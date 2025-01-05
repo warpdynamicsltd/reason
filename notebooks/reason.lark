@@ -1,0 +1,12 @@
+?start: abstract_term
+
+?abstract_term: atom_term | composed_abstract_term
+composed_abstract_term: fname "(" abstract_term_list ")"
+abstract_term_list: [abstract_term ("," abstract_term)*]
+
+fname: CNAME
+atom_term: CNAME
+
+%import common.CNAME
+%import common.WS
+%ignore WS
