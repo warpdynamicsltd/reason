@@ -1,12 +1,22 @@
-start: abstract_term
-
 abstract_term: atom_term -> atom_term
   | fname "(" abstract_term_list ")" -> composed_abstract_term
 
-logic_simple: abstract_term | "~" abstract_term | 
-alternative: abstract_term ("or" abstract_term)
+abstract_term_list: [logic_simple ("," logic_simple)*]
 
-abstract_term_list: [abstract_term ("," abstract_term)*]
+logic_simple: logic_level4
+
+logic_level1: abstract_term
+  | "(" logic_simple ")" -> brk
+  | "~" logic_level1 -> neg
+
+logic_level2: logic_level2 "and" logic_level1 -> _and
+  | logic_level1
+
+logic_level3: logic_level3 "or" logic_level2 -> _or
+  | logic_level2
+
+logic_level4: logic_level4 "→" logic_level3 -> _impl
+  | logic_level3
 
 fname: CNAME
 atom_term: CNAME

@@ -1,0 +1,24 @@
+{
+    "name": "rason",
+    "displayName": "Reason",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+      "vscode": "^1.96.0"
+    },
+    "categories": [
+      "Programming Languages"
+    ],
+    "contributes": {
+      "keybindings":[
+        {
+            "key": "ctrl+alt+s",
+            "command": "type",
+            "args": {
+                "text": "→"
+            }
+        }
+      ]
+    }
+  }
+  
