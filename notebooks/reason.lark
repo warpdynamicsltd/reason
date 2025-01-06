@@ -1,7 +1,11 @@
-?start: abstract_term
+start: abstract_term
 
-?abstract_term: atom_term | composed_abstract_term
-composed_abstract_term: fname "(" abstract_term_list ")"
+abstract_term: atom_term -> atom_term
+  | fname "(" abstract_term_list ")" -> composed_abstract_term
+
+logic_simple: abstract_term | "~" abstract_term | 
+alternative: abstract_term ("or" abstract_term)
+
 abstract_term_list: [abstract_term ("," abstract_term)*]
 
 fname: CNAME
