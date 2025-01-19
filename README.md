@@ -2,21 +2,23 @@
 
 ## Instalation guide
 
-Clone the Reason Repository by `git clone --recursive https://github.com/warpdynamicsltd/reason.git`. This will clone Reason with dependencies repositories
+Clone the Reason Repository by `git clone --recursive https://github.com/warpdynamicsltd/reason.git`. 
+This will clone Reason with dependency repositories
 
 1. `repositories/lark`
 2. `repositories/vampire`
 
-There are some necessary to complete full instalation of `reason` module:
+If you want to install to `reason` module with the most up to date versions of dependencies, you may should follow the steps below:
 
 1. Go to the root folder of Reason repository.
 2. Install Python module `lark` by `./lark-install.sh`
 3. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
 4. To install `reason` module type `pip install .` or `pip install -e .` if you need to work with the module in editable mode.
 
-If you know what you are doing you may skip steps 1 - 3 and e.g. install lark by `pip install lark` and/or get vampire binary from some other source and copy manually to `reason/assets/bin`.
+If you know what you are doing you may skip steps 1 - 3 and e.g. install lark by `pip install lark` 
+and/or get vampire binary compiled somewhere else and copy it manually to `reason/assets/bin`.
 
-## Example
+## Usage Example
 
 ```python
 from reason.vampire import Vampire
@@ -43,7 +45,7 @@ print(ZFC("∀(x, y) s(x) = s(y) → x = y"))
 print(ZFC("∀(x, y) x ∩ y ⊂ x ∪ y"))
 ```
 
-The output of the above should be
+The output of the above should be:
 
 ```
 True
