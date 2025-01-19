@@ -1,13 +1,26 @@
 from lark import Transformer
 from reason.core import AbstractTerm
 
+NEG = 'NEG'
+AND = 'AND'
+OR = 'OR'
+IMP = 'IMP'
+IFF = 'IFF'
+FORALL = 'FORALL'
+EXISTS = 'EXISTS'
+IN = 'IN'
+EQ = 'EQ'
+
 class OperatorGrammarCreator:
   precedence = [
-    (2, ['∈', '=']),
-    (1, ['~']),
-    (2, ['and']),
-    (2, ['or']),
-    (2, ['→', '⇒', '⟷', '⇔']),
+    ('std', 2, ['∩']),
+    ('std', 2, ['∪']),
+    ('std', 2, ['∈', '=', '⊂']),
+    ('std', 1, ['~']),
+    ('std', 2, ['and', '∧']),
+    ('std', 2, ['or', '∨']),
+    ('std', 2, ['→', '⇒', '⟷', '⇔']),
+    ('quantifier', 1, ['∀', '∃'])
   ]
 
   translate = {
@@ -23,7 +36,10 @@ class OperatorGrammarCreator:
     '∀': 'FORALL',
     '∃': 'EXISTS',
     '∈': 'IN',
-    '=': 'EQ'
+    '=': 'EQ',
+    '∩': 'INTERSECT',
+    '∪': 'UNION',
+    '⊂': 'INCLUDES'
   }
 
   def __init__(self, super_rule, main_rule, prefix):
@@ -32,11 +48,11 @@ class OperatorGrammarCreator:
     self.prefix = prefix
 
   def create_terminal_rule(self, level, arity, terms):
-    return f"OP{arity}_{level}: {'| '.join(map(lambda s: chr(34) + s + chr(34), terms))}\n"
+    return f"OP{arity}_{level}.1: {'| '.join(map(lambda s: chr(34) + s + chr(34), terms))}\n"
   
   def create_terminals(self):
     res = str()
-    for i, (arity, terms) in enumerate(self.precedence):
+    for i, (t, arity, terms) in enumerate(self.precedence):
       level = i + 1
       res += self.create_terminal_rule(level, arity, terms)
 
@@ -51,11 +67,21 @@ class OperatorGrammarCreator:
     
     return res
   
+  def create_quantifier_rule(self, level):
+    return f"{self.prefix}_{level}: OP1_{level} \"(\" abstract_term_list \")\" {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n"
+
+  
   def create_rules(self):
     res = str()
-    for i, (arity, terms) in enumerate(self.precedence):
+    for i, (t, arity, terms) in enumerate(self.precedence):
       level = i + 1
-      res += self.create_rule(level, arity)
+      match t:
+        case 'std':
+          res += self.create_rule(level, arity)
+        case 'quantifier':
+          res += self.create_quantifier_rule(level)
+
+
 
     return res
   
@@ -77,6 +103,7 @@ class OperatorGrammarCreator:
 class TreeToAbstractTerm(Transformer):
   def atom_term(self, s):
     (s,) = s
+    # print(type(s), s)
     return AbstractTerm(s)
   
   def brk(self, s):
@@ -94,21 +121,21 @@ class TreeToAbstractTerm(Transformer):
     fname, term_list = s
     return AbstractTerm(fname, *term_list)
   
-  def neg(self, s):
-    (op, s) = s
-    return AbstractTerm("NEG", s)
+  # def neg(self, s):
+  #   (op, s) = s
+  #   return AbstractTerm("NEG", s)
   
-  def _or(self, s):
-    a, op, b = s
-    return AbstractTerm("OR", a, b)
+  # def _or(self, s):
+  #   a, op, b = s
+  #   return AbstractTerm("OR", a, b)
   
-  def _and(self, s):
-    a, op, b = s
-    return AbstractTerm("AND", a, b)
+  # def _and(self, s):
+  #   a, op, b = s
+  #   return AbstractTerm("AND", a, b)
   
-  def _impl(self, s):
-    a, op, b = s
-    return AbstractTerm("IMP", a, b)
+  # def _impl(self, s):
+  #   a, op, b = s
+  #   return AbstractTerm("IMP", a, b)
   
   def _op1(self, s):
     op, a = s
@@ -120,6 +147,16 @@ class TreeToAbstractTerm(Transformer):
     # print(a, op, b, type(op))
     op = OperatorGrammarCreator.translate[op]
     return AbstractTerm(op, a, b)
+  
+  def _op_quant(self, s):
+    op, l, a = s
+    op = OperatorGrammarCreator.translate[op]
+    res = AbstractTerm(op, l[-1], a)
+    for v in reversed(l[:-1]):
+      res = AbstractTerm(op, v, res)
+
+    return res
+
   
   def __default__(self, data, children, meta):
     # print(children)
