@@ -1,4 +1,5 @@
 import re
+import logging
 
 from importlib.resources import files
 from reason.tools.binary import run_binary
@@ -45,10 +46,13 @@ class Vampire:
     
     return False
 
-  def add_axiom(self, formula, name):
+  def add_formula(self, formula, name, type):
     if self.verbose:
       print(formula)
-    fof_line = self.formula_to_fof_line(formula, name=name, type='axiom')
+    fof_line = self.formula_to_fof_line(formula, name=name, type=type)
     if self.verbose:
       print(fof_line)
     self.lines.append(fof_line)
+
+  def add_axiom(self, formula, name):
+    self.add_formula(formula, name, type="axiom")

@@ -86,7 +86,7 @@ class OperatorGrammarCreator:
     return res
   
   def create_bracket_rule(self):
-    return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> brk\n'
+    return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> brk | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
   
   def create_main_rule(self):
     return f"{self.main_rule}: {self.prefix}_{len(self.precedence)}\n"
@@ -115,6 +115,13 @@ class TreeToAbstractTerm(Transformer):
     return s
   
   def abstract_term_list(self, terms):
+    return list(terms)
+  
+  def conj_formula(self, s):
+    (s, ) = s
+    return AbstractTerm('CONJUNCTION', *s)
+
+  def logic_simple_list(self, terms):
     return list(terms)
   
   def composed_abstract_term(self, s):

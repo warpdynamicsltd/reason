@@ -1,7 +1,7 @@
 class AbstractTerm:
   def __init__(self, name, *args):
     self.name = name
-    self.args = args
+    self.args = tuple(args)
 
   def __hash__(self):
     if not self.args:
@@ -44,8 +44,29 @@ class AbstractTerm:
     else:
       return f"{self.name}"
 
+
 class Variable(AbstractTerm):
   pass
 
 class Const(AbstractTerm):
   pass
+
+
+class AbstractTermMutable:
+  def __init__(self, name, *args):
+    self.name = name
+    self.args = list(args)
+
+
+def immutable_copy(abstract_term_mutable):
+  if isinstance(abstract_term_mutable, AbstractTermMutable):
+    return AbstractTerm(abstract_term_mutable.name, *map(immutable_copy, abstract_term_mutable.args))
+  else:
+    return abstract_term_mutable
+  
+def n_nodes(term):
+  if isinstance(term, AbstractTerm):
+    return sum(map(n_nodes, term.args)) + 1
+  else:
+    return 1
+      

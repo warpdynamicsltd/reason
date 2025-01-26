@@ -1,4 +1,5 @@
 import subprocess
+import logging
 
 def run_binary(binary_path, input_string, *args):
     """
@@ -21,17 +22,19 @@ def run_binary(binary_path, input_string, *args):
           text=True,            # Decode input/output as text
           check=True            # Raise CalledProcessError on non-zero exit
       )
+
+      logging.debug(result.stdout)
       
       # Return the output (stdout)
       return result.stdout.strip()
     
     except subprocess.CalledProcessError as e:
-        # Handle errors in execution
-        print(f"Error: {e.stderr.strip()}")
-        raise e
+      # Handle errors in execution
+      print(f"Error: {e.stderr.strip()}")
+      raise e
     except FileNotFoundError:
-        # Handle case where binary does not exist
-        print(f"Error: Binary not found at {binary_path}")
-        # raise
+      # Handle case where binary does not exist
+      print(f"Error: Binary not found at {binary_path}")
+      # raise
 
 
