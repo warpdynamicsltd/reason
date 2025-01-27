@@ -52,3 +52,5 @@ True
 True
 True
 ```
+
+To learn more about reason study more examples in [Examples](examples) directory.

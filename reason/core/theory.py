@@ -1,4 +1,5 @@
 from reason.core import AbstractTerm, Variable, Const
+from reason.core.transform import explode_over_conjunctions
 
 class Theory:
   def __init__(self, parser, prover):
@@ -36,8 +37,27 @@ class Theory:
     # print(s)
     self.prover.add_axiom(s, name)
 
-  def __call__(self, text):
-    s = self.parser(text)
+  def __call__(self, f: str | AbstractTerm):
+    if not isinstance(f, AbstractTerm):
+      s = self.parser(f)
+    else:
+      s = f
     s = self.rectify(s)
     return self.prover(s)
+  
+  
+  def symbolise(self, f):
+    if not isinstance(f, AbstractTerm):
+      return self.parser(f)
+    else:
+      return f
+  
+
+  def check_proof(self, premise: str | AbstractTerm, thesis: str | AbstractTerm, proof: str | AbstractTerm):
+    premise = self.symbolise(premise)
+    thesis = self.symbolise(thesis)
+    proof = self.symbolise(proof)
+
+    consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
+    return all(self(AbstractTerm('IMP', source, target)) for source, target in zip(consequences[:-1], consequences[1:]))
 
