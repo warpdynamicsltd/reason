@@ -25,7 +25,7 @@ proof = """{
   ∃(z){
     z ∈ s(x) ∧ z ∈ s(y);
     z = x ∧ z = y;
-    ∀(k) (k ∈ x ⟷ k ∈ z) ∧ (∀(k) k ∈ z ⟷ k ∈ y);
+    ∀(k) ((k ∈ x ⟷ k ∈ z) ∧ (k ∈ z ⟷ k ∈ y));
     x = y
     }
 }
