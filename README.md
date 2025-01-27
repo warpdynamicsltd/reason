@@ -1,6 +1,6 @@
 # REASON
 
-## Instalation guide
+## Installation guide
 
 Clone the Reason Repository by `git clone --recursive https://github.com/warpdynamicsltd/reason.git`. 
 This will clone Reason with dependency repositories
