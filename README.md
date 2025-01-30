@@ -8,7 +8,7 @@ This will clone Reason with dependency repositories
 1. `repositories/lark`
 2. `repositories/vampire`
 
-If you want to install to `reason` module with the most up to date versions of dependencies, you should follow the steps below:
+If you want to install `reason` module with the most up to date versions of dependencies, you should follow the steps below:
 
 1. Go to the root folder of Reason repository.
 2. Install Python module `lark` by `./lark-install.sh`
