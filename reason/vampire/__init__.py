@@ -32,10 +32,13 @@ class Vampire:
   def __call__(self, formula):
     lines = list(self.lines)
     line = self.formula_to_fof_line(formula)
-    if self.verbose:
-      print(line)
     lines.append(line)
-    res = self.exec('\n'.join(lines))
+    
+    if self.verbose:
+      for l in lines:
+        print(l)
+    
+    res = self.exec('\n'.join(lines), proof="proofcheck")
     for line in res.split('\n'):
       if self.verbose:
         print(line)
