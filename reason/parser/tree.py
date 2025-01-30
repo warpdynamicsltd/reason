@@ -117,6 +117,9 @@ class TreeToAbstractTerm(Transformer):
   def abstract_term_list(self, terms):
     return list(terms)
   
+  def abstract_term_list_spec(self, terms):
+    return list(terms)
+  
   def conj_formula(self, s):
     (s, ) = s
     return AbstractTerm('CONJUNCTION', *s)
@@ -127,6 +130,14 @@ class TreeToAbstractTerm(Transformer):
   def composed_abstract_term(self, s):
     fname, term_list = s
     return AbstractTerm(fname, *term_list)
+  
+  def abstract_term_sequence(self, s):
+    (s,) = s
+    return AbstractTerm(f"SEQ{len(s)}", *s)
+  
+  def abstract_term_set(self, s):
+    (s,) = s
+    return AbstractTerm(f"SET{len(s)}", *s)
   
   # def neg(self, s):
   #   (op, s) = s

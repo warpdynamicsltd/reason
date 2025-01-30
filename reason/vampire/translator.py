@@ -27,6 +27,9 @@ def to_fof(obj):
     case AbstractTerm(name='CONJUNCTION', args=args):
       return f"({' & '.join(map(to_fof, args))})"
     
+    case AbstractTerm(name='EQ', args=[a, b]):
+      return f"({to_fof(a)}={to_fof(b)})"
+    
     case Variable(name=f, args=[]):
       return f"V_{f}"
     
