@@ -38,15 +38,12 @@ class Theory:
     self.prover.add_axiom(s, name)
 
   def __call__(self, f: str | AbstractTerm):
-    if not isinstance(f, AbstractTerm):
-      s = self.parser(f)
-    else:
-      s = f
+    s = self.symbolise(f)
     s = self.rectify(s)
     return self.prover(s)
   
   
-  def symbolise(self, f):
+  def symbolise(self, f: str | AbstractTerm) -> AbstractTerm:
     if not isinstance(f, AbstractTerm):
       return self.parser(f)
     else:

@@ -1,8 +1,34 @@
-class AbstractTerm:
-  def __init__(self, name, *args):
-    self.name = name
-    self.args = tuple(args)
+from typing import Self
+from beartype import beartype
 
+class MutateImmutableError(Exception):
+  pass
+
+class NotAcceptedType(Exception):
+  pass
+
+@beartype
+class AbstractTerm:  
+  def __init__(self, name: str | int | tuple, *args: Self | str | int | tuple):
+    self.__name = name
+    self.__args = tuple(args)
+
+  @property
+  def name(self):
+    return self.__name
+  
+  @name.setter
+  def name(self, v):
+    raise MutateImmutableError()
+  
+  @property
+  def args(self):
+    return self.__args
+  
+  @args.setter
+  def args(self, args):
+    raise MutateImmutableError()
+  
   def __hash__(self):
     if not self.args:
       return hash((type(self), self.name))
@@ -31,12 +57,6 @@ class AbstractTerm:
       return f"{type(self).__name__}({self.name}, {', '.join(map(AbstractTerm.show, self.args))})"
     else:
       return f"{type(self).__name__}({self.name})"
-  
-  # def __repr__(self):
-  #   if self.args:
-  #     return f"{type(self).__name__}({self.name}, {', '.join(map(repr, self.args))})"
-  #   else:
-  #     return f"{type(self).__name__}({self.name})"
   
   def __repr__(self):
     if self.args:
