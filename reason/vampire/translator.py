@@ -1,33 +1,40 @@
-from reason.parser.tree import *
-from reason.core import AbstractTerm, Variable, Const
+from beartype import beartype
 
-def to_fof(obj):
+# from reason.parser.tree import *
+from reason.core import Variable, Const
+from reason.core.fof import FirstOrderFormula
+
+
+def to_fof(obj: FirstOrderFormula) -> str:
+  """
+  Converts FirstOrderFormula object to fof string from TPTP language for use in Vampire
+  """
   match obj:
-    case AbstractTerm(name='NEG', args=[a]):
+    case FirstOrderFormula(name='NEG', args=[a]):
       return f"(~{to_fof(a)})"
     
-    case AbstractTerm(name='AND', args=[a, b]):
+    case FirstOrderFormula(name='AND', args=[a, b]):
       return f"({to_fof(a)} & {to_fof(b)})"
     
-    case AbstractTerm(name='OR', args=[a, b]):
+    case FirstOrderFormula(name='OR', args=[a, b]):
       return f"({to_fof(a)} | {to_fof(b)})"
     
-    case AbstractTerm(name='IMP', args=[a, b]):
+    case FirstOrderFormula(name='IMP', args=[a, b]):
       return f"({to_fof(a)} => {to_fof(b)})"
     
-    case AbstractTerm(name='IFF', args=[a, b]):
+    case FirstOrderFormula(name='IFF', args=[a, b]):
       return f"({to_fof(a)} <=> {to_fof(b)})"
     
-    case AbstractTerm(name='FORALL', args=[x, a]):
+    case FirstOrderFormula(name='FORALL', args=[x, a]):
       return f"(![{to_fof(x)}] : ({to_fof(a)}))"
     
-    case AbstractTerm(name='EXISTS', args=[x, a]):
+    case FirstOrderFormula(name='EXISTS', args=[x, a]):
       return f"(?[{to_fof(x)}] : ({to_fof(a)}))"
     
-    case AbstractTerm(name='CONJUNCTION', args=args):
-      return f"({' & '.join(map(to_fof, args))})"
+    # case FirstOrderFormula(name='CONJUNCTION', args=args):
+    #   return f"({' & '.join(map(to_fof, args))})"
     
-    case AbstractTerm(name='EQ', args=[a, b]):
+    case FirstOrderFormula(name='EQ', args=[a, b]):
       return f"({to_fof(a)}={to_fof(b)})"
     
     case Variable(name=f, args=[]):
@@ -36,7 +43,7 @@ def to_fof(obj):
     case Const(name=c, args=[]):
       return f"c_{c}"
     
-    case AbstractTerm(name=f, args=args):
+    case FirstOrderFormula(name=f, args=args):
       return f"f_{f}({','.join(map(to_fof, args))})"
     
   return obj

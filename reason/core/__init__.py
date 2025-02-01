@@ -7,8 +7,8 @@ class MutateImmutableError(Exception):
 class NotAcceptedType(Exception):
   pass
 
-@beartype
-class AbstractTerm:  
+#@beartype
+class AbstractTerm:
   def __init__(self, name: str | int | tuple, *args: Self | str | int | tuple):
     self.__name = name
     self.__args = tuple(args)
@@ -71,18 +71,21 @@ class Variable(AbstractTerm):
 class Const(AbstractTerm):
   pass
 
+class Formula(AbstractTerm):
+  pass
+
 
 class AbstractTermMutable:
   def __init__(self, name, *args):
     self.name = name
     self.args = list(args)
 
-
-def immutable_copy(abstract_term_mutable):
-  if isinstance(abstract_term_mutable, AbstractTermMutable):
-    return AbstractTerm(abstract_term_mutable.name, *map(immutable_copy, abstract_term_mutable.args))
-  else:
-    return abstract_term_mutable
+  @classmethod
+  def immutable_copy(cls, obj: Self | str | int | tuple, T: type):
+    if isinstance(obj, AbstractTermMutable):
+      return T(obj.name, *map(lambda a: cls.immutable_copy(a, T), obj.args))
+    else:
+      return obj
   
 def n_nodes(term):
   if isinstance(term, AbstractTerm):

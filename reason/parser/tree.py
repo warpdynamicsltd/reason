@@ -1,6 +1,32 @@
 from lark import Transformer
 from reason.core import AbstractTerm
 
+class GrammarTree(AbstractTerm):
+  
+  def flat_to_tree(self, target_name, left_join=True):
+    if len(self.args) == 1:
+      return self.args[0]
+    
+    if len(self.args) < 2:
+      raise ValueError("Too few args")
+    
+    args = self.args
+    if left_join is False:
+      args = list(reversed(self.args))
+      obj = GrammarTree(target_name, args[1], args[0])
+    else:
+      obj = GrammarTree(target_name, args[0], args[1])
+
+    for arg in args[2:]:
+      if left_join:
+        obj = GrammarTree(target_name, obj, arg)
+      else:
+        obj = GrammarTree(target_name, arg, obj)
+
+    return obj
+
+
+
 NEG = 'NEG'
 AND = 'AND'
 OR = 'OR'
@@ -100,19 +126,19 @@ class OperatorGrammarCreator:
 
     return res
 
-class TreeToAbstractTerm(Transformer):
+class TreeToGrammarTree(Transformer):
   def atom_term(self, s):
     (s,) = s
     # print(type(s), s)
-    return AbstractTerm(s)
+    return GrammarTree(s)
   
-  def brk(self, s):
-    (s,) = s
-    return s
+  # def brk(self, s):
+  #   (s,) = s
+  #   return s
   
-  def fname(self, s):
-    (s,) = s
-    return s
+  # def fname(self, s):
+  #   (s,) = s
+  #   return s
   
   def abstract_term_list(self, terms):
     return list(terms)
@@ -122,56 +148,41 @@ class TreeToAbstractTerm(Transformer):
   
   def conj_formula(self, s):
     (s, ) = s
-    return AbstractTerm('CONJUNCTION', *s)
+    return GrammarTree('CONJUNCTION', *s)
 
   def logic_simple_list(self, terms):
     return list(terms)
   
   def composed_abstract_term(self, s):
     fname, term_list = s
-    return AbstractTerm(fname, *term_list)
+    return GrammarTree(fname, *term_list)
   
   def abstract_term_sequence(self, s):
     (s,) = s
-    return AbstractTerm(f"SEQ{len(s)}", *s)
+    return GrammarTree(f"SEQ{len(s)}", *s)
   
   def abstract_term_set(self, s):
     (s,) = s
-    return AbstractTerm(f"SET{len(s)}", *s)
+    return GrammarTree(f"SET{len(s)}", *s)
   
-  # def neg(self, s):
-  #   (op, s) = s
-  #   return AbstractTerm("NEG", s)
-  
-  # def _or(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("OR", a, b)
-  
-  # def _and(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("AND", a, b)
-  
-  # def _impl(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("IMP", a, b)
   
   def _op1(self, s):
     op, a = s
     op = OperatorGrammarCreator.translate[op]
-    return AbstractTerm(op, a)
+    return GrammarTree(op, a)
   
   def _op2(self, s):
     a, op, b = s
     # print(a, op, b, type(op))
     op = OperatorGrammarCreator.translate[op]
-    return AbstractTerm(op, a, b)
+    return GrammarTree(op, a, b)
   
   def _op_quant(self, s):
     op, l, a = s
     op = OperatorGrammarCreator.translate[op]
-    res = AbstractTerm(op, l[-1], a)
+    res = GrammarTree(op, l[-1], a)
     for v in reversed(l[:-1]):
-      res = AbstractTerm(op, v, res)
+      res = GrammarTree(op, v, res)
 
     return res
 

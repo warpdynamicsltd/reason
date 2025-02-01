@@ -8,7 +8,7 @@ SYMBOL : (LETTER | DIGIT | "_" | "∅")+
 
 ?symbol: SYMBOL
 
-fname: symbol
+?fname: symbol
 atom_term: symbol
 
 abstract_term: atom_term
@@ -19,4 +19,4 @@ abstract_term: atom_term
 abstract_term_list: [logic_simple ("," logic_simple)*]
 abstract_term_list_spec: [(logic_simple ",")+ (logic_simple|)]
 
-logic_simple_list: [(logic_simple ";")+]
+logic_simple_list: [(logic_simple ";")+ (logic_simple|)]

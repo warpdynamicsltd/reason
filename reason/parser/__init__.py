@@ -1,7 +1,7 @@
 from lark import Transformer, Lark
 from reason.core import AbstractTerm
 from importlib.resources import files
-from reason.parser.tree import OperatorGrammarCreator, TreeToAbstractTerm
+from reason.parser.tree import OperatorGrammarCreator, TreeToGrammarTree
 
 
 class Parser:
@@ -13,4 +13,4 @@ class Parser:
 
   def __call__(self, text):
     tree = self.reason_parser.parse(text)
-    return TreeToAbstractTerm().transform(tree)
+    return TreeToGrammarTree().transform(tree)
