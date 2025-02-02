@@ -8,12 +8,15 @@ This will clone Reason with dependency repositories
 1. `repositories/lark`
 2. `repositories/vampire`
 
-If you want to install `reason` module with the most up to date versions of dependencies, you should follow the steps below:
+If you want to install `reason` package in your local Python environment 
+with the most up to date versions of dependencies, you should follow the steps below:
 
 1. Go to the root folder of Reason repository.
-2. Install Python module `lark` by `./lark-install.sh`
-3. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
-4. To install `reason` module type `pip install .` or `pip install -e .` if you need to work with the module in editable mode.
+2. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
+3. One possible way to install `reason` package in your local Python environment:
+   1. Install `uv` package manager by e.g. `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+   2. Run `uv sync` on the level of the project root directory.
+   3. Run `uv run task test` to run tests to verify if your installation is successful.
 
 If you know what you are doing you may skip steps 1 - 3 and e.g. install lark by `pip install lark` 
 and/or get vampire binary compiled somewhere else and copy it manually to `reason/assets/bin`.
