@@ -13,9 +13,9 @@ ZFC.add_axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)", name="a0")
 ZFC.add_axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))", name="d1")
 ZFC.add_axiom("empty(∅)", name="a1")
 ZFC.add_axiom("∀(x, z) z ∈ {x} ⟷ z = x", name="a3")
-ZFC.add_axiom("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y", name='a4')
-ZFC.add_axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y", name='a5')
-ZFC.add_axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)", name='d2')
+ZFC.add_axiom("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y", name="a4")
+ZFC.add_axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y", name="a5")
+ZFC.add_axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)", name="d2")
 
 premise = "~({x} ∩ {y} = ∅)"
 thesis = "x = y"
@@ -34,4 +34,3 @@ proof = """{
 print(ZFC.check_proof(premise, thesis, proof))
 
 # True
-

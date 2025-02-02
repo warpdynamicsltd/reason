@@ -1,184 +1,208 @@
-from lark import Transformer
+import re
+from lark import Transformer, v_args, Token
+
 from reason.core import AbstractTerm
 
-NEG = 'NEG'
-AND = 'AND'
-OR = 'OR'
-IMP = 'IMP'
-IFF = 'IFF'
-FORALL = 'FORALL'
-EXISTS = 'EXISTS'
-IN = 'IN'
-EQ = 'EQ'
+
+class AbstractSyntaxTree(AbstractTerm):
+    def flat_to_tree(self, target_name, left_join=True):
+        if len(self.args) == 1:
+            return self.args[0]
+
+        if len(self.args) < 2:
+            raise ValueError("Too few args")
+
+        args = self.args
+        if left_join is False:
+            args = list(reversed(self.args))
+            obj = AbstractSyntaxTree(target_name, args[1], args[0])
+        else:
+            obj = AbstractSyntaxTree(target_name, args[0], args[1])
+
+        for arg in args[2:]:
+            if left_join:
+                obj = AbstractSyntaxTree(target_name, obj, arg)
+            else:
+                obj = AbstractSyntaxTree(target_name, arg, obj)
+
+        return obj
+
+
+NEG = "NEG"
+AND = "AND"
+OR = "OR"
+IMP = "IMP"
+IFF = "IFF"
+FORALL = "FORALL"
+EXISTS = "EXISTS"
+IN = "IN"
+EQ = "EQ"
+
 
 class OperatorGrammarCreator:
-  precedence = [
-    ('std', 2, ['∩']),
-    ('std', 2, ['∪']),
-    ('std', 2, ['∈', '=', '⊂']),
-    ('std', 1, ['~']),
-    ('std', 2, ['and', '∧']),
-    ('std', 2, ['or', '∨']),
-    ('std', 2, ['→', '⇒', '⟷', '⇔']),
-    ('quantifier', 1, ['∀', '∃'])
-  ]
+    precedence = [
+        ("std", 2, ["∩"]),
+        ("std", 2, ["∪"]),
+        ("std", 2, ["∈", "=", "⊂"]),
+        ("std", 1, ["~"]),
+        ("std", 2, ["and", "∧"]),
+        ("std", 2, ["or", "∨"]),
+        ("std", 2, ["→", "⇒", "⟷", "⇔"]),
+        ("quantifier", 1, ["∀", "∃"]),
+    ]
 
-  translate = {
-    '~': 'NEG',
-    'and': 'AND',
-    '∧': 'AND',
-    'or': 'OR',
-    '∨': 'OR',
-    '→': 'IMP',
-    '⇒': 'IMP',
-    '⟷': 'IFF',
-    '⇔': 'IFF',
-    '∀': 'FORALL',
-    '∃': 'EXISTS',
-    '∈': 'IN',
-    '=': 'EQ',
-    '∩': 'INTERSECT',
-    '∪': 'UNION',
-    '⊂': 'INCLUDES'
-  }
+    translate = {
+        "~": "NEG",
+        "and": "AND",
+        "∧": "AND",
+        "or": "OR",
+        "∨": "OR",
+        "→": "IMP",
+        "⇒": "IMP",
+        "⟷": "IFF",
+        "⇔": "IFF",
+        "∀": "FORALL",
+        "∃": "EXISTS",
+        "∈": "IN",
+        "=": "EQ",
+        "∩": "INTERSECT",
+        "∪": "UNION",
+        "⊂": "INCLUDES",
+    }
 
-  def __init__(self, super_rule, main_rule, prefix):
-    self.super_rule = super_rule
-    self.main_rule = main_rule
-    self.prefix = prefix
+    def __init__(self, super_rule, main_rule, prefix):
+        self.super_rule = super_rule
+        self.main_rule = main_rule
+        self.prefix = prefix
 
-  def create_terminal_rule(self, level, arity, terms):
-    return f"OP{arity}_{level}.1: {'| '.join(map(lambda s: chr(34) + s + chr(34), terms))}\n"
-  
-  def create_terminals(self):
-    res = str()
-    for i, (t, arity, terms) in enumerate(self.precedence):
-      level = i + 1
-      res += self.create_terminal_rule(level, arity, terms)
+    def create_terminal_rule(self, level, arity, terms):
+        return f"OP{arity}_{level}.1: {'| '.join(map(lambda s: chr(34) + s + chr(34), terms))}\n"
 
-    return res
-  
-  def create_rule(self, level, arity):
-    res = str()
-    if arity == 2:
-      res = f"{self.prefix}_{level}: {self.prefix}_{level} OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
-    else:
-      res = f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
-    
-    return res
-  
-  def create_quantifier_rule(self, level):
-    return f"{self.prefix}_{level}: OP1_{level} \"(\" abstract_term_list \")\" {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n"
+    def create_terminals(self):
+        res = str()
+        for i, (t, arity, terms) in enumerate(self.precedence):
+            level = i + 1
+            res += self.create_terminal_rule(level, arity, terms)
 
-  
-  def create_rules(self):
-    res = str()
-    for i, (t, arity, terms) in enumerate(self.precedence):
-      level = i + 1
-      match t:
-        case 'std':
-          res += self.create_rule(level, arity)
-        case 'quantifier':
-          res += self.create_quantifier_rule(level)
+        return res
+
+    def create_rule(self, level, arity):
+        res = str()
+        if arity == 2:
+            res = f"{self.prefix}_{level}: {self.prefix}_{level} OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
+        else:
+            res = f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
+
+        return res
+
+    def create_quantifier_rule(self, level):
+        return f'{self.prefix}_{level}: OP1_{level} "(" abstract_term_list ")" {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n'
+
+    def create_rules(self):
+        res = str()
+        for i, (t, arity, terms) in enumerate(self.precedence):
+            level = i + 1
+            match t:
+                case "std":
+                    res += self.create_rule(level, arity)
+                case "quantifier":
+                    res += self.create_quantifier_rule(level)
+
+        return res
+
+    def create_bracket_rule(self):
+        return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> bracket | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
+
+    def create_main_rule(self):
+        return f"{self.main_rule}: {self.prefix}_{len(self.precedence)}\n"
+
+    def create_lark_code(self):
+        res = "\n\n"
+        res += self.create_main_rule() + "\n"
+        res += self.create_bracket_rule() + "\n"
+        res += self.create_terminals() + "\n"
+        res += self.create_rules() + "\n"
+
+        return res
 
 
+class TreeToGrammarTree(Transformer):
+    abstract_term_list = list
+    abstract_term_list_spec = list
+    logic_simple_list = list
 
-    return res
-  
-  def create_bracket_rule(self):
-    return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> brk | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
-  
-  def create_main_rule(self):
-    return f"{self.main_rule}: {self.prefix}_{len(self.precedence)}\n"
+    def __init__(self, level_prefix, *args, **kwargs):
+        self.level_prefix = level_prefix
+        Transformer.__init__(self, *args, **kwargs)
 
-  def create_lark_code(self):
-    res = "\n\n"
-    res += self.create_main_rule() + '\n'
-    res += self.create_bracket_rule() + '\n'
-    res += self.create_terminals() + '\n'
-    res += self.create_rules() + '\n'
+    @v_args(inline=True)
+    def symbol(self, symbol):
+        return symbol.value
 
-    return res
+    @v_args(inline=True)
+    def atom_term(self, symbol):
+        return AbstractSyntaxTree(symbol)
 
-class TreeToAbstractTerm(Transformer):
-  def atom_term(self, s):
-    (s,) = s
-    # print(type(s), s)
-    return AbstractTerm(s)
-  
-  def brk(self, s):
-    (s,) = s
-    return s
-  
-  def fname(self, s):
-    (s,) = s
-    return s
-  
-  def abstract_term_list(self, terms):
-    return list(terms)
-  
-  def abstract_term_list_spec(self, terms):
-    return list(terms)
-  
-  def conj_formula(self, s):
-    (s, ) = s
-    return AbstractTerm('CONJUNCTION', *s)
+    @v_args(inline=True)
+    def fname(self, symbol):
+        return symbol
 
-  def logic_simple_list(self, terms):
-    return list(terms)
-  
-  def composed_abstract_term(self, s):
-    fname, term_list = s
-    return AbstractTerm(fname, *term_list)
-  
-  def abstract_term_sequence(self, s):
-    (s,) = s
-    return AbstractTerm(f"SEQ{len(s)}", *s)
-  
-  def abstract_term_set(self, s):
-    (s,) = s
-    return AbstractTerm(f"SET{len(s)}", *s)
-  
-  # def neg(self, s):
-  #   (op, s) = s
-  #   return AbstractTerm("NEG", s)
-  
-  # def _or(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("OR", a, b)
-  
-  # def _and(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("AND", a, b)
-  
-  # def _impl(self, s):
-  #   a, op, b = s
-  #   return AbstractTerm("IMP", a, b)
-  
-  def _op1(self, s):
-    op, a = s
-    op = OperatorGrammarCreator.translate[op]
-    return AbstractTerm(op, a)
-  
-  def _op2(self, s):
-    a, op, b = s
-    # print(a, op, b, type(op))
-    op = OperatorGrammarCreator.translate[op]
-    return AbstractTerm(op, a, b)
-  
-  def _op_quant(self, s):
-    op, l, a = s
-    op = OperatorGrammarCreator.translate[op]
-    res = AbstractTerm(op, l[-1], a)
-    for v in reversed(l[:-1]):
-      res = AbstractTerm(op, v, res)
+    @v_args(inline=True)
+    def conj_formula(self, logic_simple_list):
+        return AbstractSyntaxTree("CONJUNCTION", *logic_simple_list)
 
-    return res
+    @v_args(inline=True)
+    def composed_abstract_term(self, fname, term_list):
+        return AbstractSyntaxTree(fname, *term_list)
 
-  
-  def __default__(self, data, children, meta):
-    # print(children)
-    if not children:
-      return None
-    (s,) = children
-    return s
+    @v_args(inline=True)
+    def abstract_term_sequence(self, abstract_term_list_spec):
+        return AbstractSyntaxTree(f"SEQ{len(abstract_term_list_spec)}", *abstract_term_list_spec)
+
+    @v_args(inline=True)
+    def abstract_term_set(self, abstract_term_list):
+        # (s,) = s
+        return AbstractSyntaxTree(f"SET{len(abstract_term_list)}", *abstract_term_list)
+
+    @v_args(inline=True)
+    def _op1(self, op, arg):
+        op = OperatorGrammarCreator.translate[op]
+        return AbstractSyntaxTree(op, arg)
+
+    @v_args(inline=True)
+    def _op2(self, abstract_term1, op, abstract_term2):
+        op = OperatorGrammarCreator.translate[op]
+        return AbstractSyntaxTree(op, abstract_term1, abstract_term2)
+
+    @v_args(inline=True)
+    def _op_quant(self, op, abstract_term_list, abstract_term):
+        op = OperatorGrammarCreator.translate[op]
+        res = AbstractSyntaxTree(op, abstract_term_list[-1], abstract_term)
+        for v in reversed(abstract_term_list[:-1]):
+            res = AbstractSyntaxTree(op, v, res)
+
+        return res
+
+    @v_args(inline=True)
+    def logic_simple(self, logic_simple):
+        return logic_simple
+
+    @v_args(inline=True)
+    def bracket(self, term):
+        return term
+
+    @v_args(inline=True)
+    def abstract_term(self, abstract_term):
+        return abstract_term
+
+    @staticmethod
+    def prefix_rule_handler(s):
+        return s
+
+    def __default__(self, data, children, meta):
+        match data:
+            case Token(type="RULE", value=value) if re.match(f"^{self.level_prefix}_\\d+$", value):
+                (s,) = children
+                return self.prefix_rule_handler(s)
+
+        raise ValueError(f"Unexpected RULE {data}")
