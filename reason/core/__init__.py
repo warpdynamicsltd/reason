@@ -68,18 +68,6 @@ class AbstractTerm:
             return f"{self.name}"
 
 
-class Variable(AbstractTerm):
-    pass
-
-
-class Const(AbstractTerm):
-    pass
-
-
-class Formula(AbstractTerm):
-    pass
-
-
 class AbstractTermMutable:
     def __init__(self, name, *args):
         self.name = name

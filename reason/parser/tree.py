@@ -136,8 +136,16 @@ class TreeToGrammarTree(Transformer):
         Transformer.__init__(self, *args, **kwargs)
 
     @v_args(inline=True)
+    def symbol(self, symbol):
+        return symbol.value
+
+    @v_args(inline=True)
     def atom_term(self, symbol):
         return AbstractSyntaxTree(symbol)
+
+    @v_args(inline=True)
+    def fname(self, symbol):
+        return symbol
 
     @v_args(inline=True)
     def conj_formula(self, logic_simple_list):
@@ -145,7 +153,6 @@ class TreeToGrammarTree(Transformer):
 
     @v_args(inline=True)
     def composed_abstract_term(self, fname, term_list):
-        # fname, term_list = s
         return AbstractSyntaxTree(fname, *term_list)
 
     @v_args(inline=True)
@@ -188,12 +195,13 @@ class TreeToGrammarTree(Transformer):
     def abstract_term(self, abstract_term):
         return abstract_term
 
-    def prefix_rule_handler(self, s):
+    @staticmethod
+    def prefix_rule_handler(s):
         return s
 
     def __default__(self, data, children, meta):
         match data:
-            case Token(type="RULE", value=value) if re.match(f"^{self.level_prefix}_[\d]+$", value):
+            case Token(type="RULE", value=value) if re.match(f"^{self.level_prefix}_\\d+$", value):
                 (s,) = children
                 return self.prefix_rule_handler(s)
 

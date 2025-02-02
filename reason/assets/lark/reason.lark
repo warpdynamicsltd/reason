@@ -6,9 +6,9 @@
  
 SYMBOL : (LETTER | DIGIT | "_" | "∅")+
 
-?symbol: SYMBOL
+symbol: SYMBOL
 
-?fname: symbol
+fname: symbol
 atom_term: symbol
 
 abstract_term: atom_term

@@ -1,37 +1,25 @@
 from beartype import beartype
 
-from reason.core import AbstractTerm, Variable, Const
-from reason.core.fof import FirstOrderFormula
+from reason.core.fof import FirstOrderFormula, FormulaBuilder
 from reason.parser.tree import AbstractSyntaxTree
 from reason.core.transform import explode_over_conjunctions
 
 
 class Theory:
-    def __init__(self, parser, prover):
+    def __init__(self, parser, prover, inspect=True):
         self.parser = parser
         self.prover = prover
         self.axioms = []
         self.consts = {}
-
-    @staticmethod
-    def unflatten_conjunctions(g: AbstractSyntaxTree) -> AbstractSyntaxTree:
-        match g:
-            case AbstractSyntaxTree(name="CONJUNCTION"):
-                return g.flat_to_tree("AND")
-
-        return g
+        self.formula_builder = FormulaBuilder(consts=self.consts)
+        self.inspect = inspect
 
     @beartype
-    def to_formula(self, s: AbstractSyntaxTree) -> Const | Variable | FirstOrderFormula:
-        s = self.unflatten_conjunctions(s)
-        match s:
-            case AbstractSyntaxTree(name=x, args=[]):
-                if x in self.consts:
-                    return Const(name=self.consts[x])
-                else:
-                    return Variable(name=x)
-
-        return FirstOrderFormula(s.name, *map(self.to_formula, s.args))
+    def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
+        formula = self.formula_builder(ast)
+        if self.inspect and not self.formula_builder.well_formed(formula):
+            raise ValueError(f"{formula.show()} is not well formed")
+        return formula
 
     def add_const(self, c: str):
         self.consts[c] = f"c{len(self.consts)}"
@@ -41,7 +29,6 @@ class Theory:
         s = self.symbolise(f)
         s = self.to_formula(s)
         self.axioms.append(s)
-        # print(s)
         self.prover.add_formula(s, name, type)
 
     @beartype
@@ -49,7 +36,6 @@ class Theory:
         s = self.symbolise(f)
         s = self.to_formula(s)
         self.axioms.append(s)
-        # print(s)
         self.prover.add_axiom(s, name)
 
     @beartype

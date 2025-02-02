@@ -12,7 +12,7 @@ class TestParser(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        ZFC = Theory(parser, vampire_prover)
+        ZFC = Theory(parser, vampire_prover, inspect=True)
 
         ZFC.add_const("∅")
 
@@ -45,12 +45,12 @@ class TestParser(unittest.TestCase):
         thesis = "x = y"
 
         proof = r"""{
-      ~({x} ∩ {y} = ∅);
-      ∃(z){
-        z ∈ {x} ∧ z ∈ {y};
-        z = x ∧ z = y;
-        ∀(k) (k ∈ x ⟷ k ∈ z) ∧ (k ∈ z ⟷ k ∈ y);
-        x = y;
+        ~({x} ∩ {y} = ∅);
+        ∃(z){
+            z ∈ {x} ∧ z ∈ {y};
+            z = x ∧ z = y;
+            ∀(k) (k ∈ x ⟷ k ∈ z) ∧ (k ∈ z ⟷ k ∈ y);
+            x = y;
         };
 
     }
