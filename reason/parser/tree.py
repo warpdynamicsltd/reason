@@ -1,8 +1,9 @@
-from lark import Transformer
+import re
+from lark import Transformer, v_args, Token
+
 from reason.core import AbstractTerm
 
-class GrammarTree(AbstractTerm):
-  
+class AbstractSyntaxTree(AbstractTerm):
   def flat_to_tree(self, target_name, left_join=True):
     if len(self.args) == 1:
       return self.args[0]
@@ -13,15 +14,15 @@ class GrammarTree(AbstractTerm):
     args = self.args
     if left_join is False:
       args = list(reversed(self.args))
-      obj = GrammarTree(target_name, args[1], args[0])
+      obj = AbstractSyntaxTree(target_name, args[1], args[0])
     else:
-      obj = GrammarTree(target_name, args[0], args[1])
+      obj = AbstractSyntaxTree(target_name, args[0], args[1])
 
     for arg in args[2:]:
       if left_join:
-        obj = GrammarTree(target_name, obj, arg)
+        obj = AbstractSyntaxTree(target_name, obj, arg)
       else:
-        obj = GrammarTree(target_name, arg, obj)
+        obj = AbstractSyntaxTree(target_name, arg, obj)
 
     return obj
 
@@ -112,7 +113,7 @@ class OperatorGrammarCreator:
     return res
   
   def create_bracket_rule(self):
-    return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> brk | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
+    return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> bracket | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
   
   def create_main_rule(self):
     return f"{self.main_rule}: {self.prefix}_{len(self.precedence)}\n"
@@ -127,69 +128,74 @@ class OperatorGrammarCreator:
     return res
 
 class TreeToGrammarTree(Transformer):
-  def atom_term(self, s):
-    (s,) = s
-    # print(type(s), s)
-    return GrammarTree(s)
-  
-  # def brk(self, s):
-  #   (s,) = s
-  #   return s
-  
-  # def fname(self, s):
-  #   (s,) = s
-  #   return s
-  
-  def abstract_term_list(self, terms):
-    return list(terms)
-  
-  def abstract_term_list_spec(self, terms):
-    return list(terms)
-  
-  def conj_formula(self, s):
-    (s, ) = s
-    return GrammarTree('CONJUNCTION', *s)
+  abstract_term_list = list
+  abstract_term_list_spec = list
+  logic_simple_list = list
 
-  def logic_simple_list(self, terms):
-    return list(terms)
+  def __init__(self, level_prefix, *args, **kwargs):
+    self.level_prefix = level_prefix
+    Transformer.__init__(self, *args, **kwargs)
+
+  @v_args(inline=True)
+  def atom_term(self, symbol):
+    return AbstractSyntaxTree(symbol)
   
-  def composed_abstract_term(self, s):
-    fname, term_list = s
-    return GrammarTree(fname, *term_list)
+  @v_args(inline=True)
+  def conj_formula(self, logic_simple_list):
+    return AbstractSyntaxTree('CONJUNCTION', *logic_simple_list)
+
+  @v_args(inline=True)
+  def composed_abstract_term(self, fname, term_list):
+    #fname, term_list = s
+    return AbstractSyntaxTree(fname, *term_list)
   
-  def abstract_term_sequence(self, s):
-    (s,) = s
-    return GrammarTree(f"SEQ{len(s)}", *s)
+  @v_args(inline=True)
+  def abstract_term_sequence(self, abstract_term_list_spec):
+    return AbstractSyntaxTree(f"SEQ{len(abstract_term_list_spec)}", *abstract_term_list_spec)
   
-  def abstract_term_set(self, s):
-    (s,) = s
-    return GrammarTree(f"SET{len(s)}", *s)
+  @v_args(inline=True)
+  def abstract_term_set(self, abstract_term_list):
+    #(s,) = s
+    return AbstractSyntaxTree(f"SET{len(abstract_term_list)}", *abstract_term_list)
   
-  
-  def _op1(self, s):
-    op, a = s
+  @v_args(inline=True)
+  def _op1(self, op, arg):
     op = OperatorGrammarCreator.translate[op]
-    return GrammarTree(op, a)
+    return AbstractSyntaxTree(op, arg)
   
-  def _op2(self, s):
-    a, op, b = s
-    # print(a, op, b, type(op))
+  @v_args(inline=True)
+  def _op2(self, abstract_term1, op, abstract_term2):
     op = OperatorGrammarCreator.translate[op]
-    return GrammarTree(op, a, b)
+    return AbstractSyntaxTree(op, abstract_term1, abstract_term2)
   
-  def _op_quant(self, s):
-    op, l, a = s
+  @v_args(inline=True)
+  def _op_quant(self, op, abstract_term_list, abstract_term):
     op = OperatorGrammarCreator.translate[op]
-    res = GrammarTree(op, l[-1], a)
-    for v in reversed(l[:-1]):
-      res = GrammarTree(op, v, res)
+    res = AbstractSyntaxTree(op, abstract_term_list[-1], abstract_term)
+    for v in reversed(abstract_term_list[:-1]):
+      res = AbstractSyntaxTree(op, v, res)
 
     return res
 
+  @v_args(inline=True)
+  def logic_simple(self, logic_simple):
+    return logic_simple
+  
+  @v_args(inline=True)
+  def bracket(self, term):
+    return term
+  
+  @v_args(inline=True)
+  def abstract_term(self, abstract_term):
+    return abstract_term
+  
+  def prefix_rule_handler(self, s):
+    return s
   
   def __default__(self, data, children, meta):
-    # print(children)
-    if not children:
-      return None
-    (s,) = children
-    return s
+    match data:
+      case Token(type='RULE', value=value) if re.match(f'^{self.level_prefix}_[\d]+$', value):
+        (s,) = children
+        return self.prefix_rule_handler(s)    
+        
+    raise ValueError(f"Unexpected RULE {data}")

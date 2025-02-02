@@ -13,4 +13,4 @@ class Parser:
 
   def __call__(self, text):
     tree = self.reason_parser.parse(text)
-    return TreeToGrammarTree().transform(tree)
+    return TreeToGrammarTree(level_prefix=self.ogc.prefix).transform(tree)

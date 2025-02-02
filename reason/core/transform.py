@@ -1,8 +1,8 @@
 from copy import deepcopy
-from reason.parser.tree import GrammarTree
+from reason.parser.tree import AbstractSyntaxTree
 from reason.core import n_nodes, AbstractTerm, AbstractTermMutable
 
-def explode_over_conjunctions(formula: GrammarTree) -> list[GrammarTree]:
+def explode_over_conjunctions(formula: AbstractSyntaxTree) -> list[AbstractSyntaxTree]:
   stack = []
 
   node = formula
@@ -21,11 +21,11 @@ def explode_over_conjunctions(formula: GrammarTree) -> list[GrammarTree]:
       cparent.args.append(cnode)
 
     match node:
-      case GrammarTree(name="CONJUNCTION"):
+      case AbstractSyntaxTree(name="CONJUNCTION"):
         for k in range(len(node.args)):
           cnode.args = node.args[:k + 1]
           obj = deepcopy(root)
-          formula = AbstractTermMutable.immutable_copy(obj, GrammarTree)
+          formula = AbstractTermMutable.immutable_copy(obj, AbstractSyntaxTree)
           if formula not in results_set:
             results_set.add(formula)
         cnode.args = []
