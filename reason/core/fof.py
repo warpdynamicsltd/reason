@@ -91,12 +91,12 @@ class FormulaBuilder:
             case Predicate(name=name, args=args):
                 return type(name) is str and all(self.well_formed(arg) and isinstance(arg, Term) for arg in args)
 
-            case LogicConnective(name=name, args=args):
+            case LogicConnective(args=args):
                 return all(
                     self.well_formed(arg) and type(arg) in {Predicate, LogicConnective, LogicQuantifier} for arg in args
                 )
 
-            case LogicQuantifier(name=name, args=[variable, arg]):
+            case LogicQuantifier(args=[variable, arg]):
                 return (
                     type(variable) is Variable
                     and self.well_formed(variable)
