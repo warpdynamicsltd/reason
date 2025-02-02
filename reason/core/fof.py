@@ -72,7 +72,7 @@ class FormulaBuilder:
             ):
                 return Predicate(name, *map(lambda a: self.process(a, Predicate), ast.args))
 
-        return Function(ast.name, *map(lambda a: self.process(a, type(ast)), ast.args))
+        return Function(ast.name, *map(lambda a: self.process(a, Function), ast.args))
 
     def __call__(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
         return self.process(ast)
