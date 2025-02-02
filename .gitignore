@@ -4,3 +4,4 @@
 build/**
 repositories/vampire/CMakeFiles/** */
 notebooks/research.ipynb
+uv.lock
