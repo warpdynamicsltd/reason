@@ -55,22 +55,22 @@ class FormulaBuilder:
     ) -> FirstOrderFormula | Const | Variable | Function:
         ast = self.unflatten_conjunctions(ast)
         match ast:
-            case AbstractSyntaxTree(name=x, args=[]):
-                if x in self.consts:
-                    return Const(name=self.consts[x])
-                else:
-                    return Variable(name=x)
-
             case AbstractSyntaxTree(name=name) if name in {"OR", "AND", "NEG", "IMP", "IFF"}:
                 return LogicConnective(name, *map(lambda a: self.process(a, LogicConnective), ast.args))
 
-            case AbstractSyntaxTree(name=name) if name in {"FORALL", "EXISTS"}:
-                return LogicQuantifier(name, *map(lambda a: self.process(a, LogicQuantifier), ast.args))
+            case AbstractSyntaxTree(name=name, args=[variable, arg]) if name in {"FORALL", "EXISTS"}:
+                return LogicQuantifier(name, Variable(variable.name), self.process(arg, LogicQuantifier))
 
             case AbstractSyntaxTree(name=name) if (
                 parent_type in {LogicConnective, LogicQuantifier} or parent_type is None
             ):
                 return Predicate(name, *map(lambda a: self.process(a, Predicate), ast.args))
+
+            case AbstractSyntaxTree(name=x, args=[]):
+                if x in self.consts:
+                    return Const(name=self.consts[x])
+                else:
+                    return Variable(name=x)
 
         return Function(ast.name, *map(lambda a: self.process(a, Function), ast.args))
 

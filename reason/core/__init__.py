@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Self
 from beartype import beartype
 
@@ -10,9 +12,8 @@ class NotAcceptedType(Exception):
     pass
 
 
-# @beartype
 class AbstractTerm:
-    def __init__(self, name: str | int | tuple, *args: Self | str | int | tuple):
+    def __init__(self, name: str | int | tuple, *args: AbstractTerm | str | int | tuple):
         self.__name = name
         self.__args = tuple(args)
 
