@@ -7,6 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "beartype>=0.19.0",
     "lark",
+    "matplotlib>=3.10.0",
+    "networkx>=3.4.2",
+    "numpy>=2.2.2",
 ]
 
 [tool.uv.sources]
@@ -31,6 +34,6 @@ quote-style = "double"
 
 [tool.taskipy.tasks]
 format = {cmd = "uvx ruff format reason", help = "Format Python code base"}
-test = {cmd = "python -m unittest discover -s tests", help = "Run test"}
+test = {cmd = 'python -m unittest discover -s tests', help = "Run test"}
 
 
