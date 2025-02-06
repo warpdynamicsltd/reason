@@ -13,11 +13,13 @@ class TestSignature(unittest.TestCase):
 
         np.random.seed(42)
         G1 = random_graph(n, p)
-        G2 = IsomorphismLab.isomorphic_copy(G1)  # isomorphic copy
+
+        iso_lab = IsomorphismLab(G1)
+        G2 = iso_lab.isomorphic_copy()  # isomorphic copy
 
         G3 = random_graph(n, p) # other random graph
 
-        sig = IsomorphismLab.signature(G1)
+        sig = iso_lab.signature()
 
-        self.assertTrue(sig == IsomorphismLab.signature(G2)) # signatures equal for isomorphic graphs
-        self.assertFalse(sig == IsomorphismLab.signature(G3)) # signature different for non isometric graphs
+        self.assertTrue(sig == IsomorphismLab(G2).signature()) # signatures equal for isomorphic graphs
+        self.assertFalse(sig == IsomorphismLab(G3).signature()) # signature different for non isometric graphs
