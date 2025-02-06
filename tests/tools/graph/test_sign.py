@@ -3,6 +3,7 @@ import unittest
 import networkx as nx
 import numpy as np
 
+from reason.tools.graph.gen import random_graph
 from reason.tools.graph import IsomorphismLab
 
 class TestSignature(unittest.TestCase):
@@ -11,13 +12,10 @@ class TestSignature(unittest.TestCase):
         p = 0.002 # Probability of edge
 
         np.random.seed(42)
-        binary_matrix = (np.random.rand(n, n) < p).astype(int)
-
-        G1 = nx.from_numpy_array(binary_matrix)
+        G1 = random_graph(n, p)
         G2 = IsomorphismLab.isomorphic_copy(G1)  # isomorphic copy
 
-        binary_matrix = (np.random.rand(n, n) < p).astype(int)
-        G3 = nx.from_numpy_array(binary_matrix) # other random graph
+        G3 = random_graph(n, p) # other random graph
 
         sig = IsomorphismLab.signature(G1)
 

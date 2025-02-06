@@ -24,7 +24,8 @@ class IsomorphismLab:
         for node in graph.nodes():
             names = []
             for neighbor in graph.neighbors(node):
-                names.append(graph.nodes[neighbor]["prev_name"])
+                name = graph.nodes[neighbor]["prev_name"]
+                names.append(name)
 
             names.sort()
             graph.nodes[node]["name"] = tuple(names)
