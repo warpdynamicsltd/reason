@@ -4,8 +4,9 @@ from reason.tools.graph.iso_fun import isomorphic_functions, isomorphic_dicts
 
 
 class IsomorphismLab:
-    def __init__(self, graph):
+    def __init__(self, graph, color_map=None):
         self.graph = graph
+        self.color_map = color_map
         self.names = {}
 
     def shorten_names(self):
@@ -19,6 +20,14 @@ class IsomorphismLab:
         for node in self.graph.nodes():
             self.names[node] = names_map[self.names[node]]
 
+    def init_naming(self):
+        if self.color_map is None:
+            for node in self.graph.nodes():
+                self.names[node] = self.graph.degree[node]
+        else:
+            for node in self.graph.nodes():
+                self.names[node] = self.color_map[node], self.graph.degree[node]
+
     def renaming_step(self):
         prev_names = dict(self.names)
 
@@ -29,13 +38,12 @@ class IsomorphismLab:
                 names.append(name)
 
             names.sort()
-            self.names[node] = tuple(names)
+            if self.color_map is None:
+                self.names[node] = tuple(names)
+            else:
+                self.names[node] = self.color_map[node], tuple(names)
 
         return prev_names
-
-    def init_naming(self):
-        for node in self.graph.nodes():
-            self.names[node] = self.graph.degree[node]
 
     def signature(self):
         prev_names = {}
@@ -71,10 +79,14 @@ class IsomorphismLab:
 
         nodes_map = dict(zip(self.graph.nodes(), nodes))
         res_graph = nx.Graph()
+
         for n in self.graph.nodes():
             res_graph.add_node(nodes_map[n])
 
         for n1, n2 in self.graph.edges():
             res_graph.add_edge(nodes_map[n1], nodes[n2])
 
-        return res_graph
+        if self.color_map is not None:
+            return res_graph, {nodes_map[n]: self.color_map[n] for n in self.graph.nodes()}
+        else:
+            return res_graph, None
