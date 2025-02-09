@@ -91,12 +91,12 @@ class OperatorGrammarCreator:
         if arity == 2:
             res = f"{self.prefix}_{level}: {self.prefix}_{level} OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
         else:
-            res = f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
+            res = f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level} -> _op{arity} | {self.prefix}_{level - 1}\n"
 
         return res
 
     def create_quantifier_rule(self, level):
-        return f'{self.prefix}_{level}: OP1_{level} "(" abstract_term_list ")" {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n'
+        return f'{self.prefix}_{level}: OP1_{level} "(" abstract_term_list ")" {self.prefix}_{level} -> _op_quant | OP1_{level} abstract_term_list "." {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n'
 
     def create_rules(self):
         res = str()
@@ -126,7 +126,7 @@ class OperatorGrammarCreator:
         return res
 
 
-class TreeToGrammarTree(Transformer):
+class TreeToAbstractSyntaxTree(Transformer):
     abstract_term_list = list
     abstract_term_list_spec = list
     logic_simple_list = list
