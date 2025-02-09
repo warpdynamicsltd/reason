@@ -2,7 +2,7 @@ from beartype import beartype
 
 from reason.core.fof import FirstOrderFormula, FormulaBuilder
 from reason.parser.tree import AbstractSyntaxTree
-from reason.core.transform import explode_over_conjunctions
+from reason.core.transform.explode_conj import explode_over_conjunctions
 
 
 class Theory:
