@@ -42,6 +42,9 @@ def to_fof(obj: FirstOrderFormula) -> str:
         case Const(name=c, args=[]):
             return f"c_{c}"
 
+        case Predicate(name=f, args=[]):
+            return f"p_{f}"
+
         case Predicate(name=f, args=args):
             return f"p_{f}({','.join(map(to_fof, args))})"
 

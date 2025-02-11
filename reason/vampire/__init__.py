@@ -38,7 +38,7 @@ class Vampire:
             for l in lines:
                 print(l)
 
-        res = self.exec("\n".join(lines), proof="proofcheck")
+        res = self.exec("\n".join(lines))
         for line in res.split("\n"):
             if self.verbose:
                 print(line)

@@ -21,6 +21,9 @@ class Theory:
             raise ValueError(f"{formula.show()} is not well formed")
         return formula
 
+    def compile(self, text: str) -> FirstOrderFormula:
+        return self.to_formula(self.parser(text))
+
     def add_const(self, c: str):
         self.consts[c] = f"c{len(self.consts)}"
 
