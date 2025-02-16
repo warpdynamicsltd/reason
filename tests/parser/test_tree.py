@@ -15,8 +15,8 @@ class TestTree(unittest.TestCase):
             AbstractSyntaxTree("s"),
         )
 
-        self.assertEqual(repr(gt.flat_to_tree("AND")), "AND(AND(AND(p, q), r), s)")
-        self.assertEqual(repr(gt.flat_to_tree("AND", left_join=False)), "AND(p, AND(q, AND(r, s)))")
+        self.assertEqual(gt.flat_to_tree("AND").show(), "AND(AND(AND(p, q), r), s)")
+        self.assertEqual(gt.flat_to_tree("AND", left_join=False).show(), "AND(p, AND(q, AND(r, s)))")
 
         gt = AbstractSyntaxTree("CONJUNCTION", AbstractSyntaxTree("p"))
-        self.assertEqual(repr(gt.flat_to_tree("AND", left_join=False)), "p")
+        self.assertEqual(gt.flat_to_tree("AND", left_join=False).show(), "p")

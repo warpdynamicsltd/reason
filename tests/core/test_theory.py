@@ -6,7 +6,7 @@ from reason.parser import Parser
 from reason.core.theory import Theory
 
 
-class TestParser(unittest.TestCase):
+class TestTheory(unittest.TestCase):
     @staticmethod
     def get_ZFC_theory():
         parser = Parser()

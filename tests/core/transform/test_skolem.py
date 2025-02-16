@@ -5,10 +5,12 @@ from reason.core.fof import Variable, LogicConnective
 from reason.core.theory import Theory
 from reason.vampire import Vampire
 from reason.parser import Parser
-from reason.core.transform.skolem import expand_iff, UniqueVariables, quantifier_signature, \
-    prepend_quantifier_signature, invert_quantifier_signature, prenex_normal_raw, prenex_normal
+from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem
+from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
+    invert_quantifier_signature, closure
 
-class TestPrinter(unittest.TestCase):
+
+class TestSkolem(unittest.TestCase):
     def test_expand_iff(self):
         parser = Parser()
         vampire_prover = Vampire()
@@ -92,6 +94,28 @@ class TestPrinter(unittest.TestCase):
 
             # Formula is always logically equivalent to its prenex normal form
             # so f <-> prenex_normal(f) is a tautology
+            self.assertTrue(T.prover(tautology))
+
+    def test_skolem_tautologies(self):
+        texts = [
+            "(∀x. A(x)) ⟷ (∃u. B(u))",
+            "A ⟷ B",
+            "(∀x. A(x)) ⟷ B",
+            "A ⟷ (∀x. B(x))",
+            "∃u. Q(u) ∧ ~((∃x. A(x)) → (∀y. B(y)))",
+            "(∀x.∃u. A(x, u)) ∧ (∃y.∀z. B(y, z))",
+            "(∀x.∃u. A(x, u)) ∨ (∃y.∀z. B(y, z))",
+            "(∀x.∃u. A(x, u)) ∧ ~(∃y.∀z. B(y, z))"
+        ]
+
+        parser = Parser()
+        vampire_prover = Vampire()
+
+        T = Theory(parser, vampire_prover)
+        for text in texts:
+            f = T.compile(text)
+
+            tautology = LogicConnective('IMP', closure(skolem(f)), f)
             self.assertTrue(T.prover(tautology))
 
 

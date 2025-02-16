@@ -33,4 +33,4 @@ class TestParser(unittest.TestCase):
     def test_formulas(self):
         parser = Parser()
         for expression, result in self.tests:
-            self.assertEqual(repr(parser(expression)), result)
+            self.assertEqual(parser(expression).show(), result)
