@@ -2,6 +2,8 @@ from reason.core.fof import *
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     invert_quantifier_signature
 
+from reason.tools.unique_repr import UniqueRepr
+
 
 def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
     match formula:
@@ -33,14 +35,14 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
             return formula
 
 
-def prenex_normal(formula: FirstOrderFormula) -> FirstOrderFormula:
+def prenex_normal(formula: FirstOrderFormula, variable_prefix='x') -> FirstOrderFormula:
     formula = expand_iff(formula)
-    formula = UniqueVariables()(formula)
+    formula = UniqueVariables(variable_prefix=variable_prefix)(formula)
     return prenex_normal_raw(formula)
 
 
-def skolem(formula):
-    formula = prenex_normal(formula)
+def skolem(formula, skolem_prefix='s', variable_prefix='x') -> FirstOrderFormula:
+    formula = prenex_normal(formula, variable_prefix=variable_prefix)
     formula, signature = quantifier_signature(formula)
 
     vars = []
@@ -48,9 +50,9 @@ def skolem(formula):
     for quantifier, variable in signature:
         if quantifier == 'EXISTS':
             if vars:
-                skolem_term = Function(f"s{index}", *vars)
+                skolem_term = Function(f"{skolem_prefix}{index}", *vars)
             else:
-                skolem_term = Const(f"s{index}")
+                skolem_term = Const(f"{skolem_prefix}{index}")
 
             formula = formula.replace(variable, skolem_term)
             index += 1
@@ -58,4 +60,60 @@ def skolem(formula):
             vars.append(variable)
 
     return formula
+
+class SkolemUniqueRepr:
+    def __init__(self):
+        self.translate = {}
+        self.translate_inv = {}
+
+    def get_form_id(self, form):
+        if form in self.translate:
+            return self.translate[form]
+        else:
+            res = len(self.translate) + 2
+            self.translate[form] = res
+            self.translate_inv[res] = form
+            return res
+
+    def unique(self, formula: FirstOrderFormula) -> UniqueRepr:
+        match formula:
+            case Predicate():
+                return UniqueRepr(self.get_form_id(formula))
+
+            case LogicConnective(name='AND', args=[a, b]):
+                return self.unique(a) * self.unique(b)
+
+            case LogicConnective(name='OR', args=[a, b]):
+                A = self.unique(a)
+                B = self.unique(b)
+                return A + B + A * B
+
+            case LogicConnective(name='NEG', args=[a]):
+                return UniqueRepr(1) + self.unique(a)
+
+            case LogicConnective(name='IMP', args=[a, b]):
+                A = self.unique(a)
+                B = self.unique(b)
+                return UniqueRepr(1) + A + A * B
+
+            case LogicConnective(name='IFF', args=[a, b]):
+                A = self.unique(a)
+                B = self.unique(b)
+                return UniqueRepr(1) + A + B
+
+        raise RuntimeError(f"unexpected formula: {formula}")
+
+    def __call__(self, formula: FirstOrderFormula):
+        res = []
+        unique_repr = self.unique(formula)
+        for addend in unique_repr.get_sorted():
+            item = []
+            for factor in addend:
+                if factor != 1:
+                    item.append(self.translate_inv[factor])
+                else:
+                    item.append(factor)
+            res.append(tuple(item))
+
+        return tuple(res)
 

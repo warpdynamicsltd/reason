@@ -6,13 +6,14 @@ from reason.core.fof import LogicQuantifier, Variable, LogicConnective, Predicat
 
 
 class UniqueVariables:
-    def __init__(self):
+    def __init__(self, variable_prefix="x"):
         self.variable_index = 1
+        self.variable_prefix = variable_prefix
 
     def __call__(self, formula):
         match formula:
             case LogicQuantifier(name=op, args=[var, arg]):
-                _var = Variable(f"x{self.variable_index}")
+                _var = Variable(f"{self.variable_prefix}{self.variable_index}")
                 self.variable_index += 1
                 return LogicQuantifier(op, _var, self(arg.replace(var, _var)))
 

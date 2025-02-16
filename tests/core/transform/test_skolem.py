@@ -5,7 +5,7 @@ from reason.core.fof import Variable, LogicConnective
 from reason.core.theory import Theory
 from reason.vampire import Vampire
 from reason.parser import Parser
-from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem
+from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     invert_quantifier_signature, closure
 
@@ -118,6 +118,22 @@ class TestSkolem(unittest.TestCase):
             tautology = LogicConnective('IMP', closure(skolem(f)), f)
             self.assertTrue(T.prover(tautology))
 
+    def test_unique_representation_tautologies(self):
+        parser = Parser()
+        vampire_prover = Vampire()
+
+        T = Theory(parser, vampire_prover)
+
+        truth = ((1,),)
+
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P ∨ ~P")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P → P")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("~(A ∧ B) ⟷ ~A ∨ ~B")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("~(A ∨ B) ⟷ ~A ∧ ~B")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∧ Q)")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∧ Q)")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∨ Q)")), truth)
+        self.assertEqual(SkolemUniqueRepr()(T.compile("P ∧ Q → P")), truth)
 
 
 

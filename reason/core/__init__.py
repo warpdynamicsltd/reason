@@ -70,9 +70,9 @@ class AbstractTerm:
 
     def to_tuple(self):
         if self.args:
-            return (type(self), self.name, *map(AbstractTerm.to_tuple, self.args))
+            return (type(self).__name__, f"{self.name}:{type(self.name).__name__}", *map(AbstractTerm.to_tuple, self.args))
         else:
-            return (type(self), self.name)
+            return (type(self).__name__, f"{self.name}:{type(self.name).__name__}")
 
     def __lt__(self, other):
         return self.to_tuple() < other.to_tuple()
