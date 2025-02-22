@@ -6,21 +6,26 @@ from reason.core.fof import LogicQuantifier, Variable, LogicConnective, Predicat
 
 
 class UniqueVariables:
-    def __init__(self, variable_prefix="x"):
+    def __init__(self, formula, variable_prefix="x"):
         self.variable_index = 1
         self.variable_prefix = variable_prefix
 
-    def __call__(self, formula):
+        self.result = self._transform(formula)
+
+    def _transform(self, formula):
         match formula:
             case LogicQuantifier(name=op, args=[var, arg]):
                 _var = Variable(f"{self.variable_prefix}{self.variable_index}")
                 self.variable_index += 1
-                return LogicQuantifier(op, _var, self(arg.replace(var, _var)))
+                return LogicQuantifier(op, _var, self._transform(arg.replace(var, _var)))
 
             case AbstractTerm(name=name, args=args):
-                return type(formula)(name, *map(self.__call__, args))
+                return type(formula)(name, *map(self._transform, args))
 
         return formula
+
+def make_bound_variables_unique(formula: FirstOrderFormula, variable_prefix='x') -> FirstOrderFormula:
+    return UniqueVariables(formula, variable_prefix=variable_prefix).result
 
 
 def expand_iff(formula: FirstOrderFormula):

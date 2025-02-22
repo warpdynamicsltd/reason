@@ -1,5 +1,5 @@
 from reason.core.fof import *
-from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
+from reason.core.transform.base import make_bound_variables_unique, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     invert_quantifier_signature
 
 from reason.tools.unique_repr import UniqueRepr
@@ -37,7 +37,7 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
 
 def prenex_normal(formula: FirstOrderFormula, variable_prefix='x') -> FirstOrderFormula:
     formula = expand_iff(formula)
-    formula = UniqueVariables(variable_prefix=variable_prefix)(formula)
+    formula = make_bound_variables_unique(formula, variable_prefix=variable_prefix)
     return prenex_normal_raw(formula)
 
 
