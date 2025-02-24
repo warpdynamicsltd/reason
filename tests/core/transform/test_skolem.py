@@ -126,14 +126,14 @@ class TestSkolem(unittest.TestCase):
 
         truth = ((1,),)
 
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P ∨ ~P")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P → P")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("~(A ∧ B) ⟷ ~A ∨ ~B")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("~(A ∨ B) ⟷ ~A ∧ ~B")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∧ Q)")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∧ Q)")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P → (Q → P ∨ Q)")), truth)
-        self.assertEqual(SkolemUniqueRepr()(T.compile("P ∧ Q → P")), truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P ∨ ~P")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P → P")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("~(A ∧ B) ⟷ ~A ∨ ~B")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("~(A ∨ B) ⟷ ~A ∧ ~B")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P → (Q → P ∧ Q)")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P → (Q → P ∧ Q)")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P → (Q → P ∨ Q)")).result, truth)
+        self.assertEqual(SkolemUniqueRepr(T.compile("P ∧ Q → P")).result, truth)
 
 
 

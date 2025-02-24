@@ -4,7 +4,7 @@ from reason.parser import Parser
 from reason.printer import Printer
 from reason.core.theory import Theory
 from reason.core.fof import LogicConnective
-from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr
+from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr, skolem_unique_repr
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     free_variables, closure
 from reason.core.transform.graph import FormulaToGraphLab
@@ -20,13 +20,15 @@ T = Theory(parser, vampire_prover)
 
 #%%
 
-f = T.compile("(∀x.∃y. A(x, y)) ⟷ (∃u.∃v. B(u, v))")
+f = T.compile("(∀x. A(x)) → (∀x. B(x))")
 s = skolem(f)
 print(printer(s))
 
-f = T.compile("P(f(x7, s4(x2, x5, x6, x7)))")
+a1 = T.compile("P(x, y)")
+a2 = T.compile("Q(x)")
+a3 = T.compile("R(y)")
 
-G = FormulaToGraphLab(f).graph
+G = FormulaToGraphLab(skolem_unique_repr(f)).graph
 
 def visualise(n):
     res = f"{G.nodes[n]["type"]}"

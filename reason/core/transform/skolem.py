@@ -68,9 +68,10 @@ def skolem(formula, skolem_prefix="s", variable_prefix="x") -> FirstOrderFormula
 
 
 class SkolemUniqueRepr:
-    def __init__(self):
+    def __init__(self, formula):
         self.translate = {}
         self.translate_inv = {}
+        self.result = self._transform(formula)
 
     def get_form_id(self, form):
         if form in self.translate:
@@ -109,7 +110,7 @@ class SkolemUniqueRepr:
 
         raise RuntimeError(f"unexpected formula: {formula}")
 
-    def __call__(self, formula: FirstOrderFormula):
+    def _transform(self, formula: FirstOrderFormula):
         res = []
         unique_repr = self.unique(formula)
         for addend in unique_repr.get_sorted():
@@ -122,3 +123,8 @@ class SkolemUniqueRepr:
             res.append(tuple(item))
 
         return tuple(res)
+
+
+def skolem_unique_repr(formula: FirstOrderFormula, skolem_prefix="s", variable_prefix="x"):
+    formula = skolem(formula, skolem_prefix=skolem_prefix, variable_prefix=variable_prefix)
+    return SkolemUniqueRepr(formula).result
