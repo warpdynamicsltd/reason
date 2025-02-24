@@ -2,8 +2,8 @@ from typing import List
 
 from collections import Counter
 
-class UniqueRepr:
 
+class UniqueRepr:
     @staticmethod
     def merge_unique_sorted_lists(list1, list2):
         """
@@ -54,7 +54,7 @@ class UniqueRepr:
 
         return res
 
-    def __init__(self, value : int | List[int] = None):
+    def __init__(self, value: int | List[int] = None):
         self.addends = []
 
         match value:
@@ -87,9 +87,3 @@ class UniqueRepr:
 
     def get_sorted(self):
         return sorted(self.addends)
-
-
-
-
-
-

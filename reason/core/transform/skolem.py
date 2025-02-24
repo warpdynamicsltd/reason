@@ -1,6 +1,11 @@
 from reason.core.fof import *
-from reason.core.transform.base import make_bound_variables_unique, expand_iff, quantifier_signature, prepend_quantifier_signature, \
-    invert_quantifier_signature
+from reason.core.transform.base import (
+    make_bound_variables_unique,
+    expand_iff,
+    quantifier_signature,
+    prepend_quantifier_signature,
+    invert_quantifier_signature,
+)
 
 from reason.tools.unique_repr import UniqueRepr
 
@@ -35,20 +40,20 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
             return formula
 
 
-def prenex_normal(formula: FirstOrderFormula, variable_prefix='x') -> FirstOrderFormula:
+def prenex_normal(formula: FirstOrderFormula, variable_prefix="x") -> FirstOrderFormula:
     formula = expand_iff(formula)
     formula = make_bound_variables_unique(formula, variable_prefix=variable_prefix)
     return prenex_normal_raw(formula)
 
 
-def skolem(formula, skolem_prefix='s', variable_prefix='x') -> FirstOrderFormula:
+def skolem(formula, skolem_prefix="s", variable_prefix="x") -> FirstOrderFormula:
     formula = prenex_normal(formula, variable_prefix=variable_prefix)
     formula, signature = quantifier_signature(formula)
 
     vars = []
     index = 1
     for quantifier, variable in signature:
-        if quantifier == 'EXISTS':
+        if quantifier == "EXISTS":
             if vars:
                 skolem_term = Function(f"{skolem_prefix}{index}", *vars)
             else:
@@ -60,6 +65,7 @@ def skolem(formula, skolem_prefix='s', variable_prefix='x') -> FirstOrderFormula
             vars.append(variable)
 
     return formula
+
 
 class SkolemUniqueRepr:
     def __init__(self):
@@ -80,23 +86,23 @@ class SkolemUniqueRepr:
             case Predicate():
                 return UniqueRepr(self.get_form_id(formula))
 
-            case LogicConnective(name='AND', args=[a, b]):
+            case LogicConnective(name="AND", args=[a, b]):
                 return self.unique(a) * self.unique(b)
 
-            case LogicConnective(name='OR', args=[a, b]):
+            case LogicConnective(name="OR", args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return A + B + A * B
 
-            case LogicConnective(name='NEG', args=[a]):
+            case LogicConnective(name="NEG", args=[a]):
                 return UniqueRepr(1) + self.unique(a)
 
-            case LogicConnective(name='IMP', args=[a, b]):
+            case LogicConnective(name="IMP", args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return UniqueRepr(1) + A + A * B
 
-            case LogicConnective(name='IFF', args=[a, b]):
+            case LogicConnective(name="IFF", args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return UniqueRepr(1) + A + B
@@ -116,4 +122,3 @@ class SkolemUniqueRepr:
             res.append(tuple(item))
 
         return tuple(res)
-

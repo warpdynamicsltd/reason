@@ -40,7 +40,7 @@ color_map = {n: colors[i] for i, n in enumerate(G1.nodes())}
 
 #%%
 print("components", nx.number_connected_components(G1))
-iso_lab1 = IsomorphismLab(G1, color_map=color_map)
+iso_lab1 = IsomorphismLab(G1, nodes_color_map=color_map)
 
 G2, iso_color_map = iso_lab1.isomorphic_copy()
 

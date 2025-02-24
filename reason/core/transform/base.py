@@ -24,7 +24,8 @@ class UniqueVariables:
 
         return formula
 
-def make_bound_variables_unique(formula: FirstOrderFormula, variable_prefix='x') -> FirstOrderFormula:
+
+def make_bound_variables_unique(formula: FirstOrderFormula, variable_prefix="x") -> FirstOrderFormula:
     return UniqueVariables(formula, variable_prefix=variable_prefix).result
 
 
@@ -70,6 +71,7 @@ def invert_quantifier_signature(sign: List[tuple[str, Variable]]) -> List[tuple[
 
     return result
 
+
 def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
     match f:
         case Variable(name=name):
@@ -88,7 +90,7 @@ def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
 
     return set()
 
+
 def closure(formula):
     variables = free_variables(formula)
-    return prepend_quantifier_signature(formula, [('FORALL', var) for var in variables])
-
+    return prepend_quantifier_signature(formula, [("FORALL", var) for var in variables])
