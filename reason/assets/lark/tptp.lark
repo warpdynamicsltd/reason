@@ -29,3 +29,10 @@ formula: predicate
   | "~" formula -> logic_neg_op
   | formula "&" formula -> logic_and_op
   | formula "|" formula -> logic_or_op
+  | formula "=>" formula -> logic_imp_op
+  | formula "<=>" formula -> logic_iff_op
+  | exists_quantifier
+  | forall_quantifier
+
+exists_quantifier: "?" "[" variables_list "]" ":" formula
+forall_quantifier: "!" "[" variables_list "]" ":" formula

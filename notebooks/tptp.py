@@ -20,7 +20,7 @@ with open(files("reason") / "assets" / "lark" / "tptp.lark") as f:
     code = f.read()
     parser = Lark(code, start="formula", lexer="basic")
 
-tree = parser.parse("p(f(X)) & q(X)")
+tree = parser.parse("! [X] : ? [Y, Z] : (p(f(X)) => (q(Y) & u(b)))")
 f = TPTPTreeToAbstractSyntaxTree().transform(tree)
 print(f)
 print(printer(f))

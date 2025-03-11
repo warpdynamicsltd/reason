@@ -1,6 +1,7 @@
 from lark import Transformer, v_args, Token
 from reason.parser.tree import *
 from reason.core.fof import *
+from reason.core.transform.base import prepend_quantifier_signature
 
 class TPTPTreeToAbstractSyntaxTree(Transformer):
     variables_list = list
@@ -45,6 +46,22 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def logic_or_op(self, pred1, pred2):
         return LogicConnective(OR, pred1, pred2)
+
+    @v_args(inline=True)
+    def logic_imp_op(self, pred1, pred2):
+        return LogicConnective(IMP, pred1, pred2)
+
+    @v_args(inline=True)
+    def logic_iff_op(self, pred1, pred2):
+        return LogicConnective(IFF, pred1, pred2)
+
+    @v_args(inline=True)
+    def exists_quantifier(self, variables_list, formula):
+        return prepend_quantifier_signature(formula, [(EXISTS, v) for v in variables_list])
+
+    @v_args(inline=True)
+    def forall_quantifier(self, variables_list, formula):
+        return prepend_quantifier_signature(formula, [(FORALL, v) for v in variables_list])
 
     @v_args(inline=True)
     def term(self, term):
