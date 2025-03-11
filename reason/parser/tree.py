@@ -126,7 +126,7 @@ class OperatorGrammarCreator:
         return res
 
 
-class TreeToAbstractSyntaxTree(Transformer):
+class ReasonTreeToAbstractSyntaxTree(Transformer):
     abstract_term_list = list
     abstract_term_list_spec = list
     logic_simple_list = list

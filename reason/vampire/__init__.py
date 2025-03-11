@@ -16,7 +16,8 @@ class Vampire:
         args = []
         for key in kwargs:
             args.append(f"--{key}")
-            args.append(kwargs[key])
+            if kwargs[key] is not None:
+                args.append(kwargs[key])
 
         return run_binary(str(bin_path), input, *args)
 
@@ -29,7 +30,7 @@ class Vampire:
         self.verbose = verbose
         self.lines = []
 
-    def __call__(self, formula):
+    def compile_input(self, formula):
         lines = list(self.lines)
         line = self.formula_to_fof_line(formula)
         lines.append(line)
@@ -38,7 +39,18 @@ class Vampire:
             for l in lines:
                 print(l)
 
-        res = self.exec("\n".join(lines))
+        return "\n".join(lines)
+
+    def run(self, formula, **kwargs):
+        input_str = self.compile_input(formula)
+
+        res = self.exec(input_str, **kwargs)
+        return res
+
+    def __call__(self, formula):
+        input_str = self.compile_input(formula)
+
+        res = self.exec(input_str)
         for line in res.split("\n"):
             if self.verbose:
                 print(line)
