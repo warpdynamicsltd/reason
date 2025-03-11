@@ -17,10 +17,16 @@ printer = Printer(parser.ogc)
 
 vampire_prover = Vampire(verbose=False)
 T = Theory(parser, vampire_prover)
+T.add_const('c')
 
 #%%
 
-f = T.compile("(∀x. A(x)) → (∀x. B(x))")
+f = T.compile("∀x. A(x) ∧ B(x) → A(x)")
+# f = T.compile("(∀x. A(x) ∧ B(x)) → (∀x. A(f(x)))")
+# f = T.compile("P(c) → P(c)")
+print(T.prover.run(f, mode="casc", proof="proofcheck", output_axiom_names="on", proof_extra="free"))
+
+#%%
 s = skolem(f)
 print(printer(s))
 

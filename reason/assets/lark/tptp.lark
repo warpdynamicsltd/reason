@@ -1,0 +1,31 @@
+%import common.CNAME
+%import common.WS
+%import common.LETTER
+%import common.DIGIT
+%import common.UCASE_LETTER
+%import common.LCASE_LETTER
+%ignore WS
+
+VARIABLE: UCASE_LETTER ("_"|LETTER|DIGIT)*
+FNAME: LCASE_LETTER ("_"|LETTER|DIGIT)*
+
+variable: VARIABLE
+fname: FNAME
+const: FNAME
+
+variables_list: [variable ("," variable)*]
+
+term: variable 
+  | const
+  | fname "(" term_list ")" -> composed_term
+
+predicate: fname -> predicate_name
+  | fname "(" term_list ")" -> composed_predicate
+
+term_list: [term ("," term)*]
+
+formula: predicate
+  | "(" formula ")" -> bracket
+  | "~" formula -> logic_neg_op
+  | formula "&" formula -> logic_and_op
+  | formula "|" formula -> logic_or_op
