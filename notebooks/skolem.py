@@ -24,7 +24,7 @@ T.add_const('c')
 f = T.compile("∀x. ∃y. A(x, y) ∧ B(x, y) → A(x, y)")
 # f = T.compile("(∀x. A(x) ∧ B(x)) → (∀x. A(f(x)))")
 # f = T.compile("P(c) → P(c)")
-print(T.prover.run(f, mode="casc", proof="proofcheck", output_axiom_names="on", proof_extra="free"))
+print(T.prover.run(f, output_axiom_names="on"))
 
 #%%
 s = skolem(f)
