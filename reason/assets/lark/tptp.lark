@@ -21,6 +21,8 @@ term: variable
 
 predicate: fname -> predicate_name
   | fname "(" term_list ")" -> composed_predicate
+  | term "=" term -> terms_equality
+  | term "!=" term -> terms_inequality
 
 term_list: [term ("," term)*]
 

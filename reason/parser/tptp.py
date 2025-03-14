@@ -3,6 +3,7 @@ from reason.parser.tree import *
 from reason.core.fof import *
 from reason.core.transform.base import prepend_quantifier_signature
 
+
 class TPTPTreeToAbstractSyntaxTree(Transformer):
     variables_list = list
     term_list = list
@@ -25,11 +26,23 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
 
     @v_args(inline=True)
     def composed_term(self, fname, args):
+        if fname[:2] == "f_":
+            fname = fname[2:]
         return Function(fname, *args)
 
     @v_args(inline=True)
     def composed_predicate(self, fname, args):
+        if fname[:2] == "p_":
+            fname = fname[2:]
         return Predicate(fname, *args)
+
+    @v_args(inline=True)
+    def terms_equality(self, term1, term2):
+        return Predicate("EQ", term1, term2)
+
+    @v_args(inline=True)
+    def terms_inequality(self, term1, term2):
+        return LogicConnective("NEG", Predicate("EQ", term1, term2))
 
     @v_args(inline=True)
     def bracket(self, arg):
@@ -74,4 +87,3 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def formula(self, formula):
         return formula
-

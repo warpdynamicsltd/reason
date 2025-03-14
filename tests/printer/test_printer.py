@@ -20,7 +20,11 @@ class TestPrinter(unittest.TestCase):
         "R ∨ (∀x. Q(x) → P) ∧ R",
         "R ∨ (∀x. A ∧ (Q(x) → P)) ∧ R",
         "R ∨ (∀x. A ∧ (Q(s(x)) → P)) ∧ R",
-        "∀x. ∀u. ∃y. P(x) ∧ (Q(u) ∨ R) → ~(∃z. A(y) ∧ ~B(z))"
+        "∀x. ∀u. ∃y. P(x) ∧ (Q(u) ∨ R) → ~(∃z. A(y) ∧ ~B(z))",
+        "a ∈ b",
+        "∀x. ∀y. x = y ⟷ (∀z. z ∈ x ⟷ z ∈ y)",
+        "∀x. ∀y. ∀z. z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y",
+        "∀x. ∀y. ∀z. z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y"
     ]
     def test_print(self):
         parser = Parser()
