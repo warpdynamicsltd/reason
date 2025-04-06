@@ -2,15 +2,22 @@
 
 ## Installation guide
 
-Clone the Reason Repository by `git clone --recursive https://github.com/warpdynamicsltd/reason.git`. 
+It is recommended to install <i>Reason</i> on Linux. 
+Instruction below assumes Debian-based distribution, but you may adjust it to your favourite Linux distribution.
+
+Clone the <i>Reason</i> repository by `git clone --recursive https://github.com/warpdynamicsltd/reason.git`. 
 This will clone Reason with dependency repositories
 
 1. `repositories/lark`
 2. `repositories/vampire`
 
-If you want to install `reason` package in your local Python environment 
+To install `reason` package in your local Python environment 
 with the most up to date versions of dependencies, you should follow the steps below:
 
+1. Most likely you will need to install:
+   ```bash
+   sudo apt install -y build-essential cmake zlib1g-dev libgmp-dev python3 curl
+   ```
 1. Go to the root folder of Reason repository.
 2. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
 3. One possible way to install `reason` package in your local Python environment:

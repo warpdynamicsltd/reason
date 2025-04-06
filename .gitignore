@@ -5,3 +5,4 @@ build/**
 repositories/vampire/CMakeFiles/** */
 notebooks/research.ipynb
 uv.lock
+reason/assets/bin/vampire
