@@ -4,6 +4,7 @@ from reason.core import AbstractTerm
 from reason.parser.tree import OperatorGrammarCreator
 from reason.core.fof import *
 
+
 class Printer:
     symb_mapping = {
         "NEG": "~",
@@ -17,7 +18,7 @@ class Printer:
         "IN": "∈",
         "INCLUDES": "⊂",
         "INTERSECT": "∩",
-        "UNION": "∪"
+        "UNION": "∪",
     }
 
     def __init__(self, ogc: OperatorGrammarCreator):

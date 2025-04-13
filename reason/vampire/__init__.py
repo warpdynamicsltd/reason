@@ -28,10 +28,10 @@ class Vampire:
 
     def __init__(self, verbose=False):
         self.verbose = verbose
-        self.lines = []
+        self.lines = {}
 
     def compile_input(self, formula):
-        lines = list(self.lines)
+        lines = list(self.lines.values())
         line = self.formula_to_fof_line(formula)
         lines.append(line)
 
@@ -54,10 +54,8 @@ class Vampire:
         for line in res.split("\n"):
             if self.verbose:
                 print(line)
-            if line and line[0] != "%":
-                m = re.search(r"\$false", line)
-                if m:
-                    return True
+            if line == "% Termination reason: Refutation":
+                return True
 
         return False
 
@@ -67,7 +65,7 @@ class Vampire:
         fof_line = self.formula_to_fof_line(formula, name=name, type=type)
         if self.verbose:
             print(fof_line)
-        self.lines.append(fof_line)
+        self.lines[name] = fof_line
 
     def add_axiom(self, formula, name):
         self.add_formula(formula, name, type="axiom")

@@ -17,7 +17,9 @@ lark = { path = "repositories/lark" }
 
 [dependency-groups]
 dev = [
-    "taskipy"
+    "taskipy",
+    "jupyter",
+    "ipykernel",
 ]
 
 [build-system]

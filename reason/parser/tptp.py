@@ -1,4 +1,5 @@
-from lark import Transformer, v_args, Token
+from lark import Transformer, Lark
+from importlib.resources import files
 from reason.parser.tree import *
 from reason.core.fof import *
 from reason.core.transform.base import prepend_quantifier_signature
@@ -87,3 +88,14 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def formula(self, formula):
         return formula
+
+
+class TPTPParser:
+    def __init__(self):
+        with open(str(files("reason") / "assets" / "lark" / "tptp.lark")) as f:
+            code = f.read()
+            self.tptp_parser = Lark(code, start="formula", lexer="basic")
+
+    def __call__(self, text: str) -> FirstOrderFormula:
+        tree = self.tptp_parser.parse(text)
+        return TPTPTreeToAbstractSyntaxTree().transform(tree)

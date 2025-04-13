@@ -25,7 +25,7 @@ class TestTheory(unittest.TestCase):
         ZFC.add_axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)", name="d2")
         ZFC.add_axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)", name="a6")
         ZFC.add_axiom(r"{a, b} = {a} ∪ {b}", name="d3")
-        ZFC.add_axiom(r"(a, b) = {a, {a, b}}", name="d3")
+        ZFC.add_axiom(r"(a, b) = {a, {a, b}}", name="d4")
 
         return ZFC
 
