@@ -21,20 +21,19 @@ T.add_const('c')
 
 #%%
 
-f = T.compile("∀x. ∃y. A(x, y) ∧ B(x, y) → A(x, y)")
-# f = T.compile("(∀x. A(x) ∧ B(x)) → (∀x. A(f(x)))")
-# f = T.compile("P(c) → P(c)")
-print(T.prover.run(f, output_axiom_names="on"))
+# f = T.compile("a = b ⟷ (∀y. P(y, a, b))")
+f = T.compile("∃y.∀z. A(y, z) ∧ (∃a.∀b. B(a, b))")
+g = T.compile("∃a.∀b. B(a, b) ∧ (∃y.∀z. A(y, z))")
 
-#%%
-s = skolem(f)
-print(printer(s))
+ftg1 = FormulaToGraphLab(skolem_unique_repr(f))
+ftg2 = FormulaToGraphLab(skolem_unique_repr(g))
 
-a1 = T.compile("P(x, y)")
-a2 = T.compile("Q(x)")
-a3 = T.compile("R(y)")
+G = ftg1.graph
+print(ftg1.sha256)
+print(ftg2.sha256)
 
-G = FormulaToGraphLab(skolem_unique_repr(f)).graph
+print(printer(prenex_normal(f)))
+print(printer(prenex_normal(g)))
 
 def visualise(n):
     res = f"{G.nodes[n]["type"]}"
@@ -61,6 +60,7 @@ nx.draw_networkx_labels(G, pos, node_labels, font_size=16, font_color='black')
 
 # Draw edge labels
 edge_labels = nx.get_edge_attributes(G, 'arg_idx')
+edge_labels.update(nx.get_edge_attributes(G, "type"))
 nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=12)
 plt.show()
 

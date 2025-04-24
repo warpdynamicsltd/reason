@@ -5,6 +5,7 @@ import sys
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.core.theory import Theory
+from reason.core.transform.skolem import skolem_sha256
 
 reason_parser = Parser()
 vampire_prover = Vampire()
@@ -22,7 +23,7 @@ ZFC.add_axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y", name="a5")
 ZFC.add_axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)", name="d2")
 ZFC.add_axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)", name="a6")
 ZFC.add_axiom("{a, b} = {a} ∪ {b}", name="d3")
-ZFC.add_formula("(a, b) = {a, {a, b}}", name="d4", type="theorem")
+ZFC.add_axiom("(a, b) = {a, {a, b}}", name="d4")
 
 ZFC.add_axiom("(a, b, c) = ((a, b), c)", name="d5")
 
@@ -30,9 +31,13 @@ ZFC.add_axiom("(a, b, c) = ((a, b), c)", name="d5")
 f = ZFC.compile("(a, b) = (c, d) → a = c ∧ b = d")
 # print(ZFC.prover.run(f, output_axiom_names="on"))
 
-proof = ZFC.prove(f)
-if proof is not None:
-    json.dump(proof, sys.stdout, indent=2)
+# proof = ZFC.prove(f)
+# if proof is not None:
+#     json.dump(proof, sys.stdout, indent=2)
+
+#%%
+f = ZFC.compile("(a, b) = (c, d) → b = d ∧ c = a")
+print(skolem_sha256(f))
 
 #%%
 T = Theory(parser=reason_parser, prover=vampire_prover)

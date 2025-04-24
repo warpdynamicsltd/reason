@@ -6,8 +6,11 @@ from reason.core.transform.base import (
     prepend_quantifier_signature,
     invert_quantifier_signature,
 )
-
+from reason.core.transform.graph import FormulaToGraphLab
 from reason.tools.unique_repr import UniqueRepr
+
+def quantifier_signature_to_str_value(signature):
+    return "".join(map(lambda pair: pair[0], signature))
 
 
 def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
@@ -22,6 +25,17 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
             b = prenex_normal_raw(b)
             a, sign_a = quantifier_signature(a)
             b, sign_b = quantifier_signature(b)
+
+            # v_a = quantifier_signature_to_str_value(sign_a)
+            # v_b = quantifier_signature_to_str_value(sign_b)
+
+            # if v_a > v_b:
+            #     sign_1 = sign_a
+            #     sign_2 = sign_b
+            # else:
+            #     sign_1 = sign_b
+            #     sign_2 = sign_a
+
             return prepend_quantifier_signature(LogicConnective(op, a, b), list(sign_a) + list(sign_b))
 
         case LogicConnective(name="IMP", args=[a, b]):
@@ -29,6 +43,7 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
             b = prenex_normal_raw(b)
             a, sign_a = quantifier_signature(a)
             b, sign_b = quantifier_signature(b)
+
             return prepend_quantifier_signature(
                 LogicConnective("IMP", a, b), invert_quantifier_signature(list(sign_a)) + list(sign_b)
             )
@@ -38,6 +53,8 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
 
         case Predicate(name=op, args=args):
             return formula
+
+    raise RuntimeError(f"unexpected formula: {formula}")
 
 
 def prenex_normal(formula: FirstOrderFormula, variable_prefix="x") -> FirstOrderFormula:
@@ -128,3 +145,7 @@ class SkolemUniqueRepr:
 def skolem_unique_repr(formula: FirstOrderFormula, skolem_prefix="s", variable_prefix="x"):
     formula = skolem(formula, skolem_prefix=skolem_prefix, variable_prefix=variable_prefix)
     return SkolemUniqueRepr(formula).result
+
+
+def skolem_sha256(formula: FirstOrderFormula, skolem_prefix="s", variable_prefix="x"):
+    return FormulaToGraphLab(skolem_unique_repr(formula, skolem_prefix=skolem_prefix, variable_prefix=variable_prefix)).sha256

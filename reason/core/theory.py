@@ -5,7 +5,7 @@ from reason.core.fof import FirstOrderFormula, FormulaBuilder, LogicConnective
 from reason.parser.tree import AbstractSyntaxTree
 from reason.core.transform.explode_conj import explode_over_conjunctions
 from reason.vampire.translator import to_fof
-from reason.core.transform.base import closure
+from reason.core.transform.base import closure, make_bound_variables_unique
 
 from reason.printer import Printer
 
@@ -146,7 +146,7 @@ class Theory:
                             "human_id": name,
                         },
                         "reference_id": reference_key,
-                        "formula": to_fof(closure(f)),
+                        "formula": to_fof(make_bound_variables_unique(closure(f))),
                     }
 
                     if _type in {"axiom", "assumption"}:
