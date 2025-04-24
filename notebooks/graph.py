@@ -28,15 +28,19 @@ def add_random_edges(G, num_edges):
             G.add_edge(u, v)
             added += 1
 
-def random_graph(n, num_added_edges=5):
+def random_non_iso_connected_graphs(n=20, p=0.2, num_added_edges=5, is_directed=False):
     binary_matrix = (np.random.rand(n, n) < p).astype(int)
     np.fill_diagonal(binary_matrix, 0)
-    binary_matrix = np.maximum(binary_matrix, binary_matrix.T)
+
+    if not is_directed:
+        binary_matrix = np.maximum(binary_matrix, binary_matrix.T)
+        G = nx.from_numpy_array(binary_matrix)
+        connected_components = nx.connected_components(G)
+    else:
+        G = nx.from_numpy_array(binary_matrix, create_using=nx.DiGraph())
+        connected_components = nx.strongly_connected_components(G)
 
 
-
-    G = nx.from_numpy_array(binary_matrix)
-    connected_components = nx.connected_components(G)
 
     # Find the largest one
     largest_cc = max(connected_components, key=len)
@@ -49,21 +53,20 @@ def random_graph(n, num_added_edges=5):
     return resG, largerG
 
 
-
 #%%
 
 
 from reason.tools.graph import IsomorphismLab
 
-n = 10       # Number of nodes
+n = 20       # Number of nodes
 p = 0.2      # Probability for edge creation
 
-G1, G2 = random_graph(n)
+G1, G2 = random_non_iso_connected_graphs(n, is_directed=True)
 
 colors = random.choices(["0", "1"], k=n)
 color_map = {k: colors[i] for i, k in enumerate(G1.nodes())}
 
-print("components", nx.number_connected_components(G1))
+#print("components", nx.number_connected_components(G1))
 iso_lab1 = IsomorphismLab(G1, nodes_color_map=color_map)
 
 nx.draw(G1, with_labels=True, node_color='skyblue', alpha=0.5)

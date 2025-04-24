@@ -22,15 +22,19 @@ def add_random_edges(G, num_edges):
             G.add_edge(u, v)
             added += 1
 
-def random_non_iso_connected_graphs(n=20, p=0.2, num_added_edges=5):
+def random_non_iso_connected_graphs(n=20, p=0.2, num_added_edges=5, is_directed=False):
     binary_matrix = (np.random.rand(n, n) < p).astype(int)
     np.fill_diagonal(binary_matrix, 0)
-    binary_matrix = np.maximum(binary_matrix, binary_matrix.T)
+
+    if not is_directed:
+        binary_matrix = np.maximum(binary_matrix, binary_matrix.T)
+        G = nx.from_numpy_array(binary_matrix)
+        connected_components = nx.connected_components(G)
+    else:
+        G = nx.from_numpy_array(binary_matrix, create_using=nx.DiGraph())
+        connected_components = nx.strongly_connected_components(G)
 
 
-
-    G = nx.from_numpy_array(binary_matrix)
-    connected_components = nx.connected_components(G)
 
     # Find the largest one
     largest_cc = max(connected_components, key=len)
@@ -44,11 +48,11 @@ def random_non_iso_connected_graphs(n=20, p=0.2, num_added_edges=5):
 
 
 class TestSignature(unittest.TestCase):
-    def random_small_graph(self, seed: int, nodes_map=True, edges_map=True, p=1.0, k=2):
+    def random_small_graph(self, seed: int, nodes_map=True, edges_map=True, p=1.0, k=2, is_directed=False):
         np.random.seed(seed)
         random.seed(seed)
 
-        G1, G2 = random_non_iso_connected_graphs()
+        G1, G2 = random_non_iso_connected_graphs(is_directed=is_directed)
 
         if nodes_map:
             nodes_color_map1 = random_color_map(G1, k=k, p=p)
@@ -124,6 +128,34 @@ class TestSignature(unittest.TestCase):
             self.random_small_graph(seed, nodes_map=True, edges_map=False, p=0.5, k=5)
             self.random_small_graph(seed, nodes_map=True, edges_map=True, p=0.5, k=5)
             self.random_small_graph(seed, nodes_map=False, edges_map=True, p=0.5, k=5)
+
+
+    def test_random_small_directed_graphs(self):
+        seed = 0
+        for _ in range(20):
+            seed += 1
+            self.random_small_graph(seed, nodes_map=False, edges_map=False, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=False, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=True, is_directed=True)
+            self.random_small_graph(seed, nodes_map=False, edges_map=True, is_directed=True)
+
+            seed += 1
+            self.random_small_graph(seed, nodes_map=False, edges_map=False, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=False, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=True, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=False, edges_map=True, k=5, is_directed=True)
+
+            seed += 1
+            self.random_small_graph(seed, nodes_map=False, edges_map=False, p=0.5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=False, p=0.5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=True, p=0.5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=False, edges_map=True, p=0.5, is_directed=True)
+
+            seed += 1
+            self.random_small_graph(seed, nodes_map=False, edges_map=False, p=0.5, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=False, p=0.5, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=True, edges_map=True, p=0.5, k=5, is_directed=True)
+            self.random_small_graph(seed, nodes_map=False, edges_map=True, p=0.5, k=5, is_directed=True)
 
 
     def test_sign(self):
