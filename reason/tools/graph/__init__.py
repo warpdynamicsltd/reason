@@ -29,7 +29,6 @@ class IsomorphismLab:
             self.init_naming = self.init_naming_directed
             self.get_signature_edges = self.get_signature_edges_for_directed
 
-
     def symmetrize_edges_color_map(self):
         if self.edges_color_map is not None:
             keys = list(self.edges_color_map.keys())
@@ -112,7 +111,6 @@ class IsomorphismLab:
                 edges.append((name1, name2, tuple()))
 
         return edges
-
 
     def signature(self):
         prev_names = {}

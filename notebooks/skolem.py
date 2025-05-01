@@ -7,7 +7,7 @@ from reason.core.fof import LogicConnective
 from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr, skolem_unique_repr
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     free_variables, closure
-from reason.core.transform.graph import FormulaToGraphLab
+from reason.core.transform.graph.skolem import SkolemFormulaToGraphLab
 
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -25,8 +25,8 @@ T.add_const('c')
 f = T.compile("∃y.∀z. A(y, z) ∧ (∃a.∀b. B(a, b))")
 g = T.compile("∃a.∀b. B(a, b) ∧ (∃y.∀z. A(y, z))")
 
-ftg1 = FormulaToGraphLab(skolem_unique_repr(f))
-ftg2 = FormulaToGraphLab(skolem_unique_repr(g))
+ftg1 = SkolemFormulaToGraphLab(skolem_unique_repr(f))
+ftg2 = SkolemFormulaToGraphLab(skolem_unique_repr(g))
 
 G = ftg1.graph
 print(ftg1.sha256)

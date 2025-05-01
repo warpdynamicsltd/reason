@@ -2,11 +2,10 @@
 /*.egg-info
 **/__pycache__/**
 build/**
-/repositories/vampire
+/repositories
 /repositories/vampire/CMakeFiles/** */
 /notebooks/research.ipynb
 uv.lock
 /reason/assets/bin
 /.idea
-
-/repositories/vampire
+/.vscode

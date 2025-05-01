@@ -7,7 +7,7 @@ from reason.core.fof import *
 from reason.parser.tree import *
 
 
-class FormulaToGraphLab:
+class SkolemFormulaToGraphLab:
     def __init__(self, formula, skolem_prefix="s"):
         self.skolem_prefix = skolem_prefix
         self.graph = nx.Graph()
@@ -42,10 +42,9 @@ class FormulaToGraphLab:
         edges_color_map = {k: repr(edges_color_map[k]) for k in edges_color_map.keys()}
         # print(nodes_color_map)
         # print(edges_color_map)
-        iso_lab = IsomorphismLab(graph=self.graph, nodes_color_map=nodes_color_map,edges_color_map=edges_color_map)
+        iso_lab = IsomorphismLab(graph=self.graph, nodes_color_map=nodes_color_map, edges_color_map=edges_color_map)
         res = iso_lab.signature()
         return res
-
 
     def _transform(self, value):
         if value in self.translate:

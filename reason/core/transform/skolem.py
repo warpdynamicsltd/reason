@@ -6,8 +6,9 @@ from reason.core.transform.base import (
     prepend_quantifier_signature,
     invert_quantifier_signature,
 )
-from reason.core.transform.graph import FormulaToGraphLab
+from reason.core.transform.graph.skolem import SkolemFormulaToGraphLab
 from reason.tools.unique_repr import UniqueRepr
+
 
 def quantifier_signature_to_str_value(signature):
     return "".join(map(lambda pair: pair[0], signature))
@@ -25,16 +26,6 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
             b = prenex_normal_raw(b)
             a, sign_a = quantifier_signature(a)
             b, sign_b = quantifier_signature(b)
-
-            # v_a = quantifier_signature_to_str_value(sign_a)
-            # v_b = quantifier_signature_to_str_value(sign_b)
-
-            # if v_a > v_b:
-            #     sign_1 = sign_a
-            #     sign_2 = sign_b
-            # else:
-            #     sign_1 = sign_b
-            #     sign_2 = sign_a
 
             return prepend_quantifier_signature(LogicConnective(op, a, b), list(sign_a) + list(sign_b))
 
@@ -148,4 +139,6 @@ def skolem_unique_repr(formula: FirstOrderFormula, skolem_prefix="s", variable_p
 
 
 def skolem_sha256(formula: FirstOrderFormula, skolem_prefix="s", variable_prefix="x"):
-    return FormulaToGraphLab(skolem_unique_repr(formula, skolem_prefix=skolem_prefix, variable_prefix=variable_prefix)).sha256
+    return SkolemFormulaToGraphLab(
+        skolem_unique_repr(formula, skolem_prefix=skolem_prefix, variable_prefix=variable_prefix)
+    ).sha256
