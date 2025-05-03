@@ -9,3 +9,5 @@ uv.lock
 /reason/assets/bin
 /.idea
 /.vscode
+/notebooks/.proof_cache
+notebooks/*.gefx

@@ -129,3 +129,17 @@ class FormulaToGraphLab:
                     self.add_edge(arg_node, node)
 
                     return node
+                
+    def get_graph_repr(self):
+        graph = nx.DiGraph()
+        for n in self.graph.nodes:
+            graph.add_node(n, name=str(self.node_color_map[n]))
+
+        for n, m in self.graph.edges:
+            if (n, m) in self.edge_color_map:
+                graph.add_edge(n, m, name=str(self.edge_color_map[n, m]))
+            else:
+                graph.add_edge(n, m)
+
+        return graph 
+

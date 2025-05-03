@@ -1,24 +1,43 @@
 import re
+import os
+import json
 from beartype import beartype
 
 from reason.core.fof import FirstOrderFormula, FormulaBuilder, LogicConnective
 from reason.parser.tree import AbstractSyntaxTree
+from reason.parser.tptp import TPTPParser
 from reason.core.transform.explode_conj import explode_over_conjunctions
 from reason.vampire.translator import to_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
+from reason.core.transform.signature import formula_sha256, signature
 
 from reason.printer import Printer
 
 
 class Theory:
-    def __init__(self, parser, prover, inspect=True):
+    def __init__(self, parser, prover, inspect=True, cache_folder_path=None):
         self.parser = parser
+        self.tptp_parser = TPTPParser()
         self.prover = prover
-        # self.axioms = []
+        self.axioms = []
         self.consts = {}
         self.formula_builder = FormulaBuilder(consts=self.consts)
         self.inspect = inspect
         self.reference_translator = {}
+        self.reference_signatures = set()
+
+        if cache_folder_path is not None:
+            os.makedirs(cache_folder_path, exist_ok=True)
+            self.cache_folder_path = cache_folder_path
+
+    def cache_proof(self, proof_obj) -> bool:
+        if len(proof_obj["conclusions"]) == 1:
+            filename = f"{proof_obj["conclusions"][0]["signature_sha256"]}.json"
+            with open(os.path.join(self.cache_folder_path, filename), "w") as f:
+                json.dump(proof_obj, f, indent=2)
+                return True
+        
+        return False
 
     @beartype
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
@@ -37,11 +56,15 @@ class Theory:
     def add_formula(self, f: str | AbstractSyntaxTree, name, type):
         s = self.symbolise(f)
         formula = self.to_formula(s)
-        # self.axioms.append(s)
+        
+        if type == "axiom":
+            self.axioms.append(formula)
 
         inner_name = f"key_{len(self.reference_translator) + 1}"
 
         self.reference_translator[inner_name] = (name, formula)
+        sig = signature(formula)
+        self.reference_signatures.add(signature(formula))
 
         self.prover.add_formula(formula, inner_name, type)
 
@@ -107,7 +130,40 @@ class Theory:
     def parse_proof_line(self, line: str) -> str | None:
         re.match(r"^\d+\.(.*)\[input\(axiom|assumption\)\s(\w+)\]", line)
 
+    
+    def check_cache_premises_compatibility(self, cache_obj, premis_signatures: set):
+        for premis in cache_obj["premises"]:
+            f = self.tptp_parser(premis["formula"])
+            sig = signature(f)
+            if sig not in premis_signatures:
+                return False
+            
+        return True
+    
+    def check_if_proof_is_cached(self, formula: FirstOrderFormula) -> dict | None:
+        if self.cache_folder_path is None:
+            return None
+
+        sha256 = formula_sha256(formula)
+        filename = f"{sha256}.json"
+        path = os.path.join(self.cache_folder_path, filename)
+        if os.path.exists(path):
+            with open(path) as f:
+                proof_obj = json.load(f)
+            
+            if proof_obj["proved"] and len(proof_obj["conclusions"]) == 1:
+                read_formula = self.tptp_parser(proof_obj["conclusions"][0]["formula"])
+                if signature(formula) == signature(read_formula) and self.check_cache_premises_compatibility(proof_obj, self.reference_signatures):
+                    return proof_obj
+
+
+        return None
+
     def prove(self, formula: FirstOrderFormula) -> dict | None:
+        proof_obj = self.check_if_proof_is_cached(formula)
+        if proof_obj is not None:
+            return proof_obj
+
         res = self.prover.run(formula, output_axiom_names="on")
         premises = []
         conclusions = []
@@ -141,12 +197,15 @@ class Theory:
                         name = None
                         f = fof_formula
 
+                    normalised_formula = make_bound_variables_unique(closure(f))
+
                     record = {
                         "metadata": {
                             "human_id": name,
                         },
                         "reference_id": reference_key,
-                        "formula": to_fof(make_bound_variables_unique(closure(f))),
+                        "formula": to_fof(normalised_formula),
+                        "signature_sha256": formula_sha256(f) 
                     }
 
                     if _type in {"axiom", "assumption"}:
@@ -159,7 +218,8 @@ class Theory:
             proved = True
 
         if proved:
-            res = {"proved": proved, "conclusions": conclusions, "premises": premises, "proof": proof}
-            return res
+            proof_obj = {"proved": proved, "conclusions": conclusions, "premises": premises, "proof": proof}
+            self.cache_proof(proof_obj)
+            return proof_obj
         else:
             return None

@@ -30,6 +30,8 @@ f2 = T.compile("∃u.∀(k,a) A(a, k) ∨ B(c, u, a, k) → a = k ∧ c = u")
 ftg = FormulaToGraphLab(f)
 ftg2 = FormulaToGraphLab(f2)
 
+print(ftg.signature)
+
 print(formula_sha256(f))
 print(formula_sha256(f2))
 
@@ -40,5 +42,9 @@ nx.draw(G, pos, with_labels=False, node_color='lightblue', node_size=300, font_s
 nx.draw_networkx_labels(G, pos, ftg.node_color_map, font_size=16, font_color='black')
 nx.draw_networkx_edge_labels(G, pos, edge_labels=ftg.edge_color_map, font_size=12)
 plt.show()
+
+G = ftg.get_graph_repr()
+
+nx.write_gexf(G, "g.gexf")
 
 # %%

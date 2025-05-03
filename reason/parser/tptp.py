@@ -15,7 +15,10 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
 
     @v_args(inline=True)
     def const(self, arg):
-        return Const(arg.value)
+        value = arg.value
+        if value[:2] == "c_":
+            value = value[2:]
+        return Const(value)
 
     @v_args(inline=True)
     def fname(self, arg):
