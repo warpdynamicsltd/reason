@@ -29,6 +29,27 @@ ZFC.add_axiom("(a, b) = {a, {a, b}}", name="d4")
 
 ZFC.add_axiom("(a, b, c) = ((a, b), c)", name="d5")
 
+ZFC.absorb_cache()
+
+
+obj = ZFC.prove("(a, b) = (c, d) → a = c ∧ b = d")
+print(obj)
+
+obj = ZFC.prove("(a, b) = (c, d) → a = c ∧ b = d")
+print(obj)
+
+
+#%%
+
+obj = ZFC.prove("(a, b, c) = (x, x, x) → a = b")
+print(obj)
+
+#%%
+
+obj = ZFC.prove("(a, b, c) = (x, y, z) → a = x ∧ b = y ∧ c = z")
+print(obj)
+
+
 #%%
 f = ZFC.compile("(a, b) = (c, d) → a = c ∧ b = d")
 # print(ZFC.prover.run(f, output_axiom_names="on"))

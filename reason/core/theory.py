@@ -1,6 +1,7 @@
 import re
 import os
 import json
+from glob import glob
 from beartype import beartype
 
 from reason.core.fof import FirstOrderFormula, FormulaBuilder, LogicConnective
@@ -10,6 +11,7 @@ from reason.core.transform.explode_conj import explode_over_conjunctions
 from reason.vampire.translator import to_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
 from reason.core.transform.signature import formula_sha256, signature
+from reason.tools.math.transform import utf8_to_varname
 
 from reason.printer import Printer
 
@@ -26,16 +28,28 @@ class Theory:
         self.reference_translator = {}
         self.reference_signatures = set()
 
-        if cache_folder_path is not None:
-            os.makedirs(cache_folder_path, exist_ok=True)
-            self.cache_folder_path = cache_folder_path
+        self.cache_folder_path = cache_folder_path
+        if self.cache_folder_path is not None:
+            os.makedirs(self.cache_folder_path, exist_ok=True)
+
+
+    def absorb_cache(self):
+        if self.cache_folder_path is not None:
+            for path in glob(f"{self.cache_folder_path}/*.json"):
+                # print(path)
+                m = re.match(r"^.+/([0-9a-f]{64})\.json$", path)
+                if m:
+                    sha256, = m.groups()
+                    res = self.check_cache_file_compatibility(sha256)
+                    # print(sha256, res)
 
     def cache_proof(self, proof_obj) -> bool:
-        if len(proof_obj["conclusions"]) == 1:
-            filename = f"{proof_obj["conclusions"][0]["signature_sha256"]}.json"
-            with open(os.path.join(self.cache_folder_path, filename), "w") as f:
-                json.dump(proof_obj, f, indent=2)
-                return True
+        if self.cache_folder_path is not None:
+            if len(proof_obj["conclusions"]) == 1:
+                filename = f"{proof_obj["conclusions"][0]["signature_sha256"]}.json"
+                with open(os.path.join(self.cache_folder_path, filename), "w") as f:
+                    json.dump(proof_obj, f, indent=2)
+                    return True
         
         return False
 
@@ -50,26 +64,28 @@ class Theory:
         return self.to_formula(self.parser(text))
 
     def add_const(self, c: str):
-        self.consts[c] = f"c{len(self.consts)}"
+        self.consts[c] = f"c{utf8_to_varname(c)}"
 
     @beartype
-    def add_formula(self, f: str | AbstractSyntaxTree, name, type):
-        s = self.symbolise(f)
-        formula = self.to_formula(s)
+    def add_formula(self, f: str | AbstractSyntaxTree | FirstOrderFormula, name=None, type="theorem"):
+        if not isinstance(f, FirstOrderFormula):
+            s = self.symbolise(f)
+            formula = self.to_formula(s)
+        else:
+            formula = f
         
         if type == "axiom":
             self.axioms.append(formula)
-
-        inner_name = f"key_{len(self.reference_translator) + 1}"
-
-        self.reference_translator[inner_name] = (name, formula)
+        
         sig = signature(formula)
-        self.reference_signatures.add(signature(formula))
-
-        self.prover.add_formula(formula, inner_name, type)
+        if sig not in self.reference_signatures:
+            self.reference_signatures.add(sig)
+            inner_name = f"key_{len(self.reference_translator) + 1}"
+            self.reference_translator[inner_name] = (name, formula)
+            self.prover.add_formula(formula, inner_name, type)
 
     @beartype
-    def add_axiom(self, f: str | AbstractSyntaxTree, name):
+    def add_axiom(self, f: str | AbstractSyntaxTree| FirstOrderFormula, name):
         self.add_formula(f, name, type="axiom")
 
     @beartype
@@ -104,7 +120,8 @@ class Theory:
         for source, target in zip(consequences[:-1], consequences[1:]):
             f = LogicConnective("IMP", self.to_formula(source), self.to_formula(target))
             # print(printer(f))
-            if not self(f):
+            proof_obj = self.prove(f)
+            if proof_obj is None:
                 res = False
                 break
 
@@ -136,15 +153,15 @@ class Theory:
             f = self.tptp_parser(premis["formula"])
             sig = signature(f)
             if sig not in premis_signatures:
+                proof_obj = self.prove(f)
+                if proof_obj is None:
+                    return False
+                else:
+                    self.add_formula(f, type="theorem") 
                 return False
-            
         return True
     
-    def check_if_proof_is_cached(self, formula: FirstOrderFormula) -> dict | None:
-        if self.cache_folder_path is None:
-            return None
-
-        sha256 = formula_sha256(formula)
+    def check_cache_file_compatibility(self, sha256, formula : FirstOrderFormula | None = None):
         filename = f"{sha256}.json"
         path = os.path.join(self.cache_folder_path, filename)
         if os.path.exists(path):
@@ -153,13 +170,25 @@ class Theory:
             
             if proof_obj["proved"] and len(proof_obj["conclusions"]) == 1:
                 read_formula = self.tptp_parser(proof_obj["conclusions"][0]["formula"])
-                if signature(formula) == signature(read_formula) and self.check_cache_premises_compatibility(proof_obj, self.reference_signatures):
+                if formula is None:
+                    self.add_formula(read_formula, type="theorem")
+                if (formula is None or signature(formula) == signature(read_formula)) and self.check_cache_premises_compatibility(proof_obj, self.reference_signatures):
                     return proof_obj
 
 
         return None
+    
+    def check_if_proof_is_cached(self, formula: FirstOrderFormula) -> dict | None:
+        if self.cache_folder_path is None:
+            return None
 
-    def prove(self, formula: FirstOrderFormula) -> dict | None:
+        sha256 = formula_sha256(formula)
+        return self.check_cache_file_compatibility(sha256, formula)
+
+    def prove(self, formula: str | FirstOrderFormula) -> dict | None:
+        if type(formula) is str:
+            formula = self.compile(formula)
+
         proof_obj = self.check_if_proof_is_cached(formula)
         if proof_obj is not None:
             return proof_obj
@@ -220,6 +249,7 @@ class Theory:
         if proved:
             proof_obj = {"proved": proved, "conclusions": conclusions, "premises": premises, "proof": proof}
             self.cache_proof(proof_obj)
+            self.add_formula(formula, type="theorem")
             return proof_obj
         else:
             return None
