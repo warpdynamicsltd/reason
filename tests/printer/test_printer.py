@@ -34,5 +34,5 @@ class TestPrinter(unittest.TestCase):
         T = Theory(parser, vampire_prover)
 
         for text in self.tests:
-            f = T.formula_builder(parser(text))
+            f = T.compile(text)
             self.assertEqual(printer(f), text)

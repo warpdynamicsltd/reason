@@ -24,7 +24,7 @@ class Theory:
         self.prover = prover
         self.axioms = []
         self.consts = {}
-        self.formula_builder = FormulaBuilder(consts=self.consts)
+        # self.formula_builder = FormulaBuilder(consts=self.consts)
         self.inspect = inspect
         self.reference_translator = {}
         self.reference_signatures = set()
@@ -33,33 +33,32 @@ class Theory:
         if self.cache_folder_path is not None:
             os.makedirs(self.cache_folder_path, exist_ok=True)
 
-
     def absorb_cache(self):
         if self.cache_folder_path is not None:
             for path in glob(f"{self.cache_folder_path}/*.json"):
                 # print(path)
                 m = re.match(r"^.+/([0-9a-f]{64})\.json$", path)
                 if m:
-                    sha256, = m.groups()
+                    (sha256,) = m.groups()
                     res = self.check_cache_file_compatibility(sha256)
                     # print(sha256, res)
 
     def cache_proof(self, proof_obj) -> bool:
         if self.cache_folder_path is not None:
             if len(proof_obj["conclusions"]) == 1:
-                filename = f"{proof_obj["conclusions"][0]["signature_sha256"]}.json"
+                filename = f"{proof_obj['conclusions'][0]['signature_sha256']}.json"
                 with open(os.path.join(self.cache_folder_path, filename), "w") as f:
                     json.dump(proof_obj, f, indent=2)
                     return True
-        
+
         return False
 
     @beartype
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
-        #formula = self.formula_builder(ast)
-        formula = FormulaBuilder(consts=self.consts)(ast)
-        if self.inspect and not self.formula_builder.well_formed(formula):
-            raise ValueError(f"{formula.show()} is not well formed")
+        builder = FormulaBuilder(ast, consts=self.consts)
+        formula = builder.formula
+        if self.inspect and not builder.well_formed():
+            raise RuntimeError(f"{formula.show()} is not well formed")
         return formula
 
     def compile(self, text: str) -> FirstOrderFormula:
@@ -75,10 +74,10 @@ class Theory:
             formula = self.to_formula(s)
         else:
             formula = f
-        
+
         if type == "axiom":
             self.axioms.append(formula)
-        
+
         sig = signature(formula)
         if sig not in self.reference_signatures:
             self.reference_signatures.add(sig)
@@ -87,7 +86,7 @@ class Theory:
             self.prover.add_formula(formula, inner_name, type)
 
     @beartype
-    def add_axiom(self, f: str | AbstractSyntaxTree| FirstOrderFormula, name):
+    def add_axiom(self, f: str | AbstractSyntaxTree | FirstOrderFormula, name):
         self.add_formula(f, name, type="axiom")
 
     @beartype
@@ -149,7 +148,6 @@ class Theory:
     def parse_proof_line(self, line: str) -> str | None:
         re.match(r"^\d+\.(.*)\[input\(axiom|assumption\)\s(\w+)\]", line)
 
-    
     def check_cache_premises_compatibility(self, cache_obj, premis_signatures: set):
         for premis in cache_obj["premises"]:
             f = self.tptp_parser(premis["formula"])
@@ -159,27 +157,28 @@ class Theory:
                 if proof_obj is None:
                     return False
                 else:
-                    self.add_formula(f, type="theorem") 
+                    self.add_formula(f, type="theorem")
                 return False
         return True
-    
-    def check_cache_file_compatibility(self, sha256, formula : FirstOrderFormula | None = None):
+
+    def check_cache_file_compatibility(self, sha256, formula: FirstOrderFormula | None = None):
         filename = f"{sha256}.json"
         path = os.path.join(self.cache_folder_path, filename)
         if os.path.exists(path):
             with open(path) as f:
                 proof_obj = json.load(f)
-            
+
             if proof_obj["proved"] and len(proof_obj["conclusions"]) == 1:
                 read_formula = self.tptp_parser(proof_obj["conclusions"][0]["formula"])
                 if formula is None:
                     self.add_formula(read_formula, type="theorem")
-                if (formula is None or signature(formula) == signature(read_formula)) and self.check_cache_premises_compatibility(proof_obj, self.reference_signatures):
+                if (
+                    formula is None or signature(formula) == signature(read_formula)
+                ) and self.check_cache_premises_compatibility(proof_obj, self.reference_signatures):
                     return proof_obj
 
-
         return None
-    
+
     def check_if_proof_is_cached(self, formula: FirstOrderFormula) -> dict | None:
         if self.cache_folder_path is None:
             return None
@@ -236,7 +235,7 @@ class Theory:
                         },
                         "reference_id": reference_key,
                         "formula": to_fof(normalised_formula),
-                        "signature_sha256": formula_sha256(f) 
+                        "signature_sha256": formula_sha256(f),
                     }
 
                     if _type in {"axiom", "assumption"}:

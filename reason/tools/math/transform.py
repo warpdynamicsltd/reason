@@ -10,8 +10,10 @@ def int_to_varname(n):
         n //= base
     return result
 
+
 def utf8_to_int(s):
-  return int.from_bytes(s.encode("utf-8"), byteorder='little')
+    return int.from_bytes(s.encode("utf-8"), byteorder="little")
+
 
 def utf8_to_varname(s):
     return int_to_varname(utf8_to_int(s))

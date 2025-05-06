@@ -130,7 +130,7 @@ class FormulaToGraphLab:
                     self.add_edge(arg_node, node)
 
                     return node
-                
+
     def get_graph_repr(self):
         graph = nx.DiGraph()
         for n in self.graph.nodes:
@@ -142,5 +142,4 @@ class FormulaToGraphLab:
             else:
                 graph.add_edge(n, m)
 
-        return graph 
-
+        return graph

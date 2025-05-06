@@ -94,3 +94,14 @@ def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
 def closure(formula):
     variables = free_variables(formula)
     return prepend_quantifier_signature(formula, [("FORALL", var) for var in variables])
+
+
+def conjunction(*formulas: list[FirstOrderFormula]):
+    if len(formulas) == 1:
+        return formulas[0]
+
+    res = formulas[0]
+    for f in formulas[1:]:
+        res = LogicConnective("AND", res, f)
+
+    return res
