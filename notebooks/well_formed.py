@@ -1,12 +1,12 @@
 #%%
 import importlib
 import reason
-from reason.core.fof import Variable
+from reason.core.fof_types import Variable
 from reason.core.theory import Theory
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.printer import Printer
-from reason.core.fof import LogicConnective
+from reason.core.fof_types import LogicConnective
 from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     free_variables, closure

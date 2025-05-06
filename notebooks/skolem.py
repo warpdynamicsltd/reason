@@ -3,7 +3,7 @@ from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.printer import Printer
 from reason.core.theory import Theory
-from reason.core.fof import LogicConnective
+from reason.core.fof_types import LogicConnective
 from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr, skolem_unique_repr
 from reason.core.transform.base import UniqueVariables, expand_iff, quantifier_signature, prepend_quantifier_signature, \
     free_variables, closure

@@ -1,7 +1,8 @@
 from beartype import beartype
 
 # from reason.parser.tree import *
-from reason.core.fof import FirstOrderFormula, Variable, Const, LogicPredicate, Predicate, Function
+from reason.core.fof_types import LogicPredicate
+from reason.core.fof_types import Const, FirstOrderFormula, Function, Predicate, Variable
 
 
 def to_fof(obj: FirstOrderFormula) -> str:

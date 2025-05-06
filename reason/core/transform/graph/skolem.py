@@ -2,6 +2,7 @@ import networkx as nx
 
 from hashlib import sha256
 
+from reason.core.fof_types import Const, Function, Predicate, Variable
 from reason.tools.graph import IsomorphismLab
 from reason.core.fof import *
 from reason.parser.tree import *

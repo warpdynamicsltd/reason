@@ -2,7 +2,7 @@ from collections import deque
 from typing import List
 
 from reason.core import AbstractTerm
-from reason.core.fof import LogicQuantifier, Variable, LogicConnective, Predicate, FirstOrderFormula, Term
+from reason.core.fof_types import FirstOrderFormula, LogicConnective, LogicQuantifier, Predicate, Term, Variable
 
 
 class UniqueVariables:

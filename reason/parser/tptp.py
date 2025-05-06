@@ -1,5 +1,6 @@
 from lark import Transformer, Lark
 from importlib.resources import files
+from reason.core.fof_types import Const, FirstOrderFormula, Function, LogicConnective, Predicate, Variable
 from reason.parser.tree import *
 from reason.core.fof import *
 from reason.core.transform.base import prepend_quantifier_signature

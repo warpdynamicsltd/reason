@@ -1,4 +1,4 @@
-from reason.core.fof import FirstOrderFormula
+from reason.core.fof_types import FirstOrderFormula
 
 from reason.core.transform.base import make_bound_variables_unique, closure
 from reason.core.transform.graph.skolem import SkolemFormulaToGraphLab

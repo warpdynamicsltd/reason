@@ -1,7 +1,8 @@
 import unittest
 from collections import deque
 
-from reason.core.fof import Variable, LogicConnective
+from reason.core.fof_types import LogicConnective
+from reason.core.fof_types import Variable
 from reason.core.theory import Theory
 from reason.vampire import Vampire
 from reason.parser import Parser

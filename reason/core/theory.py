@@ -4,7 +4,8 @@ import json
 from glob import glob
 from beartype import beartype
 
-from reason.core.fof import FirstOrderFormula, FormulaBuilder, LogicConnective
+from reason.core.fof import FormulaBuilder
+from reason.core.fof_types import FirstOrderFormula, LogicConnective
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tptp import TPTPParser
 from reason.core.transform.explode_conj import explode_over_conjunctions
@@ -55,7 +56,8 @@ class Theory:
 
     @beartype
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
-        formula = self.formula_builder(ast)
+        #formula = self.formula_builder(ast)
+        formula = FormulaBuilder(consts=self.consts)(ast)
         if self.inspect and not self.formula_builder.well_formed(formula):
             raise ValueError(f"{formula.show()} is not well formed")
         return formula

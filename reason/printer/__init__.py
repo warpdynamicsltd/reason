@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from reason.core import AbstractTerm
+from reason.core.fof_types import Function, LogicConnective, LogicQuantifier, Predicate
 from reason.parser.tree import OperatorGrammarCreator
 from reason.core.fof import *
 

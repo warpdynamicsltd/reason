@@ -1,4 +1,5 @@
 from reason.core.fof import *
+from reason.core.fof_types import Const, FirstOrderFormula, Function, LogicConnective, LogicQuantifier, Predicate
 from reason.core.transform.base import (
     make_bound_variables_unique,
     expand_iff,

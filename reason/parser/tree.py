@@ -38,6 +38,8 @@ EXISTS = "EXISTS"
 IN = "IN"
 EQ = "EQ"
 
+SELECT = "SELECT"
+
 
 class OperatorGrammarCreator:
     precedence = [
@@ -163,6 +165,10 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
     def abstract_term_set(self, abstract_term_list):
         # (s,) = s
         return AbstractSyntaxTree(f"SET{len(abstract_term_list)}", *abstract_term_list)
+    
+    @v_args(inline=True)
+    def abstract_term_selection(self, logic_simple1, logic_simple2):
+        return AbstractSyntaxTree(SELECT, logic_simple1, logic_simple2)
 
     @v_args(inline=True)
     def _op1(self, op, arg):
