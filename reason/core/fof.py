@@ -15,13 +15,6 @@ from reason.core.transform.base import prepend_quantifier_signature, conjunction
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tree.consts import *
 
-const = SimpleNamespace()
-const.CONJUNCTION = CONJUNCTION
-const.IN = IN
-const.SELECT = SELECT
-
-
-
 class FormulaBuilder:
     def __init__(self, ast: AbstractSyntaxTree, consts: dict[str, str] = {}, select_vars_prefix="u"):
         self.consts = consts
