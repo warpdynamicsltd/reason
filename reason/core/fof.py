@@ -13,6 +13,13 @@ from reason.core.fof_types import (
 )
 from reason.core.transform.base import prepend_quantifier_signature, conjunction
 from reason.parser.tree import AbstractSyntaxTree
+from reason.parser.tree.consts import *
+
+const = SimpleNamespace()
+const.CONJUNCTION = CONJUNCTION
+const.IN = IN
+const.SELECT = SELECT
+
 
 
 class FormulaBuilder:
@@ -25,8 +32,8 @@ class FormulaBuilder:
     @staticmethod
     def unflatten_conjunctions(ast: AbstractSyntaxTree) -> AbstractSyntaxTree:
         match ast:
-            case AbstractSyntaxTree(name="CONJUNCTION"):
-                return ast.flat_to_tree("AND")
+            case AbstractSyntaxTree(name=const.CONJUNCTION):
+                return ast.flat_to_tree(AND)
 
         return ast
 
@@ -37,7 +44,7 @@ class FormulaBuilder:
         selector_formula, _ = self._transform(selector_tree)
         embedded_selectors.extend(embedded_selectors_index)
         match index_formula:
-            case Predicate(name="IN", args=[v, t]) if type(v) is Variable and isinstance(t, Term):
+            case Predicate(name=const.IN, args=[v, t]) if type(v) is Variable and isinstance(t, Term):
                 self.select_vars_count += 1
                 selector_var = Variable(f"{self.select_vars_prefix}{self.select_vars_count}")
                 embedded_selectors.append((selector_var, v, t, selector_formula))
@@ -58,16 +65,16 @@ class FormulaBuilder:
         quantifier_signature = []
         for selector_var, v, t, selector_formula in embedded_selectors:
             f = LogicQuantifier(
-                "FORALL",
+                FORALL,
                 v,
                 LogicConnective(
-                    "IFF",
-                    Predicate("IN", v, selector_var),
-                    LogicConnective("AND", Predicate("IN", v, t), selector_formula),
+                    IFF,
+                    Predicate(IN, v, selector_var),
+                    LogicConnective(AND, Predicate(IN, v, t), selector_formula),
                 ),
             )
             formulas.append(f)
-            quantifier_signature.append(("EXISTS", selector_var))
+            quantifier_signature.append((EXISTS, selector_var))
 
         result_formula = conjunction(Predicate(name, *_args), *formulas)
         result_formula = prepend_quantifier_signature(result_formula, quantifier_signature)
@@ -89,10 +96,10 @@ class FormulaBuilder:
         embedded_selectors = list(embedded_selectors)
         ast = self.unflatten_conjunctions(ast)
         match ast:
-            case AbstractSyntaxTree(name=name) if name in {"OR", "AND", "NEG", "IMP", "IFF"}:
+            case AbstractSyntaxTree(name=name) if name in {OR, AND, NEG, IMP, IFF}:
                 return LogicConnective(name, *map(lambda a: self._transform(a, LogicConnective)[0], ast.args)), []
 
-            case AbstractSyntaxTree(name=name, args=[variable, arg]) if name in {"FORALL", "EXISTS"}:
+            case AbstractSyntaxTree(name=name, args=[variable, arg]) if name in {FORALL, EXISTS}:
                 return LogicQuantifier(name, Variable(variable.name), self._transform(arg, LogicQuantifier)[0]), []
 
             case AbstractSyntaxTree(name=name) if (
@@ -106,7 +113,7 @@ class FormulaBuilder:
                 else:
                     return Variable(name=x), []
 
-            case AbstractSyntaxTree(name="SELECT", args=[index_tree, selector_tree]):
+            case AbstractSyntaxTree(name=const.SELECT, args=[index_tree, selector_tree]):
                 return self._transform_selector(index_tree, selector_tree, embedded_selectors), embedded_selectors
 
         return Function(

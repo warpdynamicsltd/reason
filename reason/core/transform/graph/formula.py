@@ -3,6 +3,7 @@ import networkx as nx
 from hashlib import sha256
 
 from reason.core.fof_types import Const, Function, LogicConnective, LogicQuantifier, Predicate, Variable
+from reason.parser.tree.consts import AND, EQ, IFF, OR
 from reason.tools.graph import IsomorphismLab
 from reason.core.fof import *
 from reason.parser.tree import *

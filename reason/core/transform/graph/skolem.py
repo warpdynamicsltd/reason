@@ -3,9 +3,9 @@ import networkx as nx
 from hashlib import sha256
 
 from reason.core.fof_types import Const, Function, Predicate, Variable
+from reason.parser.tree.consts import EQ
 from reason.tools.graph import IsomorphismLab
-from reason.core.fof import *
-from reason.parser.tree import *
+from reason.parser.tree import AbstractTerm
 
 
 class SkolemFormulaToGraphLab:
@@ -41,8 +41,6 @@ class SkolemFormulaToGraphLab:
         edges_color_map = nx.get_edge_attributes(self.graph, "arg_idx")
         edges_color_map.update(nx.get_edge_attributes(self.graph, "type"))
         edges_color_map = {k: repr(edges_color_map[k]) for k in edges_color_map.keys()}
-        # print(nodes_color_map)
-        # print(edges_color_map)
         iso_lab = IsomorphismLab(graph=self.graph, nodes_color_map=nodes_color_map, edges_color_map=edges_color_map)
         res = iso_lab.signature()
         return res

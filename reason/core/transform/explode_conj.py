@@ -1,6 +1,7 @@
 from copy import deepcopy
 from reason.parser.tree import AbstractSyntaxTree
-from reason.core import n_nodes, AbstractTerm, AbstractTermMutable
+from reason.core import n_nodes, AbstractTermMutable
+from reason.parser.tree.consts import *
 
 
 def explode_over_conjunctions(formula: AbstractSyntaxTree) -> list[AbstractSyntaxTree]:
@@ -22,7 +23,7 @@ def explode_over_conjunctions(formula: AbstractSyntaxTree) -> list[AbstractSynta
             cparent.args.append(cnode)
 
         match node:
-            case AbstractSyntaxTree(name="CONJUNCTION"):
+            case AbstractSyntaxTree(name=const.CONJUNCTION):
                 for k in range(len(node.args)):
                     cnode.args = node.args[: k + 1]
                     obj = deepcopy(root)

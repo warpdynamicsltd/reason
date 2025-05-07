@@ -4,6 +4,7 @@ from reason.core.fof_types import Const, FirstOrderFormula, Function, LogicConne
 from reason.parser.tree import *
 from reason.core.fof import *
 from reason.core.transform.base import prepend_quantifier_signature
+from reason.parser.tree.consts import *
 
 
 class TPTPTreeToAbstractSyntaxTree(Transformer):
@@ -43,11 +44,11 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
 
     @v_args(inline=True)
     def terms_equality(self, term1, term2):
-        return Predicate("EQ", term1, term2)
+        return Predicate(EQ, term1, term2)
 
     @v_args(inline=True)
     def terms_inequality(self, term1, term2):
-        return LogicConnective("NEG", Predicate("EQ", term1, term2))
+        return LogicConnective(NEG, Predicate(EQ, term1, term2))
 
     @v_args(inline=True)
     def bracket(self, arg):

@@ -13,6 +13,7 @@ from reason.vampire.translator import to_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
 from reason.core.transform.signature import formula_sha256, signature
 from reason.tools.math.transform import utf8_to_varname
+from reason.parser.tree.consts import *
 
 from reason.printer import Printer
 
@@ -115,12 +116,9 @@ class Theory:
 
         consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
 
-        printer = Printer(self.parser.ogc)
-
         res = True
         for source, target in zip(consequences[:-1], consequences[1:]):
-            f = LogicConnective("IMP", self.to_formula(source), self.to_formula(target))
-            # print(printer(f))
+            f = LogicConnective(IMP, self.to_formula(source), self.to_formula(target))
             proof_obj = self.prove(f)
             if proof_obj is None:
                 res = False
@@ -139,7 +137,7 @@ class Theory:
         if self.check_proof(premise, thesis, proof):
             consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
             for source, target in zip(consequences[:-1], consequences[1:]):
-                formula = AbstractSyntaxTree("IMP", source, target)
+                formula = AbstractSyntaxTree(IMP, source, target)
                 self.add_formula(formula, name=f"lemma{id(formula)}", type="theorem")
             return True
 

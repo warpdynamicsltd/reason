@@ -69,7 +69,11 @@ class TestFof(unittest.TestCase):
       [
         "∀z. A({x ∈ z: P(x)}) ∧ B({x ∈ z: Q(x)})",
         "∀z. (∃u1. A(u1) ∧ (∀x. x ∈ u1 ⟷ x ∈ z ∧ P(x))) ∧ (∃u2. B(u2) ∧ (∀x. x ∈ u2 ⟷ x ∈ z ∧ Q(x)))"
-      ]
+      ],
+      [
+        "(∀k. (P(k) → Q(k))) → {x ∈ z: P(x)} ⊂ {x ∈ z: Q(x)}",
+        "(∀k. P(k) → Q(k)) → (∃u1. ∃u2. u1 ⊂ u2 ∧ (∀x. x ∈ u1 ⟷ x ∈ z ∧ P(x)) ∧ (∀x. x ∈ u2 ⟷ x ∈ z ∧ Q(x)))"
+      ],
     ]
 
     for text, expected_text in case_list:

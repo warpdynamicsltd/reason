@@ -9,6 +9,7 @@ from reason.core.transform.base import (
 )
 from reason.core.transform.graph.skolem import SkolemFormulaToGraphLab
 from reason.tools.unique_repr import UniqueRepr
+from reason.parser.tree.consts import *
 
 
 def quantifier_signature_to_str_value(signature):
@@ -17,12 +18,12 @@ def quantifier_signature_to_str_value(signature):
 
 def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
     match formula:
-        case LogicConnective(name="NEG", args=[arg]):
+        case LogicConnective(name=const.NEG, args=[arg]):
             f = prenex_normal_raw(arg)
             f, sign = quantifier_signature(f)
-            return prepend_quantifier_signature(LogicConnective("NEG", f), invert_quantifier_signature(list(sign)))
+            return prepend_quantifier_signature(LogicConnective(NEG, f), invert_quantifier_signature(list(sign)))
 
-        case LogicConnective(name=op, args=[a, b]) if op in {"AND", "OR"}:
+        case LogicConnective(name=op, args=[a, b]) if op in {AND, OR}:
             a = prenex_normal_raw(a)
             b = prenex_normal_raw(b)
             a, sign_a = quantifier_signature(a)
@@ -30,20 +31,20 @@ def prenex_normal_raw(formula: FirstOrderFormula) -> FirstOrderFormula:
 
             return prepend_quantifier_signature(LogicConnective(op, a, b), list(sign_a) + list(sign_b))
 
-        case LogicConnective(name="IMP", args=[a, b]):
+        case LogicConnective(name=const.IMP, args=[a, b]):
             a = prenex_normal_raw(a)
             b = prenex_normal_raw(b)
             a, sign_a = quantifier_signature(a)
             b, sign_b = quantifier_signature(b)
 
             return prepend_quantifier_signature(
-                LogicConnective("IMP", a, b), invert_quantifier_signature(list(sign_a)) + list(sign_b)
+                LogicConnective(IMP, a, b), invert_quantifier_signature(list(sign_a)) + list(sign_b)
             )
 
         case LogicQuantifier(name=op, args=[var, arg]):
             return LogicQuantifier(op, var, prenex_normal_raw(arg))
 
-        case Predicate(name=op, args=args):
+        case Predicate(name=op):
             return formula
 
     raise RuntimeError(f"unexpected formula: {formula}")
@@ -62,7 +63,7 @@ def skolem(formula, skolem_prefix="s", variable_prefix="x") -> FirstOrderFormula
     vars = []
     index = 1
     for quantifier, variable in signature:
-        if quantifier == "EXISTS":
+        if quantifier == EXISTS:
             if vars:
                 skolem_term = Function(f"{skolem_prefix}{index}", *vars)
             else:
@@ -96,23 +97,23 @@ class SkolemUniqueRepr:
             case Predicate():
                 return UniqueRepr(self.get_form_id(formula))
 
-            case LogicConnective(name="AND", args=[a, b]):
+            case LogicConnective(name=const.AND, args=[a, b]):
                 return self.unique(a) * self.unique(b)
 
-            case LogicConnective(name="OR", args=[a, b]):
+            case LogicConnective(name=const.OR, args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return A + B + A * B
 
-            case LogicConnective(name="NEG", args=[a]):
+            case LogicConnective(name=const.NEG, args=[a]):
                 return UniqueRepr(1) + self.unique(a)
 
-            case LogicConnective(name="IMP", args=[a, b]):
+            case LogicConnective(name=const.IMP, args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return UniqueRepr(1) + A + A * B
 
-            case LogicConnective(name="IFF", args=[a, b]):
+            case LogicConnective(name=const.IFF, args=[a, b]):
                 A = self.unique(a)
                 B = self.unique(b)
                 return UniqueRepr(1) + A + B

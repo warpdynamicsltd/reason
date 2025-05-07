@@ -21,6 +21,7 @@ T = Theory(parser=reason_parser, prover=vampire_prover)
 # print(reason_parser.dynamic_code)
 # %%
 input_list = [
+  "(∀k. (P(k) → Q(k))) → {x ∈ z: P(x)} ⊂ {x ∈ z: Q(x)}",
   "A({x ∈ z ∩ y: P(x)})",
   "A({x ∈ z: P(x)})",
   "∀z. A({x ∈ z: P(x)})",

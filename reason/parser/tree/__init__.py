@@ -2,6 +2,7 @@ import re
 from lark import Transformer, v_args, Token
 
 from reason.core import AbstractTerm
+from reason.parser.tree.consts import *
 
 
 class AbstractSyntaxTree(AbstractTerm):
@@ -28,19 +29,6 @@ class AbstractSyntaxTree(AbstractTerm):
         return obj
 
 
-NEG = "NEG"
-AND = "AND"
-OR = "OR"
-IMP = "IMP"
-IFF = "IFF"
-FORALL = "FORALL"
-EXISTS = "EXISTS"
-IN = "IN"
-EQ = "EQ"
-
-SELECT = "SELECT"
-
-
 class OperatorGrammarCreator:
     precedence = [
         ("std", 2, ["∩"]),
@@ -54,22 +42,22 @@ class OperatorGrammarCreator:
     ]
 
     translate = {
-        "~": "NEG",
-        "and": "AND",
-        "∧": "AND",
-        "or": "OR",
-        "∨": "OR",
-        "→": "IMP",
-        "⇒": "IMP",
-        "⟷": "IFF",
-        "⇔": "IFF",
-        "∀": "FORALL",
-        "∃": "EXISTS",
-        "∈": "IN",
-        "=": "EQ",
-        "∩": "INTERSECT",
-        "∪": "UNION",
-        "⊂": "INCLUDES",
+        "~": NEG,
+        "and": AND,
+        "∧": AND,
+        "or": OR,
+        "∨": OR,
+        "→": IMP,
+        "⇒": IMP,
+        "⟷": IFF,
+        "⇔": IFF,
+        "∀": FORALL,
+        "∃": EXISTS,
+        "∈": IN,
+        "=": EQ,
+        "∩": INTERSECT,
+        "∪": UNION,
+        "⊂": INCLUDES,
     }
 
     def __init__(self, super_rule, main_rule, prefix):
@@ -151,7 +139,7 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
 
     @v_args(inline=True)
     def conj_formula(self, logic_simple_list):
-        return AbstractSyntaxTree("CONJUNCTION", *logic_simple_list)
+        return AbstractSyntaxTree(CONJUNCTION, *logic_simple_list)
 
     @v_args(inline=True)
     def composed_abstract_term(self, fname, term_list):
@@ -159,12 +147,12 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
 
     @v_args(inline=True)
     def abstract_term_sequence(self, abstract_term_list_spec):
-        return AbstractSyntaxTree(f"SEQ{len(abstract_term_list_spec)}", *abstract_term_list_spec)
+        return AbstractSyntaxTree(f"{SEQ}{len(abstract_term_list_spec)}", *abstract_term_list_spec)
 
     @v_args(inline=True)
     def abstract_term_set(self, abstract_term_list):
         # (s,) = s
-        return AbstractSyntaxTree(f"SET{len(abstract_term_list)}", *abstract_term_list)
+        return AbstractSyntaxTree(f"{SET}{len(abstract_term_list)}", *abstract_term_list)
 
     @v_args(inline=True)
     def abstract_term_selection(self, logic_simple1, logic_simple2):

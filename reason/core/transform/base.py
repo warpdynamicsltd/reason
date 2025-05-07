@@ -3,6 +3,7 @@ from typing import List
 
 from reason.core import AbstractTerm
 from reason.core.fof_types import FirstOrderFormula, LogicConnective, LogicQuantifier, Predicate, Term, Variable
+from reason.parser.tree.consts import *
 
 
 class UniqueVariables:
@@ -31,11 +32,11 @@ def make_bound_variables_unique(formula: FirstOrderFormula, variable_prefix="x")
 
 def expand_iff(formula: FirstOrderFormula):
     match formula:
-        case LogicConnective(name="IFF", args=[a, b]):
+        case LogicConnective(name=const.IFF, args=[a, b]):
             return LogicConnective(
-                "AND",
-                LogicConnective("IMP", expand_iff(a), expand_iff(b)),
-                LogicConnective("IMP", expand_iff(b), expand_iff(a)),
+                AND,
+                LogicConnective(IMP, expand_iff(a), expand_iff(b)),
+                LogicConnective(IMP, expand_iff(b), expand_iff(a)),
             )
 
         case AbstractTerm(name=name, args=args):
@@ -67,7 +68,7 @@ def prepend_quantifier_signature(formula: FirstOrderFormula, sign: List[tuple[st
 def invert_quantifier_signature(sign: List[tuple[str, Variable]]) -> List[tuple[str, Variable]]:
     result = []
     for s, var in sign:
-        result.append(("FORALL" if s == "EXISTS" else "EXISTS", var))
+        result.append((FORALL if s == EXISTS else EXISTS, var))
 
     return result
 
@@ -93,7 +94,7 @@ def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
 
 def closure(formula):
     variables = free_variables(formula)
-    return prepend_quantifier_signature(formula, [("FORALL", var) for var in variables])
+    return prepend_quantifier_signature(formula, [(FORALL, var) for var in variables])
 
 
 def conjunction(*formulas: list[FirstOrderFormula]):
@@ -102,6 +103,6 @@ def conjunction(*formulas: list[FirstOrderFormula]):
 
     res = formulas[0]
     for f in formulas[1:]:
-        res = LogicConnective("AND", res, f)
+        res = LogicConnective(AND, res, f)
 
     return res
