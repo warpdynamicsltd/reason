@@ -37,6 +37,19 @@ class FormulaToGraphLab:
         if color is not None:
             self.node_color_map[n] = color
 
+    def remove_node(self, node):
+        for n in self.graph.successors(node):
+            if (node, n) in self.edge_color_map:
+                del self.edge_color_map[node, n]
+
+        for n in self.graph.predecessors(node):
+            if (n, node) in self.edge_color_map:
+                del self.edge_color_map[n, node]
+
+        del self.node_color_map[node]
+
+        self.graph.remove_node(node)
+
     def add_edge(self, n, m, color=None):
         self.graph.add_edge(n, m)
         if color is not None:
@@ -99,13 +112,39 @@ class FormulaToGraphLab:
                     self.update_edge_arg_idx(n, node, i)
 
                 return node
-
-            case LogicConnective(name=op, args=[a, b]) if op in {AND, OR, IFF}:
+            
+            case LogicConnective(name=const.IFF, args=[a, b]):
                 node = self.get_form_id(value)
-                self.add_node(node, color=op)
+
+                self.add_node(node, color=IFF)
 
                 self.add_edge(self._transform(a), node)
                 self.add_edge(self._transform(b), node)
+
+                return node
+
+            case LogicConnective(name=op, args=[a, b]) if op in {AND, OR}:
+                node = self.get_form_id(value)
+                self.add_node(node, color=op)
+
+                a_node = self._transform(a)
+                b_node = self._transform(b)
+
+                if self.node_color_map[a_node] == op:
+                    for n in self.graph.predecessors(a_node):
+                        self.add_edge(n, node)
+                    
+                    self.remove_node(a_node)
+                else:
+                    self.add_edge(a_node, node)
+
+                if self.node_color_map[b_node] == op:
+                    for n in self.graph.predecessors(b_node):
+                        self.add_edge(n, node)
+                    
+                    self.remove_node(b_node)
+                else:
+                    self.add_edge(b_node, node)
 
                 return node
 

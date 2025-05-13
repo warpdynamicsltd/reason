@@ -12,7 +12,7 @@ from reason.core.transform.signature import formula_sha256, signature
 reason_parser = Parser()
 vampire_prover = Vampire()
 
-ZFC = Theory(parser=reason_parser, prover=vampire_prover, cache_folder_path=".proof_cache")
+ZFC = Theory(parser=reason_parser, prover=vampire_prover, cache_folder_path=None)
 
 ZFC.add_const("∅")
 
@@ -31,7 +31,47 @@ ZFC.add_axiom("(a, b, c) = ((a, b), c)", name="d5")
 
 ZFC.absorb_cache()
 
+#%%
+ZFC.prove("{x ∈ a: P(x)} ∪ {x ∈ a: Q(x)} ⊂ {x ∈ a: P(x) ∨ Q(x)}")
 
+#%%
+proof_obj = ZFC.prove("∃p. p = {x ∈ a: P(x)}")
+if proof_obj is not None:
+  print("OK")
+
+#%%
+proof_obj = ZFC.prove("{x ∈ a: P(x)} ⊂ a")
+if proof_obj is not None:
+  print("OK")
+
+#%%
+proof_obj = ZFC.prove("(k ∈ a ∧ P(k)) ∨ (k ∈ a ∧ Q(k)) ⟷ k ∈ a ∧ (P(k) ∨ Q(k))")
+if proof_obj is not None:
+  print("OK")
+
+#%%
+premise = None
+thesis = "{x ∈ a: P(x)} ∪ {x ∈ a: Q(x)} ⊂ {x ∈ a: P(x) ∨ Q(x)}"
+
+proof = """
+{
+  ∃p. { 
+    p = {x ∈ a: P(x)};
+    ∃q. {
+          q = {x ∈ a: Q(x)};
+          (∀ k. k ∈ p ∪ q ⟷ k ∈ p ∨ k ∈ q);
+          (∀ k. k ∈ p ∨ k ∈ q ⟷ (k ∈ a ∧ P(k)) ∨ (k ∈ a ∧ Q(k)));
+          (∀ k. (k ∈ a ∧ P(k)) ∨ (k ∈ a ∧ Q(k)) ⟷ k ∈ a ∧ (P(k) ∨ Q(k)));
+          (∀ k. k ∈ a ∧ (P(k) ∨ Q(k)) ⟷ k ∈ {x ∈ a: P(x) ∨ Q(x)});
+    };
+    p ∪ q ⊂ {x ∈ a: P(x) ∨ Q(x)};
+  };
+}
+"""
+
+print(ZFC.check_proof(premise, thesis, proof))
+
+#%%
 obj = ZFC.prove("(a, b) = (c, d) → a = c ∧ b = d")
 print(obj)
 
@@ -100,7 +140,7 @@ thesis = "a = b"
 
 proof = """{
     (a, b, c) = (x, x, x);
-    ∃z. {
+    ∃(z) {
       z = (a, b, c);
       z = ((a, b), c);
       z = (x, x, x);

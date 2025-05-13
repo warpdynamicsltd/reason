@@ -3,6 +3,7 @@ import os
 import json
 from glob import glob
 from beartype import beartype
+from typing import Tuple
 
 from reason.core.fof import FormulaBuilder
 from reason.core.fof_types import FirstOrderFormula, LogicConnective
@@ -23,11 +24,12 @@ class Theory:
         self.parser = parser
         self.tptp_parser = TPTPParser()
         self.prover = prover
-        self.axioms = []
+        self.printer = Printer(parser.ogc)
+        # self.axioms = []
         self.consts = {}
         # self.formula_builder = FormulaBuilder(consts=self.consts)
         self.inspect = inspect
-        self.reference_translator = {}
+        self.reference_dict : dict[str, FirstOrderFormula] = {}
         self.reference_signatures = set()
 
         self.cache_folder_path = cache_folder_path
@@ -56,14 +58,22 @@ class Theory:
 
     @beartype
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
+        formula, _ = self.to_formula_and_required_axioms(ast)
+        return formula
+    
+    @beartype
+    def to_formula_and_required_axioms(self, ast: AbstractSyntaxTree) -> Tuple[FirstOrderFormula, list[FirstOrderFormula]]:
         builder = FormulaBuilder(ast, consts=self.consts)
         formula = builder.formula
         if self.inspect and not builder.well_formed():
             raise RuntimeError(f"{formula.show()} is not well formed")
-        return formula
+        return formula, builder.axioms
 
     def compile(self, text: str) -> FirstOrderFormula:
         return self.to_formula(self.parser(text))
+    
+    def compile_and_get_axioms(self, text: str) -> Tuple[FirstOrderFormula, list[FirstOrderFormula]]:
+        return self.to_formula_and_required_axioms(self.parser(text))
 
     def add_const(self, c: str):
         self.consts[c] = f"c{utf8_to_varname(c)}"
@@ -76,19 +86,24 @@ class Theory:
         else:
             formula = f
 
-        if type == "axiom":
-            self.axioms.append(formula)
+        # if type == "axiom":
+        #     self.axioms.append(formula)
 
         sig = signature(formula)
         if sig not in self.reference_signatures:
             self.reference_signatures.add(sig)
-            inner_name = f"key_{len(self.reference_translator) + 1}"
-            self.reference_translator[inner_name] = (name, formula)
+            inner_name = f"key_{len(self.reference_dict) + 1}"
+            self.reference_dict[inner_name] = (name, formula)
             self.prover.add_formula(formula, inner_name, type)
 
     @beartype
-    def add_axiom(self, f: str | AbstractSyntaxTree | FirstOrderFormula, name):
+    def add_axiom(self, f: str | AbstractSyntaxTree | FirstOrderFormula, name=None):
         self.add_formula(f, name, type="axiom")
+
+    @beartype
+    def add_axioms(self, formulas: list[str | AbstractSyntaxTree | FirstOrderFormula]):
+        for formula in formulas:
+            self.add_axiom(formula)
 
     @beartype
     def __call__(self, f: str | AbstractSyntaxTree | FirstOrderFormula) -> bool:
@@ -108,18 +123,27 @@ class Theory:
 
     @beartype
     def check_proof(
-        self, premise: str | AbstractSyntaxTree, thesis: str | AbstractSyntaxTree, proof: str | AbstractSyntaxTree
+        self, premise: str | AbstractSyntaxTree | None, thesis: str | AbstractSyntaxTree, proof: str | AbstractSyntaxTree
     ) -> bool:
-        premise = self.symbolise(premise)
+        if premise is not None:
+            premise = self.symbolise(premise)
         thesis = self.symbolise(thesis)
         proof = self.symbolise(proof)
 
-        consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
+        if premise is not None:
+            consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
+        else:
+            consequences = explode_over_conjunctions(proof) + [thesis]
 
         res = True
         for source, target in zip(consequences[:-1], consequences[1:]):
-            f = LogicConnective(IMP, self.to_formula(source), self.to_formula(target))
+            source_formula, axioms = self.to_formula_and_required_axioms(source)
+            self.add_axioms(axioms)
+            target_formula, axioms = self.to_formula_and_required_axioms(target)
+            self.add_axioms(axioms)
+            f = LogicConnective(IMP, source_formula, target_formula)
             proof_obj = self.prove(f)
+            print(self.printer(target_formula))
             if proof_obj is None:
                 res = False
                 break
@@ -186,7 +210,8 @@ class Theory:
 
     def prove(self, formula: str | FirstOrderFormula) -> dict | None:
         if type(formula) is str:
-            formula = self.compile(formula)
+            formula, new_axioms = self.compile_and_get_axioms(formula)
+            self.add_axioms(new_axioms)
 
         proof_obj = self.check_if_proof_is_cached(formula)
         if proof_obj is not None:
@@ -216,8 +241,8 @@ class Theory:
                 if match_input_comment:
                     _type, reference_key = match_input_comment.groups()
 
-                    if reference_key in self.reference_translator:
-                        name, f = self.reference_translator[reference_key]
+                    if reference_key in self.reference_dict:
+                        name, f = self.reference_dict[reference_key]
                     elif reference_key == "formula":
                         name = None
                         f = formula
@@ -252,3 +277,7 @@ class Theory:
             return proof_obj
         else:
             return None
+
+    def provable(self, formula: str | FirstOrderFormula):
+        proof_obj = self.prove(formula)
+        return proof_obj is not None

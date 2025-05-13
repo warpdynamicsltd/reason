@@ -24,8 +24,8 @@ T.add_const('c')
 #%%
 
 # f = T.compile("a = b ⟷ (∀y. P(y, a, b))")
-f = T.compile("∃z.∀y.∀x. B(c, z, x, y) ∨ A(x, y) → x = y ∧ c = z")
-f2 = T.compile("∃u.∀(k,a) A(a, k) ∨ B(c, u, a, k) → a = k ∧ c = u")
+f = T.compile("(R(z) ∧ S(t)) ∧ (Q(y) ∧ P(x))")
+f2 = T.compile("(∀z. R(z)) ∧ (∀y. Q(y)) ∧ (∀x. P(x))")
 
 ftg = FormulaToGraphLab(f)
 ftg2 = FormulaToGraphLab(f2)
@@ -45,6 +45,6 @@ plt.show()
 
 G = ftg.get_graph_repr()
 
-nx.write_gexf(G, "g.gexf")
+nx.write_gexf(G, "g.gefx")
 
 # %%

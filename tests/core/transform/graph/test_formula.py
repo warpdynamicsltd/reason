@@ -8,7 +8,7 @@ from reason.core.transform.signature import formula_sha256
 
 
 class TestFormula(unittest.TestCase):
-  def test_formula_sha256(self):
+    def test_formula_sha256(self):
         parser = Parser()
         vampire_prover = Vampire()
 
@@ -17,10 +17,20 @@ class TestFormula(unittest.TestCase):
 
         matches = [
             ("P(x) ∧ Q(y)", "Q(y) ∧ P(x)"),
+            ("P(x) ∧ Q(y) ∧ R(z)", "Q(y) ∧ P(x) ∧ R(z)"),
+            ("P(x) ∧ Q(y) ∧ R(z)", "R(z) ∧ Q(y) ∧ P(x)"),
+            ("P(x) ∧ Q(y) ∧ R(z) ∧ S(t)", "R(z) ∧ S(t) ∧ Q(y) ∧ P(x)"),
+            ("P(x) ∧ Q(y) ∧ R(z) ∧ S(t)", "R(z) ∧ (S(t) ∧ Q(y)) ∧ P(x)"),
+            ("P(x) ∧ Q(y) ∧ R(z) ∧ S(t)", "(R(z) ∧ S(t)) ∧ (Q(y) ∧ P(x))"),
+            ("(∀x. P(x)) ∧ (∀y. Q(y)) ∧ (∀z. R(z))", "(∀z. R(z)) ∧ (∀y. Q(y)) ∧ (∀x. P(x))"),
+            ("P(c) ∧ Q(y)", "Q(y) ∧ P(c)"),
             ("∀x. P(x) ∧ Q(y)", "Q(y) ∧ P(x)"),
             ("P(x) ∧ Q(y)", "∀y. Q(y) ∧ P(x)"),
             ("∀x. ∀y. P(x) ∨ Q(y)", "Q(y) ∨ P(x)"),
             ("P(x) ∨ Q(y)", "Q(y) ∨ P(x)"),
+            ("P(x) ∨ Q(y) ∨ R(z)", "Q(y) ∨ P(x) ∨ R(z)"),
+            ("P(x) ∨ Q(y) ∨ R(z)", "R(z) ∨ Q(y) ∨ P(x)"),
+            ("(∀x. P(x)) ∨ (∀y. Q(y)) ∨ (∀z. R(z))", "(∀z. R(z)) ∨ (∀y. Q(y)) ∨ (∀x. P(x))"),
             ("∀x. P(x) ∨ Q(y)", "Q(y) ∨ P(x)"),
             ("P(x) ∨ Q(y)", "∀y. Q(y) ∨ P(x)"),
             ("∀x. ∀y. P(x) ∨ Q(y)", "Q(y) ∨ P(x)"),
@@ -46,3 +56,21 @@ class TestFormula(unittest.TestCase):
             f2 = T.compile(t2)
 
             self.assertEqual(formula_sha256(f1), formula_sha256(f2))
+
+
+    def test_formula_no_match_sha256(self):
+        parser = Parser()
+        vampire_prover = Vampire()
+
+        T = Theory(parser, vampire_prover)
+        T.add_const("c")
+
+        matches = [
+            ("P(x) ∧ Q(y)", "Q(c) ∧ P(x)")
+        ]
+
+        for t1, t2 in matches:
+            f1 = T.compile(t1)
+            f2 = T.compile(t2)
+
+            self.assertNotEqual(formula_sha256(f1), formula_sha256(f2))

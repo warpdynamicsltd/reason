@@ -20,6 +20,7 @@ class FormulaBuilder:
         self.consts = consts
         self.select_vars_count = 0
         self.select_vars_prefix = select_vars_prefix
+        self.axioms = []
         self.formula = self._transform(ast)[0]
 
     @staticmethod
@@ -55,6 +56,7 @@ class FormulaBuilder:
             embedded_selectors.extend(_embedded_selectors)
 
         formulas = []
+        axioms = []
         quantifier_signature = []
         for selector_var, v, t, selector_formula in embedded_selectors:
             f = LogicQuantifier(
@@ -67,8 +69,16 @@ class FormulaBuilder:
                 ),
             )
             formulas.append(f)
+            axioms.append(
+                LogicQuantifier(
+                   EXISTS,
+                   selector_var,
+                   f 
+                )
+            )
             quantifier_signature.append((EXISTS, selector_var))
 
+        self.axioms.extend(axioms)
         result_formula = conjunction(Predicate(name, *_args), *formulas)
         result_formula = prepend_quantifier_signature(result_formula, quantifier_signature)
 

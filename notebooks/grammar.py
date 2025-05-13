@@ -10,12 +10,30 @@ from reason.printer import Printer
 from reason.core.transform.skolem import skolem_sha256
 from reason.core.transform.signature import formula_sha256, signature
 from reason.core.transform.base import conjunction
+from reason.core.fof import FormulaBuilder
+from reason.core.transform.explode_conj import explode_over_conjunctions
 
 reason_parser = Parser()
 vampire_prover = Vampire()
 printer = Printer(reason_parser.ogc)
 
 T = Theory(parser=reason_parser, prover=vampire_prover)
+
+#%%
+fb = FormulaBuilder(reason_parser("A({x ∈ a: B(x, {t ∈ b: C(t)}) ∧ D(x, {t ∈ d: E(t)})})"))
+for a in fb.axioms:
+  print(printer(a))
+
+
+#%%
+cons = explode_over_conjunctions(reason_parser("""
+  {x ∈ b;
+  b ⊂ {t ∈ a: P(t)};
+  P(x);}                                    
+"""))
+
+for ast in cons:
+  print(printer(T.to_formula(ast)))
 
 # print(conjunction(T.compile("A(x)"), T.compile("B(x)"), T.compile("C(x)")))
 # print(reason_parser.dynamic_code)
