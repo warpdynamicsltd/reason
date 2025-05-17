@@ -35,7 +35,7 @@ $$\Gamma \models  \forall x. \beta(x) .$$
 
 <h3 id="corollary-universal-constant">Corollary: <b>invariance of universal constant</b></h3>
 
-If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$ and $\Gamma\models  \beta(a) $, then $a$ is an universal constant with respect to $\Gamma\cup \left\{ \beta(a) \right\}$.
+If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$ and $\Gamma\models  \beta(a) $, then $a$ is an universal constant with respect to $`\Gamma\cup \{ \beta(a) \}`$.
 
 
 
