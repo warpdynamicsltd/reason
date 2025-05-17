@@ -14,7 +14,7 @@ If $a\in\mathcal{C}$ and $\models\alpha(a)$, then $\models  \forall x. \alpha(x)
 
 If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$, then for any $\Gamma\models  \beta(a) $, we have $\Gamma\models \forall x. \beta(x) $.
 
-<b>Proof.</b> Since $\Gamma\models \beta(a) $, we have some $ \alpha_i(a)  \in\Gamma$ which contains constant $a$ and possibly some $\gamma_i\in\Gamma$ which do not contain constant $a$ such that
+<b>Proof.</b> Since $\Gamma\models\beta(a)$, we have some $\alpha_i(a) \in\Gamma$ which contains constant $a$ and possibly some $\gamma_i\in\Gamma$ which do not contain constant $a$ such that
 
 $$\models  \alpha_1(a) \wedge \dots \wedge \alpha_n(a) \wedge \gamma_1 \wedge \dots \wedge \gamma_k \to \beta(a) $$
 
