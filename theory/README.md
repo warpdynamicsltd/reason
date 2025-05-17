@@ -20,13 +20,13 @@ $$\models \ulcorner \alpha_1(a) \wedge \dots \wedge \alpha_n(a) \wedge \gamma_1 
 
 Let $\gamma$ denotes $\gamma_1 \wedge \dots \wedge \gamma_k$. By Lemma [tautologies with constants](universal-constat-tautology)
 
-$$\models \ulcorner \forall x. \; \alpha_1(x) \wedge \dots \wedge \alpha_n(x) \wedge \gamma \to \beta(x) \urcorner,$$
+$$\models \ulcorner \forall x. \ \alpha_1(x) \wedge \dots \wedge \alpha_n(x) \wedge \gamma \to \beta(x) \urcorner,$$
 
-$$\models \ulcorner \forall x. \; \neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma \vee \beta(x) \urcorner,$$
+$$\models \ulcorner \forall x. \ \neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma \vee \beta(x) \urcorner,$$
 
-$$\models \ulcorner \forall x. \; (\neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma) \vee (\forall x.\beta(x)) \urcorner,$$
+$$\models \ulcorner \forall x. \ (\neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma) \vee (\forall x.\beta(x)) \urcorner,$$
 
-$$\models \ulcorner \exists x. \; (\neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma) \vee (\forall x.\beta(x)) \urcorner,$$
+$$\models \ulcorner \exists x. \ (\neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \neg\gamma) \vee (\forall x.\beta(x)) \urcorner,$$
 
 $$\models \ulcorner \neg\forall x.\alpha_1(x) \vee \dots \vee \neg\forall x.\alpha_n(x) \vee \neg\gamma \vee (\forall x.\beta(x)) \urcorner.$$
 
