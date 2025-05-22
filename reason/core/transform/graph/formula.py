@@ -112,7 +112,7 @@ class FormulaToGraphLab:
                     self.update_edge_arg_idx(n, node, i)
 
                 return node
-            
+
             case LogicConnective(name=const.IFF, args=[a, b]):
                 node = self.get_form_id(value)
 
@@ -133,7 +133,7 @@ class FormulaToGraphLab:
                 if self.node_color_map[a_node] == op:
                     for n in self.graph.predecessors(a_node):
                         self.add_edge(n, node)
-                    
+
                     self.remove_node(a_node)
                 else:
                     self.add_edge(a_node, node)
@@ -141,7 +141,7 @@ class FormulaToGraphLab:
                 if self.node_color_map[b_node] == op:
                     for n in self.graph.predecessors(b_node):
                         self.add_edge(n, node)
-                    
+
                     self.remove_node(b_node)
                 else:
                     self.add_edge(b_node, node)

@@ -15,6 +15,7 @@ from reason.core.transform.base import prepend_quantifier_signature, conjunction
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tree.consts import *
 
+
 class FormulaBuilder:
     def __init__(self, ast: AbstractSyntaxTree, consts: dict[str, str] = {}, select_vars_prefix="u"):
         self.consts = consts
@@ -69,13 +70,7 @@ class FormulaBuilder:
                 ),
             )
             formulas.append(f)
-            axioms.append(
-                LogicQuantifier(
-                   EXISTS,
-                   selector_var,
-                   f 
-                )
-            )
+            axioms.append(LogicQuantifier(EXISTS, selector_var, f))
             quantifier_signature.append((EXISTS, selector_var))
 
         self.axioms.extend(axioms)

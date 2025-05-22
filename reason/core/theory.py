@@ -29,7 +29,7 @@ class Theory:
         self.consts = {}
         # self.formula_builder = FormulaBuilder(consts=self.consts)
         self.inspect = inspect
-        self.reference_dict : dict[str, FirstOrderFormula] = {}
+        self.reference_dict: dict[str, FirstOrderFormula] = {}
         self.reference_signatures = set()
 
         self.cache_folder_path = cache_folder_path
@@ -60,9 +60,11 @@ class Theory:
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
         formula, _ = self.to_formula_and_required_axioms(ast)
         return formula
-    
+
     @beartype
-    def to_formula_and_required_axioms(self, ast: AbstractSyntaxTree) -> Tuple[FirstOrderFormula, list[FirstOrderFormula]]:
+    def to_formula_and_required_axioms(
+        self, ast: AbstractSyntaxTree
+    ) -> Tuple[FirstOrderFormula, list[FirstOrderFormula]]:
         builder = FormulaBuilder(ast, consts=self.consts)
         formula = builder.formula
         if self.inspect and not builder.well_formed():
@@ -71,7 +73,7 @@ class Theory:
 
     def compile(self, text: str) -> FirstOrderFormula:
         return self.to_formula(self.parser(text))
-    
+
     def compile_and_get_axioms(self, text: str) -> Tuple[FirstOrderFormula, list[FirstOrderFormula]]:
         return self.to_formula_and_required_axioms(self.parser(text))
 
@@ -123,7 +125,10 @@ class Theory:
 
     @beartype
     def check_proof(
-        self, premise: str | AbstractSyntaxTree | None, thesis: str | AbstractSyntaxTree, proof: str | AbstractSyntaxTree
+        self,
+        premise: str | AbstractSyntaxTree | None,
+        thesis: str | AbstractSyntaxTree,
+        proof: str | AbstractSyntaxTree,
     ) -> bool:
         if premise is not None:
             premise = self.symbolise(premise)
