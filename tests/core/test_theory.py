@@ -3,7 +3,7 @@ import unittest
 from reason.vampire import Vampire
 from reason.parser import Parser
 
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 
 
 class TestTheory(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestTheory(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        ZFC = Theory(parser, vampire_prover, inspect=True)
+        ZFC = Theory_v1(parser, vampire_prover, inspect=True)
 
         ZFC.add_const("∅")
 

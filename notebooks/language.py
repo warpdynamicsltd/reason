@@ -1,7 +1,7 @@
 #%%
 import json
 from reason.core.language import Language
-from reason.core.tautology import prove
+from reason.core.theory.tautology import prove
 
 L = Language()
 L.add_const("a")

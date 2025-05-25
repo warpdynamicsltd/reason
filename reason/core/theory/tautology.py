@@ -1,6 +1,7 @@
 import re
 
 from reason.core.fof_types import FirstOrderFormula
+from reason.parser.tptp import TPTPParser
 from reason.vampire import Vampire
 from reason.vampire.translator import to_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
@@ -72,3 +73,19 @@ def prove(conjucture: FirstOrderFormula, premises: list[FirstOrderFormula]) -> d
         return proof_obj
     else:
         return None
+
+
+class Tautology:
+    def __init__(self, proof_json: dict):
+        if not proof_json or proof_json["proved"]:
+            raise RuntimeError("not proved!")
+
+        self.proof_json = proof_json
+
+
+        tptp_parser = TPTPParser()
+
+        self.premises = []
+        self.conjucture = tptp_parser.parse(proof_json["conclusions"][0]["formula"])
+        for p in proof_json["premises"]:
+            self.premises.append(tptp_parser.parse(p["formula"]))

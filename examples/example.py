@@ -1,11 +1,11 @@
 from reason.vampire import Vampire
 from reason.parser import Parser
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 
 reason_parser = Parser()
 vampire_prover = Vampire()
 
-ZFC = Theory(parser=reason_parser, prover=vampire_prover)
+ZFC = Theory_v1(parser=reason_parser, prover=vampire_prover)
 
 ZFC.add_const("∅")
 

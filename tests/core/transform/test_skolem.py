@@ -3,7 +3,7 @@ from collections import deque
 
 from reason.core.fof_types import LogicConnective
 from reason.core.fof_types import Variable
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem, SkolemUniqueRepr, skolem_sha256
@@ -16,7 +16,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
 
         self.assertEqual(expand_iff(T.compile("(Q ⟷ R(x))")), T.compile("((Q → R(x)) ∧ (R(x) → Q))"))
         self.assertEqual(expand_iff(T.compile("P ∧ (Q ⟷ R)")), T.compile("P ∧ ((Q → R) ∧ (R → Q))"))
@@ -27,7 +27,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
         f, signature = quantifier_signature(T.compile("∃u.∀x.∀y.∃z. P(x) → R(u, y, z)"))
         self.assertEqual(signature, deque([('EXISTS', Variable('u')), ('FORALL', Variable('x')), ('FORALL', Variable('y')), ('EXISTS', Variable('z'))]))
         self.assertEqual(f, T.compile("P(x) → R(u, y, z)"))
@@ -35,7 +35,7 @@ class TestSkolem(unittest.TestCase):
     def test_prepend_quantifier_signature(self):
         parser = Parser()
         vampire_prover = Vampire()
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
         f = T.compile("P(x) → R(u, y, z)")
         signature = [('EXISTS', Variable('u')), ('FORALL', Variable('x')), ('FORALL', Variable('y')), ('EXISTS', Variable('z'))]
         self.assertEqual(prepend_quantifier_signature(f, signature), T.compile("∃u.∀x.∀y.∃z. P(x) → R(u, y, z)"))
@@ -50,7 +50,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
         self.assertEqual(prenex_normal_raw(T.compile("~(∀x.∃u. P)")), T.compile("∃x.∀u. ~P"))
         self.assertEqual(prenex_normal_raw(T.compile("(∀x.∃u. A) ∧ (∃y.∀z. B)")), T.compile("∀x.∃u.∃y.∀z. A ∧ B"))
         self.assertEqual(prenex_normal_raw(T.compile("(∀x.∃u. A) ∧ ~(∃y.∀z. B)")), T.compile("∀x.∃u.∀y.∃z. A ∧ ~B"))
@@ -87,7 +87,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
         for text in texts:
             f = T.compile(text)
 
@@ -112,7 +112,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
         for text in texts:
             f = T.compile(text)
 
@@ -123,7 +123,7 @@ class TestSkolem(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
 
         truth = ((1,),)
 

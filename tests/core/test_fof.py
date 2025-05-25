@@ -2,7 +2,7 @@ import unittest
 
 from reason.vampire import Vampire
 from reason.parser import Parser
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.printer import Printer
 
 class TestFof(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestFof(unittest.TestCase):
     vampire_prover = Vampire()
     printer = Printer(reason_parser.ogc)
 
-    T = Theory(parser=reason_parser, prover=vampire_prover)
+    T = Theory_v1(parser=reason_parser, prover=vampire_prover)
 
     case_list = [
       [

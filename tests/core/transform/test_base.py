@@ -3,7 +3,7 @@ from collections import deque
 
 from reason.core.fof_types import LogicConnective
 from reason.core.fof_types import Variable
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.core.transform.skolem import prenex_normal_raw, prenex_normal, skolem
@@ -15,7 +15,7 @@ class TestBase(unittest.TestCase):
         parser = Parser()
         vampire_prover = Vampire()
 
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
 
         self.assertEqual(free_variables(T.compile("∀u. A(x, u) → (B(o) → (U(z)))")),
                          {Variable('x'), Variable('o'), Variable('z')})

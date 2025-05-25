@@ -7,13 +7,13 @@ from importlib.resources import files
 
 from reason.parser import Parser
 from reason.printer import Printer
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 
 parser = Parser()
 printer = Printer(parser.ogc)
 
 vampire_prover = Vampire(verbose=False)
-T = Theory(parser, vampire_prover)
+T = Theory_v1(parser, vampire_prover)
 
 #%%
 with open(files("reason") / "assets" / "lark" / "tptp.lark") as f:

@@ -2,7 +2,7 @@
 import importlib
 import reason
 from reason.core.fof_types import Variable
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.printer import Printer
@@ -19,7 +19,7 @@ parser = Parser()
 printer = Printer(parser.ogc)
 
 vampire_prover = Vampire(verbose=False)
-T = Theory(parser, vampire_prover)
+T = Theory_v1(parser, vampire_prover)
 
 #%%
 list((1, 3, 4))

@@ -19,7 +19,7 @@ from reason.parser.tree.consts import *
 from reason.printer import Printer
 
 
-class Theory:
+class Theory_v1:
     def __init__(self, parser, prover, inspect=True, cache_folder_path=None):
         self.parser = parser
         self.tptp_parser = TPTPParser()

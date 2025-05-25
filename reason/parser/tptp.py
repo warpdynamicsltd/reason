@@ -1,5 +1,7 @@
-from lark import Transformer, Lark
+from lark import Transformer
 from importlib.resources import files
+
+from reason.parser.lark import get_lark_parser
 from reason.core.fof_types import Const, FirstOrderFormula, Function, LogicConnective, Predicate, Variable
 from reason.parser.tree import *
 from reason.core.fof import *
@@ -99,7 +101,7 @@ class TPTPParser:
     def __init__(self):
         with open(str(files("reason") / "assets" / "lark" / "tptp.lark")) as f:
             code = f.read()
-            self.tptp_parser = Lark(code, start="formula", lexer="basic")
+            self.tptp_parser = get_lark_parser(code, start="formula", lexer="basic")
 
     def __call__(self, text: str) -> FirstOrderFormula:
         tree = self.tptp_parser.parse(text)

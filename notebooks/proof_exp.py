@@ -5,14 +5,14 @@ import json
 
 from reason.vampire import Vampire
 from reason.parser import Parser
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.core.transform.skolem import skolem_sha256
 from reason.core.transform.signature import formula_sha256, signature
 
 reason_parser = Parser()
 vampire_prover = Vampire()
 
-ZFC = Theory(parser=reason_parser, prover=vampire_prover, cache_folder_path=".exp1")
+ZFC = Theory_v1(parser=reason_parser, prover=vampire_prover, cache_folder_path=".exp1")
 
 ZFC.add_const("∅")
 

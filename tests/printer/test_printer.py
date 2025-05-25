@@ -1,5 +1,5 @@
 import unittest
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.vampire import Vampire
 from reason.parser import Parser
 from reason.printer import Printer
@@ -31,7 +31,7 @@ class TestPrinter(unittest.TestCase):
         printer = Printer(parser.ogc)
 
         vampire_prover = Vampire(verbose=True)
-        T = Theory(parser, vampire_prover)
+        T = Theory_v1(parser, vampire_prover)
 
         for text in self.tests:
             f = T.compile(text)

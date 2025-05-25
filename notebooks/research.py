@@ -43,10 +43,10 @@ formula._args
 #%%
 formula.args
 #%%
-from reason.core.theory import Theory
+from reason.core.theory_v1 import Theory_v1
 from reason.vampire import Vampire
 vampire_prover = Vampire(verbose=True)
-ZFC = Theory(parser, vampire_prover)
+ZFC = Theory_v1(parser, vampire_prover)
 
 ZFC.add_const("∅")
 
