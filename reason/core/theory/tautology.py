@@ -1,4 +1,5 @@
 import re
+from typing import Sequence, Iterator
 
 from reason.core.fof_types import FirstOrderFormula
 from reason.parser.tptp import TPTPParser
@@ -10,7 +11,7 @@ from beartype import beartype
 
 
 @beartype
-def prove(conjucture: FirstOrderFormula, premises: list[FirstOrderFormula]) -> dict | None:
+def prove(conjucture: FirstOrderFormula, premises: Iterator[FirstOrderFormula]) -> dict | None:
     prover = Vampire()
     reference_dict = {}
     for premis in premises:
