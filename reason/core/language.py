@@ -2,6 +2,7 @@ from beartype import beartype
 from typing import Tuple
 
 from reason.parser import Parser
+from reason.printer import Printer
 from reason.core.fof_types import FirstOrderFormula
 from reason.parser.tree import AbstractSyntaxTree
 from reason.tools.math.transform import utf8_to_varname
@@ -11,6 +12,7 @@ from reason.core.fof import FormulaBuilder
 class Language:
     def __init__(self, inspect=True):
         self.parser = Parser()
+        self.printer = Printer(self.parser.ogc)
         self.consts = {}
         self.inspect = inspect
 
@@ -31,3 +33,6 @@ class Language:
         ast = self.parser(text)
         formula, _ = self.to_formula_and_required_axioms(ast)
         return formula
+    
+    def display(self, call, formula):
+        call(self.printer(formula))

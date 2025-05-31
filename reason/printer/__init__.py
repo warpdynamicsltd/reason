@@ -1,9 +1,10 @@
 from collections import defaultdict
 
 from reason.core import AbstractTerm
-from reason.core.fof_types import Function, LogicConnective, LogicQuantifier, Predicate
+from reason.core.fof_types import Function, LogicConnective, LogicQuantifier, Predicate, Const
 from reason.parser.tree import OperatorGrammarCreator
 from reason.core.fof import *
+from reason.tools.math.transform import varname_to_utf8
 
 
 class Printer:
@@ -47,6 +48,8 @@ class Printer:
 
     def text(self, formula, parent_priority=-1, left_child=False):
         match formula:
+            case Const(name=name):
+                return varname_to_utf8(name[1:])
             case LogicConnective(name=op, args=[a, b]):
                 priority = self.priority[op]
                 res = f"{self.text(a, priority, left_child=True)} {self.symb_mapping[op]} {self.text(b, priority)}"
