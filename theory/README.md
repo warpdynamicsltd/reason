@@ -37,6 +37,31 @@ $$\Gamma \models  \forall x. \beta(x) .$$
 
 If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$ and $\Gamma\models  \beta(a) $, then $a$ is an universal constant with respect to $`\Gamma\cup \{ \beta(a) \}`$.
 
+<h3 id="implication-theorem">Theorem: <b>implication</b></h3>
+
+If $\Gamma, \alpha \models \beta$, then $\Gamma\models \alpha \to \beta$.
+
+<b>Proof.</b> Since $\Gamma, \alpha \models \beta$, we have $\alpha_i\in\Gamma$ such that
+
+$$\models \alpha_1 \wedge \dots \wedge \alpha_n \wedge \alpha \to \beta,$$
+
+$$\models \neg\alpha_1 \vee \dots \vee \neg\alpha_n \vee \neg\alpha \vee \beta,$$
+
+$$\models \neg\alpha_1 \vee \dots \vee \neg\alpha_n \vee (\neg\alpha \vee \beta),$$
+
+$$\models \alpha_1 \wedge \dots \wedge \alpha_n \to (\alpha \to \beta).$$
+
+Thus $\Gamma\models \alpha \to \beta$.
+
+<h3 id="use-universal-const-for-implication"> Theorem: </h3>
+
+If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$ and $\Gamma,\alpha(a)\models  \beta(a)$, then 
+
+$\Gamma\models \forall x.\big(\alpha(x) \to \beta(x)\big)$.
+
+<b>Proof.</b> By Theorem [implication](implication), $\Gamma\models \alpha(a) \to \beta(a)$. But since $a$ is a universal constant with respect to $\Gamma$, then $\forall x.\big(\alpha(x) \to \beta(x)\big)$.
+
+
 
 
 

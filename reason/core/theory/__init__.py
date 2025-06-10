@@ -4,6 +4,7 @@ from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
 from reason.core.transform.base import remove_universal_quantifiers
 from reason.core.transform.describe import describe
+from reason.core.language import Language
 from reason.parser.tree.consts import *
 
 class BaseTheory(ABC):
@@ -14,13 +15,21 @@ class BaseTheory(ABC):
     @abstractmethod
     def is_on_stack(self, formula: FirstOrderFormula) -> bool:
         pass
-
+    
     @abstractmethod
     def _push(self, formula: FirstOrderFormula):
+        pass
+    
+    @abstractmethod
+    def _pop(self) -> FirstOrderFormula:
         pass
 
     @abstractmethod
     def get_stack_iter(self) -> Iterator[FirstOrderFormula]:
+        pass
+
+    @abstractmethod
+    def get_stack_len(self) -> int:
         pass
     
     @abstractmethod
@@ -32,7 +41,11 @@ class BaseTheory(ABC):
         pass
 
     @abstractmethod
-    def is_used(self, t, name):
+    def is_used(self, t: type, name: str) -> bool:
+        pass
+
+    @abstractmethod
+    def get_langauge(self) -> Language:
         pass
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
@@ -90,6 +103,8 @@ class BaseTheory(ABC):
         return False
     
     def add_formula(self, formula: FirstOrderFormula):
+        if self.is_on_stack(formula):
+            return
         if self.is_provable(formula):
             self._push(formula)
         else:
