@@ -7,6 +7,7 @@ from reason.core.transform.base import remove_universal_quantifiers, conjunction
 from reason.core.transform.describe import describe
 from reason.parser.tree.consts import *
 from reason.core.language import Language, derive
+from reason.parser.tree import AbstractSyntaxTree
 
 
 class Context:
@@ -38,19 +39,26 @@ class Context:
         self.const_values.add(c_value)
         self.context_const_index += 1
 
-    def when(self, text: str):
-        formula = self.L(text)
+    def assume(self, s: str | AbstractSyntaxTree):
+        if isinstance(s, AbstractSyntaxTree):
+            formula = self.L.to_formula(s)
+        else:
+            formula = self.L(s)
+
         formula = closure(formula)
         self.premises.append(formula)
         self.theory._push(formula)
 
-    def then(self, text: str) -> FirstOrderFormula:
-        formula = self.L(text)
+    def add(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
+        if isinstance(s, AbstractSyntaxTree):
+            formula = self.L.to_formula(s)
+        else:
+            formula = self.L(s)
         self.theory.add_formula(formula)
         return closure(formula)
 
-    def conclude(self, text: str):
-        formula = self.then(text)
+    def conclude(self, s: str | AbstractSyntaxTree):
+        formula = self.add(s)
         self.conclusions.append(formula)
 
 
@@ -84,6 +92,8 @@ class Context:
                 
             self.theory._push(theorem)
             return theorem
+
+        raise SyntaxError("context without conclusions")
         
     def open_context(self):
         return Context(theory=self.theory, 

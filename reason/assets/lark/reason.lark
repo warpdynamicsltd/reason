@@ -21,6 +21,12 @@ abstract_term_list: [logic_simple ("," logic_simple)*]
 abstract_term_list_spec: [(logic_simple ",")+ (logic_simple|)]
 
 // Program
-expression: "`" logic_simple "`" -> logic_expression
-  | "assume" "`" logic_simple "`" -> assumption_expression
-  | "take" fname -> const_declaration 
+fname_list: [fname ("," fname)*]
+
+expression: logic_simple -> logic_expression
+  | "assume" logic_simple -> assumption_expression
+  | "then" logic_simple -> conclusion_expression 
+  | "take" fname_list -> const_declaration
+  | "begin" expression_list "end" -> context_block
+
+expression_list: [expression (";" expression)* (|";")]

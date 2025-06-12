@@ -40,6 +40,10 @@ class Language:
         if self.inspect and not builder.well_formed():
             raise RuntimeError(f"{formula.show()} is not well formed")
         return formula, builder.axioms
+
+    def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
+        formula, _ = self.to_formula_and_required_axioms(ast)
+        return formula
     
     def __call__(self, text : str):
         ast = self.parser(text)
