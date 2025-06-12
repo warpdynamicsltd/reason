@@ -101,7 +101,7 @@ class OperatorGrammarCreator:
         return res
 
     def create_bracket_rule(self):
-        return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> bracket | "{{" {self.main_rule}_list "}}" -> conj_formula \n'
+        return f'{self.prefix}_0: {self.super_rule} | "(" {self.main_rule} ")" -> bracket\n'
 
     def create_main_rule(self):
         return f"{self.main_rule}: {self.prefix}_{len(self.precedence)}\n"
@@ -119,7 +119,7 @@ class OperatorGrammarCreator:
 class ReasonTreeToAbstractSyntaxTree(Transformer):
     abstract_term_list = list
     abstract_term_list_spec = list
-    logic_simple_list = list
+    # logic_simple_list = list
 
     def __init__(self, level_prefix, *args, **kwargs):
         self.level_prefix = level_prefix
@@ -137,9 +137,9 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
     def fname(self, symbol):
         return symbol
 
-    @v_args(inline=True)
-    def conj_formula(self, logic_simple_list):
-        return AbstractSyntaxTree(CONJUNCTION, *logic_simple_list)
+    # @v_args(inline=True)
+    # def conj_formula(self, logic_simple_list):
+    #     return AbstractSyntaxTree(CONJUNCTION, *logic_simple_list)
 
     @v_args(inline=True)
     def composed_abstract_term(self, fname, term_list):

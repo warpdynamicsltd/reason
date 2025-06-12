@@ -57,7 +57,6 @@ class Context:
     def close(self) -> FirstOrderFormula:
         context_produced = self.theory.get_stack_len() - self.context_theory_stack_start
         if context_produced:
-            conclusion = self.theory._pop()
             while self.theory.get_stack_len() > self.context_theory_stack_start:
                 self.theory._pop()
             

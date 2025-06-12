@@ -9,7 +9,7 @@ from reason.core.fof import FormulaBuilder
 from reason.core.fof_types import FirstOrderFormula, LogicConnective
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tptp import TPTPParser
-from reason.core.transform.explode_conj import explode_over_conjunctions
+# from reason.core.transform.explode_conj import explode_over_conjunctions
 from reason.vampire.translator import to_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
 from reason.core.transform.signature import formula_sha256, signature
@@ -123,54 +123,54 @@ class Theory_v1:
         else:
             return f
 
-    @beartype
-    def check_proof(
-        self,
-        premise: str | AbstractSyntaxTree | None,
-        thesis: str | AbstractSyntaxTree,
-        proof: str | AbstractSyntaxTree,
-    ) -> bool:
-        if premise is not None:
-            premise = self.symbolise(premise)
-        thesis = self.symbolise(thesis)
-        proof = self.symbolise(proof)
-
-        if premise is not None:
-            consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
-        else:
-            consequences = explode_over_conjunctions(proof) + [thesis]
-
-        res = True
-        for source, target in zip(consequences[:-1], consequences[1:]):
-            source_formula, axioms = self.to_formula_and_required_axioms(source)
-            self.add_axioms(axioms)
-            target_formula, axioms = self.to_formula_and_required_axioms(target)
-            self.add_axioms(axioms)
-            f = LogicConnective(IMP, source_formula, target_formula)
-            proof_obj = self.prove(f)
-            print(self.printer(target_formula))
-            if proof_obj is None:
-                res = False
-                break
-
-        return res
-
-    @beartype
-    def add_lemmas(
-        self, premise: str | AbstractSyntaxTree, thesis: str | AbstractSyntaxTree, proof: str | AbstractSyntaxTree
-    ) -> bool:
-        premise = self.symbolise(premise)
-        thesis = self.symbolise(thesis)
-        proof = self.symbolise(proof)
-
-        if self.check_proof(premise, thesis, proof):
-            consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
-            for source, target in zip(consequences[:-1], consequences[1:]):
-                formula = AbstractSyntaxTree(IMP, source, target)
-                self.add_formula(formula, name=f"lemma{id(formula)}", type="theorem")
-            return True
-
-        return False
+    # @beartype
+    # def check_proof(
+    #     self,
+    #     premise: str | AbstractSyntaxTree | None,
+    #     thesis: str | AbstractSyntaxTree,
+    #     proof: str | AbstractSyntaxTree,
+    # ) -> bool:
+    #     if premise is not None:
+    #         premise = self.symbolise(premise)
+    #     thesis = self.symbolise(thesis)
+    #     proof = self.symbolise(proof)
+    #
+    #     if premise is not None:
+    #         consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
+    #     else:
+    #         consequences = explode_over_conjunctions(proof) + [thesis]
+    #
+    #     res = True
+    #     for source, target in zip(consequences[:-1], consequences[1:]):
+    #         source_formula, axioms = self.to_formula_and_required_axioms(source)
+    #         self.add_axioms(axioms)
+    #         target_formula, axioms = self.to_formula_and_required_axioms(target)
+    #         self.add_axioms(axioms)
+    #         f = LogicConnective(IMP, source_formula, target_formula)
+    #         proof_obj = self.prove(f)
+    #         print(self.printer(target_formula))
+    #         if proof_obj is None:
+    #             res = False
+    #             break
+    #
+    #     return res
+    #
+    # @beartype
+    # def add_lemmas(
+    #     self, premise: str | AbstractSyntaxTree, thesis: str | AbstractSyntaxTree, proof: str | AbstractSyntaxTree
+    # ) -> bool:
+    #     premise = self.symbolise(premise)
+    #     thesis = self.symbolise(thesis)
+    #     proof = self.symbolise(proof)
+    #
+    #     if self.check_proof(premise, thesis, proof):
+    #         consequences = [premise] + explode_over_conjunctions(proof) + [thesis]
+    #         for source, target in zip(consequences[:-1], consequences[1:]):
+    #             formula = AbstractSyntaxTree(IMP, source, target)
+    #             self.add_formula(formula, name=f"lemma{id(formula)}", type="theorem")
+    #         return True
+    #
+    #     return False
 
     def parse_proof_line(self, line: str) -> str | None:
         re.match(r"^\d+\.(.*)\[input\(axiom|assumption\)\s(\w+)\]", line)

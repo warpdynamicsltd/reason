@@ -38,22 +38,22 @@ class TestTheory(unittest.TestCase):
         self.assertTrue(ZFC(r"∀(x, y, z) z = {x} ∪ {y} → x ∈ z ∧ y ∈ z"))
         self.assertTrue(ZFC(r"∀(x, y) {x, y} = {x} → x = y"))
 
-    def test_zfc_proof(self):
-        ZFC = self.get_ZFC_theory()
-
-        premise = r"~({x} ∩ {y} = ∅)"
-        thesis = "x = y"
-
-        proof = r"""{
-        ~({x} ∩ {y} = ∅);
-        ∃(z){
-            z ∈ {x} ∧ z ∈ {y};
-            z = x ∧ z = y;
-            ∀(k) (k ∈ x ⟷ k ∈ z) ∧ (k ∈ z ⟷ k ∈ y);
-            x = y;
-        };
-
-    }
-    """
-
-        self.assertTrue(ZFC.check_proof(premise, thesis, proof))
+    # def test_zfc_proof(self):
+    #     ZFC = self.get_ZFC_theory()
+    #
+    #     premise = r"~({x} ∩ {y} = ∅)"
+    #     thesis = "x = y"
+    #
+    #     proof = r"""{
+    #     ~({x} ∩ {y} = ∅);
+    #     ∃(z){
+    #         z ∈ {x} ∧ z ∈ {y};
+    #         z = x ∧ z = y;
+    #         ∀(k) (k ∈ x ⟷ k ∈ z) ∧ (k ∈ z ⟷ k ∈ y);
+    #         x = y;
+    #     };
+    #
+    # }
+    # """
+    #
+    #     self.assertTrue(ZFC.check_proof(premise, thesis, proof))
