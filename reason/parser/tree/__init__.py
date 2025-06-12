@@ -119,7 +119,6 @@ class OperatorGrammarCreator:
 class ReasonTreeToAbstractSyntaxTree(Transformer):
     abstract_term_list = list
     abstract_term_list_spec = list
-    # logic_simple_list = list
 
     def __init__(self, level_prefix, *args, **kwargs):
         self.level_prefix = level_prefix
@@ -136,10 +135,6 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def fname(self, symbol):
         return symbol
-
-    # @v_args(inline=True)
-    # def conj_formula(self, logic_simple_list):
-    #     return AbstractSyntaxTree(CONJUNCTION, *logic_simple_list)
 
     @v_args(inline=True)
     def composed_abstract_term(self, fname, term_list):
