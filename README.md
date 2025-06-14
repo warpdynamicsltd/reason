@@ -59,12 +59,12 @@ end;
 ~(a ∈ b ∧ b ∈ a);
 ```
 
-You can run the above proof with
+You can run the above proof with:
 ```bash
 reason examples/basic/example.rsn
 ```
 
-The output of the above should end with something similar to the following.:
+The output of the above should end with something similar to the following.
 
 ```
 QUOD ERAT DEMONSTRANDUM
