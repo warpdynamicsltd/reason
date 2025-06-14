@@ -7,6 +7,7 @@ from reason.parser.tree import *
 from reason.core.fof import *
 from reason.core.transform.base import prepend_quantifier_signature
 from reason.parser.tree.consts import *
+from reason.vampire.translator import name_tptp_decode
 
 
 class TPTPTreeToAbstractSyntaxTree(Transformer):
@@ -22,7 +23,7 @@ class TPTPTreeToAbstractSyntaxTree(Transformer):
         value = arg.value
         if value[:2] == "c_":
             value = value[2:]
-        return Const(value)
+        return Const(name_tptp_decode(value))
 
     @v_args(inline=True)
     def fname(self, arg):

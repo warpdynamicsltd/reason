@@ -3,7 +3,7 @@ import importlib
 from reason.core import AbstractTerm, AbstractTermMutable
 from reason.parser.tree import AbstractSyntaxTree
 from reason.core.transform import explode_over_conjunctions
-from reason.vampire.translator import to_fof
+from reason.vampire.translator import to_tptp_fof
 from reason.parser import Parser
 
 #%%
@@ -133,7 +133,7 @@ ZFC.add_lemmas(premise, thesis, proof)
 #%%
 
 #%%
-from reason.vampire.translator import to_fof
+from reason.vampire.translator import to_tptp_fof
 #%%
 premise = parser("~(s(x) ∩ s(y) = ∅)")
 thesis = parser("x = y")

@@ -36,6 +36,7 @@ class Context:
         # self.const_map_inc[self.context_const_index] = c
         c_value = self.const_name(self.context_const_index)
         self.L.add_const(c, c_value=c_value)
+        # self.L.add_const(c_value, c_value=c_value)
         self.const_values.add(c_value)
         self.context_const_index += 1
 

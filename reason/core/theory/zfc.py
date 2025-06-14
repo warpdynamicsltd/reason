@@ -33,7 +33,7 @@ class ZFC(BaseTheory):
         self.formulas_stack.append(formula)
         self.stack_signatures.add(formula_sha256(formula))
         self.update_description(formula)
-        logging.info("pushed %s", formula)
+        logging.info("pushed %s", self.L.printer(formula))
     
     @overwritten
     def _pop(self) -> FirstOrderFormula:
@@ -97,5 +97,5 @@ class ZFC(BaseTheory):
     def add(self, s: str):
         formula = self.L(s)
         self.add_formula(formula)
-        logging.info("formula %s is true", formula)
+        logging.info("formula %s is true", self.L.printer(formula))
         
