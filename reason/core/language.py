@@ -26,12 +26,10 @@ class Language:
             c_value = c
 
         if c_value in self.const_values:
-            raise RuntimeError(f"const value {c_value} alrady in use")
+            raise RuntimeError(f"const value {c_value} already in use")
         
         self.consts[c] = c_value
         self.const_values.add(c_value)
-        # self.consts[c] = c
-        # self.const_values.add(c)
         
 
     @beartype
