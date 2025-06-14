@@ -1,0 +1,15 @@
+include "zfc_axioms.rsn";
+
+begin
+    take a, b;
+    assume a ∈ b;
+    assume b ∈ a;
+
+    take e;
+    assume e = {a, b};
+    ~(a ∩ e = ∅);
+    b ∩ e = ∅;
+    then ~(a ∈ b);
+end;
+
+~(a ∈ b ∧ b ∈ a);

@@ -21,14 +21,17 @@ code = \
     ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
     ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
     
-    begin
-        take a, b, c, p, q;
-        assume p = a ∩ (b ∪ c);
-        assume q = (a ∩ b) ∪ (a ∩ c);
-        then p = q; 
-    end;
-    
+    p = a ∩ (b ∪ c) ∧ q = (a ∩ b) ∪ (a ∩ c) → p = q;
     a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
+    
+    # begin
+    #     take a, b, c, p, q;
+    #     assume p = a ∩ (b ∪ c);
+    #     assume q = (a ∩ b) ∪ (a ∩ c);
+    #     then p = q; 
+    # end;
+    # 
+    # a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
 """
 
 program_ast = program_parser(code)

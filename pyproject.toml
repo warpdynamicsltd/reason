@@ -12,6 +12,9 @@ dependencies = [
     "numpy>=2.2.2",
 ]
 
+[project.scripts]
+reason = "reason.scripts.reason:main"
+
 [tool.uv.sources]
 lark = { path = "repositories/lark" }
 

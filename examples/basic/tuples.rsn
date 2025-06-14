@@ -1,0 +1,23 @@
+include "zfc_axioms.rsn";
+include "no_cycles.rsn";
+
+begin
+    take a, b, x, y;
+    assume (a, b) = (x, y);
+    a ∈ (a, b);
+    a ∈ (x, y);
+    a = x ∨ a = {x, y};
+    assume ~(a = x);
+    a = {x, y};
+    x ∈ a;
+    x ∈ (x, y);
+    x ∈ (a, b);
+    x = {a, b};
+    a ∈ x;
+    x ∈ a ∧ a ∈ x;
+    #~(x ∈ a);
+
+    then a = x;
+end;
+
+(a, b) = (x, y) → a = x;

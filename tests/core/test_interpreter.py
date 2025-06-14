@@ -10,14 +10,14 @@ class TestZFCTheory(unittest.TestCase):
 
         code = \
             """
-                ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-                empty(e) ⟷ (∀(x) ~(x ∈ e));
-                empty(∅);
-                ∀(x, z) z ∈ {x} ⟷ z = x;
-                ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
-                ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
-                ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
-                ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
+                assume ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
+                assume empty(e) ⟷ (∀(x) ~(x ∈ e));
+                assume empty(∅);
+                assume ∀(x, z) z ∈ {x} ⟷ z = x;
+                assume ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
+                assume ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
+                assume ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
+                assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
     
                 begin
                     take a, b, c, p, q;

@@ -1,4 +1,6 @@
+import ast
 import re
+
 from lark import Transformer, v_args, Token
 
 from reason.parser.tree import AbstractTerm, ReasonTreeToAbstractSyntaxTree, AbstractSyntaxTree
@@ -27,6 +29,10 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def conclusion_expression(self, logic_simple):
         return AbstractSyntaxTree(CONCLUSION, self._logic_simple(logic_simple))
+
+    @v_args(inline=True)
+    def include_expression(self, s):
+        return AbstractSyntaxTree(INCLUDE_FILE, ast.literal_eval(s.value))
 
     @v_args(inline=True)
     def const_declaration(self, consts):

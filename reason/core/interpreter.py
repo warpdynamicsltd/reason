@@ -2,11 +2,13 @@ from reason.core.theory import BaseTheory
 from reason.core.theory.context import Context
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tree.consts import *
+from reason.parser import ProgramParser
 
 class Interpreter:
 
     def __init__(self, theory: BaseTheory):
         self.theory = theory
+        self.parser = ProgramParser()
         self.context_stack = []
 
     def current_context(self) -> Context:
@@ -24,7 +26,8 @@ class Interpreter:
 
             case AbstractSyntaxTree(name=const.ASSERTION, args=[formula_ast]):
                 if not self.context_stack:
-                    self.theory.add_formula(self.theory.get_langauge().to_formula(formula_ast))
+                    formula = self.theory.formula(formula_ast)
+                    self.theory.add_formula(formula)
                 else:
                     self.current_context().add(formula_ast)
 
@@ -32,8 +35,12 @@ class Interpreter:
 
 
             case AbstractSyntaxTree(name=const.ASSUMPTION, args=[formula_ast]):
-                context = self.current_context()
-                context.assume(formula_ast)
+                if self.context_stack:
+                    context = self.current_context()
+                    context.assume(formula_ast)
+                else:
+                    formula = self.theory.formula(formula_ast)
+                    self.theory.add_atomic_axiom(formula)
                 return
 
 
@@ -57,6 +64,13 @@ class Interpreter:
                 context.close()
                 self.context_stack.pop()
                 return
+
+            case AbstractSyntaxTree(name=const.INCLUDE_FILE, args=[s]):
+                with open(s, "r") as f:
+                    code = f.read()
+
+                program_ast_list = self.parser(code)
+                self.run(program_ast_list)
 
 
     def run(self, expressions : list[AbstractSyntaxTree]):

@@ -21,7 +21,7 @@ class Context:
         # self.const_map_inv = {}
         self.const_values = set()
         if L is None:
-            self.L = self.theory.get_langauge()
+            self.L = self.theory.derive_language()
         else:
             self.L = L
         self.premises = []

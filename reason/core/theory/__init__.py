@@ -4,7 +4,7 @@ from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
 from reason.core.transform.base import remove_universal_quantifiers
 from reason.core.transform.describe import describe
-from reason.core.language import Language
+from reason.core.language import Language, derive
 from reason.parser.tree.consts import *
 
 class BaseTheory(ABC):
@@ -31,10 +31,6 @@ class BaseTheory(ABC):
     @abstractmethod
     def get_stack_len(self) -> int:
         pass
-    
-    @abstractmethod
-    def is_atomic_axiom(self, formula: FirstOrderFormula) -> bool:
-        pass
 
     @abstractmethod
     def is_computed_axiom(self, formula: FirstOrderFormula) -> bool:
@@ -47,6 +43,17 @@ class BaseTheory(ABC):
     @abstractmethod
     def get_langauge(self) -> Language:
         pass
+
+    def derive_language(self) -> Language:
+        return derive(self.get_langauge())
+
+    def formula(self, ast: AbstractSyntaxTree):
+        return self.get_langauge().to_formula(ast)
+
+
+    def add_atomic_axiom(self, formula: FirstOrderFormula):
+        if not self.is_on_stack(formula):
+            self._push(formula)
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
         formula = remove_universal_quantifiers(formula)
@@ -75,9 +82,6 @@ class BaseTheory(ABC):
 
 
     def is_axiom(self, formula: FirstOrderFormula) -> bool:
-        if self.is_atomic_axiom(formula):
-            return True
-        
         if self.is_computed_axiom(formula):
             return True
         
@@ -88,10 +92,10 @@ class BaseTheory(ABC):
 
 
     def is_provable(self, formula: FirstOrderFormula) -> bool:
-        if self.is_axiom(formula):
-            return True
-        
         if self.is_on_stack(formula):
+            return True
+
+        if self.is_axiom(formula):
             return True
         
         premises = self.get_stack_iter()

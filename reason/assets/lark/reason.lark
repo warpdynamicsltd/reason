@@ -2,6 +2,7 @@
 %import common.WS
 %import common.LETTER
 %import common.DIGIT
+%import common.ESCAPED_STRING
 %ignore WS
  
 SYMBOL : (LETTER | DIGIT | "_" | "∅")+
@@ -28,5 +29,6 @@ expression: logic_simple -> logic_expression
   | "then" logic_simple -> conclusion_expression 
   | "take" fname_list -> const_declaration
   | "begin" expression_list "end" -> context_block
+  | "include" ESCAPED_STRING -> include_expression
 
 expression_list: [expression (";" expression)* (|";")]

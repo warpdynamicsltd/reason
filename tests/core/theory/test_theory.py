@@ -8,14 +8,14 @@ class TestZFCTheory(unittest.TestCase):
         zfc = ZFC()
 
         # BEGIN OF AXIOMS
-        zfc.add("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
-        zfc.add("empty(e) ⟷ (∀(x) ~(x ∈ e))")
-        zfc.add("empty(∅)")
-        zfc.add("∀(x, z) z ∈ {x} ⟷ z = x")
-        zfc.add("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y")
-        zfc.add("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y")
-        zfc.add("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)")
-        zfc.add("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
+        zfc.axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
+        zfc.axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))")
+        zfc.axiom("empty(∅)")
+        zfc.axiom("∀(x, z) z ∈ {x} ⟷ z = x")
+        zfc.axiom("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y")
+        zfc.axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y")
+        zfc.axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)")
+        zfc.axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
         # END OF AXIOMS
 
         zfc.add("{a, b} = {a} ∪ {b}")
@@ -37,14 +37,14 @@ class TestZFCTheory(unittest.TestCase):
     def test_zfc_context_proof(self):
         zfc = ZFC()
         # BEGIN OF AXIOMS
-        zfc.add("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
-        zfc.add("empty(e) ⟷ (∀(x) ~(x ∈ e))")
-        zfc.add("empty(∅)")
-        zfc.add("∀(x, z) z ∈ {x} ⟷ z = x")
-        zfc.add("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y")
-        zfc.add("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y")
-        zfc.add("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)")
-        zfc.add("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
+        zfc.axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
+        zfc.axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))")
+        zfc.axiom("empty(∅)")
+        zfc.axiom("∀(x, z) z ∈ {x} ⟷ z = x")
+        zfc.axiom("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y")
+        zfc.axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y")
+        zfc.axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)")
+        zfc.axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
         # END OF AXIOMS
 
         zfc.add("{a, b} = {a} ∪ {b}")

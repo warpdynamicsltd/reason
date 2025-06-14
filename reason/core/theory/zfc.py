@@ -27,15 +27,6 @@ class ZFC(BaseTheory):
             Predicate: Counter()
         }
 
-        self._add_axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
-        self._add_axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))")
-        self._add_axiom("empty(∅)")
-        self._add_axiom("∀(x, z) z ∈ {x} ⟷ z = x")
-        self._add_axiom("∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y")
-        self._add_axiom("∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y")
-        self._add_axiom("∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y)")
-        self._add_axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
-
     @overwritten
     def _push(self, formula: FirstOrderFormula):
         formula = closure(formula)
@@ -68,11 +59,7 @@ class ZFC(BaseTheory):
     @overwritten
     def get_stack_len(self) -> int:
         return len(self.formulas_stack)
-    
-    @overwritten
-    def is_atomic_axiom(self, formula: FirstOrderFormula) -> bool:
-        hash = formula_sha256(formula)
-        return hash in self.simple_axioms_signatures
+
     
     @overwritten
     def is_computed_axiom(self, formula):
@@ -84,7 +71,7 @@ class ZFC(BaseTheory):
     
     @overwritten
     def get_langauge(self):
-        return derive(self.L)
+        return self.L
 
     
     def update_description(self, formula, removes=False):
@@ -102,9 +89,10 @@ class ZFC(BaseTheory):
     def _add_const(self, c: str):
         self.L.add_const(c)
 
-    def _add_axiom(self, s: str):
+
+    def axiom(self, s: str):
         formula = self.L(s)
-        self.simple_axioms_signatures.add(formula_sha256(formula))
+        self.add_atomic_axiom(formula)
 
     def add(self, s: str):
         formula = self.L(s)
