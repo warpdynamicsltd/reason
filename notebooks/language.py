@@ -8,7 +8,7 @@ from reason.core.transform.base import quantifier_signature, remove_universal_qu
 L = Language()
 # L.add_const("a")
 
-formula = L("f(a, b) = g(a, b)")
+formula = L("a ∪ (p ∩ q) = (a ∪ p) ∩ (a ∪ q)")
 print(remove_universal_quantifiers(formula))
 L.display(print, formula)
 

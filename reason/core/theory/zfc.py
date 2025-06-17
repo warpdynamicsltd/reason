@@ -2,13 +2,18 @@ from typing import List, Sequence
 from abc import ABC, abstractmethod
 from collections import Counter
 import logging
+import structlog
 
+from reason.tools.logger import configure_logger
 from reason.core.theory import BaseTheory, overwritten
 from reason.core.language import Language, derive
 from reason.core.fof_types import *
 from reason.core.transform.signature import formula_sha256
 from reason.core.transform.base import closure
 from reason.core.transform.describe import describe
+
+configure_logger()
+logger = structlog.get_logger()
 
 class ZFC(BaseTheory):
     def __init__(self):
@@ -33,7 +38,7 @@ class ZFC(BaseTheory):
         self.formulas_stack.append(formula)
         self.stack_signatures.add(formula_sha256(formula))
         self.update_description(formula)
-        logging.info("pushed %s", self.L.printer(formula))
+        logger.info("pushed", formula=self.L.printer(formula))
     
     @overwritten
     def _pop(self) -> FirstOrderFormula:
@@ -97,5 +102,5 @@ class ZFC(BaseTheory):
     def add(self, s: str):
         formula = self.L(s)
         self.add_formula(formula)
-        logging.info("formula %s is true", self.L.printer(formula))
+        logger.info("formula %s is true", formula=self.L.printer(formula))
         
