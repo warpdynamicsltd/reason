@@ -102,5 +102,5 @@ class ZFC(BaseTheory):
     def add(self, s: str):
         formula = self.L(s)
         self.add_formula(formula)
-        logger.info("formula %s is true", formula=self.L.printer(formula))
+        logger.info("formula is true", formula=self.L.printer(formula))
         

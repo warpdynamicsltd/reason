@@ -91,7 +91,7 @@ class Context:
                 
             for f in description[Function]:
                 if not self.theory.is_used(Function, f):
-                    raise RuntimeError(f"unseed function {f}")
+                    raise RuntimeError(f"unseen function {f}")
                 
             self.theory._push(theorem)
             return theorem

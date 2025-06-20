@@ -16,7 +16,7 @@ with the most up to date versions of dependencies, you should follow the steps b
 
 1. Most likely you will need to install:
    ```bash
-   sudo apt install -y build-essential cmake zlib1g-dev libgmp-dev python3 curl
+   sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl
    ```
 1. Go to the root folder of Reason repository.
 2. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
