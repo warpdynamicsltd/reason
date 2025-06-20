@@ -5,7 +5,7 @@ from reason.parser import Parser
 from reason.printer import Printer
 from reason.core.fof_types import FirstOrderFormula
 from reason.parser.tree import AbstractSyntaxTree
-from reason.tools.math.transform import utf8_to_varname
+# from reason.tools.math.transform import utf8_to_varname
 from reason.core.fof import FormulaBuilder
 
 
@@ -22,10 +22,11 @@ class Language:
             raise RuntimeError(f"const {c} already defined")
 
         if c_value is None:
-            c_value = f"c{utf8_to_varname(c)}"
+            # c_value = f"c{utf8_to_varname(c)}"
+            c_value = c
 
         if c_value in self.const_values:
-            raise RuntimeError(f"const value {c_value} alrady in use")
+            raise RuntimeError(f"const value {c_value} already in use")
         
         self.consts[c] = c_value
         self.const_values.add(c_value)

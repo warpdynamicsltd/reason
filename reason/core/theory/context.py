@@ -11,7 +11,8 @@ from reason.parser.tree import AbstractSyntaxTree
 
 
 class Context:
-    def __init__(self, theory: BaseTheory, L: Language | None = None, const_index: int = 0):
+    def __init__(self, theory: BaseTheory, L: Language | None = None, const_index: int = 0, name: str = "0"):
+        self.name = name
         self.theory = theory
 
         self.context_const_index = const_index
@@ -34,8 +35,10 @@ class Context:
     def declare(self, c: str):
         # self.const_map[c] = self.context_const_index
         # self.const_map_inc[self.context_const_index] = c
-        c_value = self.const_name(self.context_const_index)
+        # c_value = self.const_name(self.context_const_index)
+        c_value = f"{self.name}_{c}"
         self.L.add_const(c, c_value=c_value)
+        # self.L.add_const(c_value, c_value=c_value)
         self.const_values.add(c_value)
         self.context_const_index += 1
 
@@ -96,8 +99,9 @@ class Context:
         raise SyntaxError("context without conclusions")
         
     def open_context(self):
-        return Context(theory=self.theory, 
+        return Context(theory=self.theory,
                        L=derive(self.L),
+                       name=str(int(self.name) + 1),
                        const_index=self.context_const_index)
     
     def __enter__(self):

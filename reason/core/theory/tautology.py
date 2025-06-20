@@ -4,7 +4,7 @@ from typing import Sequence, Iterator
 from reason.core.fof_types import FirstOrderFormula
 from reason.parser.tptp import TPTPParser
 from reason.vampire import Vampire
-from reason.vampire.translator import to_fof
+from reason.vampire.translator import to_tptp_fof
 from reason.core.transform.base import closure, make_bound_variables_unique
 from reason.core.transform.signature import formula_sha256
 from beartype import beartype
@@ -56,7 +56,7 @@ def prove(conjucture: FirstOrderFormula, premises: Iterator[FirstOrderFormula]) 
 
                 record = {
                     "reference_id": reference_key,
-                    "formula": to_fof(normalised_formula),
+                    "formula": to_tptp_fof(normalised_formula),
                     "signature_sha256": formula_sha256(f),
                 }
 

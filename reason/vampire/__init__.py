@@ -3,7 +3,7 @@ import logging
 
 from importlib.resources import files
 from reason.tools.binary import run_binary
-from reason.vampire.translator import to_fof
+from reason.vampire.translator import to_tptp_fof
 
 __version__ = "0.1.0"
 
@@ -23,7 +23,7 @@ class Vampire:
 
     @staticmethod
     def formula_to_fof_line(formula, name="formula", type="conjecture"):
-        res = f"fof({name},{type},{to_fof(formula)})."
+        res = f"fof({name},{type},{to_tptp_fof(formula)})."
         return res
 
     def __init__(self, verbose=False):

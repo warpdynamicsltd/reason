@@ -49,7 +49,8 @@ class Printer:
     def text(self, formula, parent_priority=-1, left_child=False):
         match formula:
             case Const(name=name):
-                return varname_to_utf8(name[1:])
+                # return varname_to_utf8(name[1:])
+                return name
             case LogicConnective(name=op, args=[a, b]):
                 priority = self.priority[op]
                 res = f"{self.text(a, priority, left_child=True)} {self.symb_mapping[op]} {self.text(b, priority)}"
