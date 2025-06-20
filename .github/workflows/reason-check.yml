@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: 'true'
       - run: |
-          sudo apt install -y build-essential cmake zlib1g-dev libgmp-dev python3 curl
+          sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl
           ./vampire-install.sh
           curl -LsSf https://astral.sh/uv/install.sh | sh .
           uv sync
