@@ -19,5 +19,7 @@ jobs:
         with:
           submodules: 'true'
       - run: |
+          sudo apt-get update
+          sudo apt-get install -y dash
           curl -LsSf https://astral.sh/uv/install.sh | sh.
           echo "hello world!"
