@@ -21,7 +21,7 @@ jobs:
 
       - run: sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl
 
-      - name: Cache node modules
+      - name: cache vampire build
         id: cache-vampire
         uses: actions/cache@v4
         with:
