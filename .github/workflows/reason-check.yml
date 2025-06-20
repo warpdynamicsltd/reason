@@ -15,5 +15,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - run: |
-        echo "hello world!"
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh.
+          echo "hello world!"
