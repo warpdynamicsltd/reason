@@ -1,6 +1,6 @@
 [submodule "repositories/vampire"]
 	path = repositories/vampire
-	url = https://github.com/vprover/vampire.git
+	url = https://github.com/warpdynamicsltd/vampire.git
 [submodule "repositories/lark"]
 	path = repositories/lark
-	url = https://github.com/lark-parser/lark.git
+	url = https://github.com/warpdynamicsltd/lark.git
