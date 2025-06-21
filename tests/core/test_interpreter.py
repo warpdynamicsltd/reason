@@ -1,8 +1,9 @@
 import unittest
 
-from reason.parser import ProgramParser
+from importlib.resources import files
 from reason.core.theory.zfc import ZFC
 from reason.core.interpreter import Interpreter
+
 
 class TestZFCTheory(unittest.TestCase):
     codes = [
@@ -53,10 +54,20 @@ class TestZFCTheory(unittest.TestCase):
         """
     ]
     def test_interpreter_zfc_basic(self):
-        program_parser = ProgramParser()
-
         for code in self.codes:
-            program_ast = program_parser(code)
             interpreter = Interpreter(ZFC())
 
-            interpreter(program_ast)
+            interpreter.run_code(code)
+
+    def test_interpreter_zfc_files(self):
+        filenames = [
+            "basic/hello.rsn",
+            "basic/tuples.rsn"
+        ]
+        root_examples = files("reason") / ".." / "examples"
+
+        interpreter = Interpreter(ZFC())
+        for filename in filenames:
+            filename = root_examples / filename
+            interpreter.run_file(filename)
+

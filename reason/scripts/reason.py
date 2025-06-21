@@ -30,18 +30,20 @@ def main():
     """Entry point for the command-line interface."""
     # Your CLI logic here
     args = get_args()
-    program_parser = ProgramParser()
+    # program_parser = ProgramParser()
 
-    with open(args.file, 'r') as f:
-        code = f.read()
-
-    program_ast_list = program_parser(code)
+    # with open(args.file, 'r') as f:
+    #     code = f.read()
+    #
+    # program_ast_list = program_parser(code)
     interpreter = Interpreter(ZFC())
 
+
     start_time = perf_counter()
-    interpreter(program_ast_list)
+    interpreter.run_file(args.file)
     end_time = perf_counter()
 
+    print("\nQUOD ERAT DEMONSTRANDUM")
     print(f"proved in {end_time - start_time:.3f} seconds")
 
 if __name__ == '__main__':

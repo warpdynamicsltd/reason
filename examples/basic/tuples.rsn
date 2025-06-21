@@ -13,9 +13,8 @@ begin
     x ∈ (x, y);
     x ∈ (a, b);
     x = {a, b};
-    a ∈ x;
+    #a ∈ x;
     x ∈ a ∧ a ∈ x;
-    #~(x ∈ a);
 
     then a = x;
 end;
