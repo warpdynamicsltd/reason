@@ -3,7 +3,7 @@ import re
 
 from lark import Transformer, v_args, Token
 
-from reason.parser.utils import v_args_return_with_meta
+from reason.parser.utils import v_args_return_with_meta, v_args_with_meta_return_with_meta
 from reason.parser.tree import AbstractTerm, ReasonTreeToAbstractSyntaxTree, AbstractSyntaxTree
 from reason.parser.tree.consts import *
 
@@ -44,17 +44,18 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
     def const_declaration(self, consts):
         return AbstractSyntaxTree(CONST_DECLARATION, *consts)
 
+
     # @v_args(inline=True)
     @v_args_return_with_meta
     def context_block(self, expression_list):
         return AbstractSyntaxTree(CONTEXT_BLOCK, *expression_list)
 
-    @v_args_return_with_meta
-    def theorem_context_block(self, theorem, expression_list):
+    @v_args_with_meta_return_with_meta
+    def theorem_context_block(self, meta, theorem, expression_list):
         return AbstractSyntaxTree(
             THEOREM_CONTEXT_BLOCK,
-            AbstractSyntaxTree(CONTEXT_BLOCK, *expression_list),
-            AbstractSyntaxTree(CONCLUSION, self._logic_simple(theorem)))
+            self.context_block(meta, [expression_list]),
+            self.conclusion_expression(meta, [theorem]),)
 
     # @v_args(inline=True)
     @v_args_return_with_meta

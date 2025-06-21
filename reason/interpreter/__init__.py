@@ -5,6 +5,7 @@ import structlog
 from beartype import beartype
 
 from reason.core.fof_types import FirstOrderFormula
+from reason.core.transform.base import closure
 from reason.core.theory import BaseTheory
 from reason.core.theory.context import Context
 from reason.parser import ProgramParser, AbstractSyntaxTree
@@ -28,6 +29,7 @@ class Interpreter:
         message: str = "",
         formula: FirstOrderFormula | None = None,
         ast: AbstractSyntaxTree | None = None,
+        end: bool = False
     ):
         if self.context_stack:
             L = self.current_context().L
@@ -42,11 +44,14 @@ class Interpreter:
 
         comment = {}
         if formula is not None:
-            comment["formula"] = L.printer(formula)
+            comment["formula"] = L.printer(closure(formula))
 
         if isinstance(ast, AbstractSyntaxTree) and hasattr(ast, "meta"):
             meta = ast.meta
-            comment["loc"] = dict(filename=self.current_filename(), line=meta.line, column=meta.column)
+            if not end:
+                comment["loc"] = dict(filename=self.current_filename(), line=meta.line, column=meta.column)
+            else:
+                comment["loc"] = dict(filename=self.current_filename(), line=meta.end_line, column=meta.end_column)
 
         else:
             comment["loc"] = self.current_filename()
@@ -164,6 +169,7 @@ class Interpreter:
 
         self.run_expressions(expressions)
 
-        context.close()
+        theorem = context.close()
         self.context_stack.pop()
-        self.log("info", "close context", ast=expression)
+        # print(expression.meta.__dict__)
+        self.log("info", "close context", formula=theorem, ast=expression, end=True)
