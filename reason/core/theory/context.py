@@ -42,7 +42,7 @@ class Context:
         self.const_values.add(c_value)
         self.context_const_index += 1
 
-    def assume(self, s: str | AbstractSyntaxTree):
+    def assume(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
         else:
@@ -51,6 +51,7 @@ class Context:
         formula = closure(formula)
         self.premises.append(formula)
         self.theory._push(formula)
+        return formula
 
     def add(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
         if isinstance(s, AbstractSyntaxTree):
@@ -60,9 +61,10 @@ class Context:
         self.theory.add_formula(formula)
         return closure(formula)
 
-    def conclude(self, s: str | AbstractSyntaxTree):
+    def conclude(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
         formula = self.add(s)
         self.conclusions.append(formula)
+        return formula
 
 
     def close(self) -> FirstOrderFormula:

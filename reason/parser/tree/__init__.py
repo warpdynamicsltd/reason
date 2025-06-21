@@ -1,6 +1,7 @@
 import re
 from lark import Transformer, v_args, Token
 
+from reason.parser.utils import v_args_return_with_meta
 from reason.core import AbstractTerm
 from reason.parser.tree.consts import *
 
@@ -124,46 +125,56 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
         self.level_prefix = level_prefix
         Transformer.__init__(self, *args, **kwargs)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def symbol(self, symbol):
         return symbol.value
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def atom_term(self, symbol):
         return AbstractSyntaxTree(symbol)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def fname(self, symbol):
         return symbol
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def composed_abstract_term(self, fname, term_list):
         return AbstractSyntaxTree(fname, *term_list)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def abstract_term_sequence(self, abstract_term_list_spec):
         return AbstractSyntaxTree(f"{SEQ}{len(abstract_term_list_spec)}", *abstract_term_list_spec)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def abstract_term_set(self, abstract_term_list):
         # (s,) = s
         return AbstractSyntaxTree(f"{SET}{len(abstract_term_list)}", *abstract_term_list)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def abstract_term_selection(self, logic_simple1, logic_simple2):
         return AbstractSyntaxTree(SELECT, logic_simple1, logic_simple2)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def _op1(self, op, arg):
         op = OperatorGrammarCreator.translate[op]
         return AbstractSyntaxTree(op, arg)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def _op2(self, abstract_term1, op, abstract_term2):
         op = OperatorGrammarCreator.translate[op]
         return AbstractSyntaxTree(op, abstract_term1, abstract_term2)
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def _op_quant(self, op, abstract_term_list, abstract_term):
         op = OperatorGrammarCreator.translate[op]
         res = AbstractSyntaxTree(op, abstract_term_list[-1], abstract_term)
@@ -172,15 +183,18 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
 
         return res
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def logic_simple(self, logic_simple):
         return logic_simple
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def bracket(self, term):
         return term
 
-    @v_args(inline=True)
+    #@v_args(inline=True)
+    @v_args_return_with_meta
     def abstract_term(self, abstract_term):
         return abstract_term
 
@@ -192,6 +206,9 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
         match data:
             case Token(type="RULE", value=value) if re.match(f"^{self.level_prefix}_\\d+$", value):
                 (s,) = children
-                return self.prefix_rule_handler(s)
+                res = self.prefix_rule_handler(s)
+                if isinstance(res, AbstractSyntaxTree):
+                    setattr(res, "meta", meta)
+                return res
 
         raise RuntimeError(f"Unexpected RULE {data}")

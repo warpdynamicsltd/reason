@@ -26,12 +26,5 @@ class ProgramParser:
             self.reason_parser = get_lark_parser(code, start="expression_list", lexer="basic")
 
     def __call__(self, text: str) -> list[AbstractSyntaxTree]:
-        res_text = ""
-        for line in text.split("\n"):
-            index = line.find("#")
-            if index != -1:
-                line = line[:index]
-            # print(line)
-            res_text += line
-        tree = self.reason_parser.parse(res_text)
+        tree = self.reason_parser.parse(text)
         return ProgramTreeToAbstractSyntaxTree(level_prefix=self.ogc.prefix).transform(tree)
