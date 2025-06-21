@@ -6,7 +6,7 @@ begin
     assume b ∈ a;
 
     take e;
-    assume e = {a, b};
+    let e = {a, b};
     ~(a ∩ e = ∅);
     b ∩ e = ∅;
     then ~(a ∈ b);

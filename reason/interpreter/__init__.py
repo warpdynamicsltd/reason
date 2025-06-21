@@ -6,7 +6,7 @@ from beartype import beartype
 
 from reason.core.fof_types import FirstOrderFormula
 from reason.core.transform.base import closure
-from reason.core.theory import BaseTheory
+from reason.core.theory import BaseTheory, AssertionStatus
 from reason.core.theory.context import Context
 from reason.parser import ProgramParser, AbstractSyntaxTree
 from reason.parser.tree import const
@@ -58,6 +58,12 @@ class Interpreter:
 
         logger(message, **comment)
 
+    def assert_formula(self, formula_ast: AbstractSyntaxTree) -> AssertionStatus:
+        if self.context_stack:
+            return context_exps.assert_formula(self, formula_ast)
+        else:
+            return theory_exps.assert_formula(self, formula_ast)
+
     @beartype
     def get_file_absolute_path(self, filename: str) -> str:
         if self.file_stack:
@@ -102,18 +108,30 @@ class Interpreter:
                 context_exps.declare_consts(self, consts)
                 return
 
-            case AbstractSyntaxTree(name=const.ASSERTION, args=[formula_ast]):
-                if self.context_stack:
-                    context_exps.assert_formula(self, formula_ast)
+            case AbstractSyntaxTree(name=const.ATOMIC_AXIOM, args=[formula_ast]):
+                if not self.context_stack:
+                    theory_exps.add_atomic_axiom_formula(self, formula_ast)
                 else:
-                    theory_exps.assert_formula(self, formula_ast)
+                    raise RuntimeError("axioms not allowed in context")
+
+            case AbstractSyntaxTree(name=const.ASSERTION, args=[formula_ast]):
+                status = self.assert_formula(formula_ast)
+                if status in {AssertionStatus.null, AssertionStatus.definition}:
+                    raise RuntimeError(f"not a valid assertion")
                 return
+
+            case AbstractSyntaxTree(name=const.DEFINITION, args=[formula_ast]):
+                status = self.assert_formula(formula_ast)
+                if status != AssertionStatus.definition:
+                    raise RuntimeError(f"not a valid definition")
+                return
+
 
             case AbstractSyntaxTree(name=const.ASSUMPTION, args=[formula_ast]):
                 if self.context_stack:
                     context_exps.assume_formula(self, formula_ast)
                 else:
-                    theory_exps.assume_formula(self, formula_ast)
+                    raise RuntimeError("assumptions must be used in context")
                 return
 
             case AbstractSyntaxTree(name=const.CONCLUSION, args=[formula_ast]):

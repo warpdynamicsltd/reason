@@ -6,12 +6,13 @@ from reason.parser.tree import AbstractSyntaxTree
 @beartype
 def assert_formula(self, formula_ast: AbstractSyntaxTree):
     formula = self.theory.formula(formula_ast)
-    self.theory.add_formula(formula)
-    self.log("info", "assertion", formula=formula, ast=formula_ast)
+    formula, status = self.theory.add_formula(formula)
+    self.log("info", f"assertion {status.name}", formula=formula, ast=formula_ast)
+    return status
 
 
 @beartype
-def assume_formula(self, formula_ast: AbstractSyntaxTree):
+def add_atomic_axiom_formula(self, formula_ast: AbstractSyntaxTree):
     formula = self.theory.formula(formula_ast)
-    self.log("info", "assumption", formula=formula, ast=formula_ast)
-    self.theory.add_atomic_axiom(formula)
+    formula = self.theory.add_atomic_axiom(formula)
+    self.log("info", "atomic axiom", formula=formula, ast=formula_ast)
