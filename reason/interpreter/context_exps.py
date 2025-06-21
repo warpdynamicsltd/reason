@@ -12,8 +12,9 @@ def declare_consts(self, consts: tuple[str, ...]):
 
 @beartype
 def assert_formula(self, formula_ast: AbstractSyntaxTree):
-    formula = self.current_context().add(formula_ast)
-    self.log("info", "context assertion", formula=formula, ast=formula_ast)
+    formula, status = self.current_context().add(formula_ast)
+    self.log("info", f"context assertion {status.name}", formula=formula, ast=formula_ast)
+    return status
 
 
 @beartype
@@ -26,5 +27,5 @@ def assume_formula(self, formula_ast: AbstractSyntaxTree):
 @beartype
 def conclude_formula(self, formula_ast: AbstractSyntaxTree):
     context = self.current_context()
-    formula = context.conclude(formula_ast)
-    self.log("info", "context conclusion", formula=formula, ast=formula_ast)
+    formula, status = context.conclude(formula_ast)
+    self.log("info", f"context conclusion {status.name}", formula=formula, ast=formula_ast)

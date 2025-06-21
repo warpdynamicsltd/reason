@@ -1,4 +1,4 @@
-include "zfc_axioms.rsn";
+#include "zfc_axioms.rsn";
 include "no_cycles.rsn";
 
 begin

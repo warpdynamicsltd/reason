@@ -6,8 +6,8 @@ include "zfc_axioms.rsn";
 theorem a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c)
 proof
     take a, b, c, p, q;
-    assume p = a ∩ (b ∪ c);
-    assume q = (a ∩ b) ∪ (a ∩ c);
+    let p = a ∩ (b ∪ c);
+    let q = (a ∩ b) ∪ (a ∩ c);
 
     proposition
       p = q

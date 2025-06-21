@@ -25,11 +25,12 @@ class ZFC(BaseTheory):
         self.description = {Const: Counter(), Function: Counter(), Predicate: Counter()}
 
     @overwritten
-    def _push(self, formula: FirstOrderFormula):
+    def _push(self, formula: FirstOrderFormula) -> FirstOrderFormula:
         formula = closure(formula)
         self.formulas_stack.append(formula)
         self.stack_signatures.add(formula_sha256(formula))
         self.update_description(formula)
+        return formula
 
     @overwritten
     def _pop(self) -> FirstOrderFormula:

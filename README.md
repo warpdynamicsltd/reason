@@ -33,17 +33,17 @@ and/or get vampire binary compiled somewhere else and copy it manually to `reaso
 ### examples/basic/example.rsn
 
 ```reason
-assume ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-assume empty(e) ⟷ (∀(x) ~(x ∈ e));
-assume empty(∅);
-assume ∀(x, z) z ∈ {x} ⟷ z = x;
-assume ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
-assume ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
-assume ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
-assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
+axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
+axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
+axiom empty(∅);
+axiom ∀(x, z) z ∈ {x} ⟷ z = x;
+axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
+axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
+axiom ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
+axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 
-assume {a, b} = {a} ∪ {b};
-assume (a, b) = {a, {a, b}};
+let {a, b} = {a} ∪ {b};
+let (a, b) = {a, {a, b}};
 
 theorem ~(a ∈ b ∧ b ∈ a)
 proof
@@ -52,7 +52,7 @@ proof
   assume b ∈ a;
 
   take e;
-  assume e = {a, b};
+  let e = {a, b};
   ~(a ∩ e = ∅);
   b ∩ e = ∅;
   then ~(a ∈ b);

@@ -8,17 +8,17 @@ from reason.interpreter import Interpreter
 class TestZFCTheory(unittest.TestCase):
     codes = [
         """
-        assume ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-        assume empty(e) ⟷ (∀(x) ~(x ∈ e));
-        assume empty(∅);
-        assume ∀(x, z) z ∈ {x} ⟷ z = x;
-        assume ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
-        assume ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
-        assume ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
-        assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
+        axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
+        axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
+        axiom empty(∅);
+        axiom ∀(x, z) z ∈ {x} ⟷ z = x;
+        axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
+        axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
+        axiom ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
+        axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
         
-        assume {a, b} = {a} ∪ {b};
-        assume (a, b) = {a, {a, b}};
+        let {a, b} = {a} ∪ {b};
+        let (a, b) = {a, {a, b}};
         
         begin
             take a, b;
@@ -26,7 +26,7 @@ class TestZFCTheory(unittest.TestCase):
             assume b ∈ a;
         
             take e;
-            assume e = {a, b};
+            let e = {a, b};
             ~(a ∩ e = ∅);
             b ∩ e = ∅;
             then ~(a ∈ b);
@@ -34,19 +34,19 @@ class TestZFCTheory(unittest.TestCase):
         ~(a ∈ b ∧ b ∈ a);
         """,
         """
-        assume ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-        assume empty(e) ⟷ (∀(x) ~(x ∈ e));
-        assume empty(∅);
-        assume ∀(x, z) z ∈ {x} ⟷ z = x;
-        assume ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
-        assume ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
-        assume ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
-        assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
+        axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
+        axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
+        axiom empty(∅);
+        axiom ∀(x, z) z ∈ {x} ⟷ z = x;
+        axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
+        axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
+        axiom ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
+        axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 
         begin
             take a, b, c, p, q;
-            assume p = a ∩ (b ∪ c);
-            assume q = (a ∩ b) ∪ (a ∩ c);
+            let p = a ∩ (b ∪ c);
+            let q = (a ∩ b) ∪ (a ∩ c);
             then p = q; 
         end;
 
@@ -67,8 +67,9 @@ class TestZFCTheory(unittest.TestCase):
         ]
         root_examples = files("reason") / ".." / "examples"
 
-        interpreter = Interpreter(ZFC())
+
         for filename in filenames:
             filename = root_examples / filename
+            interpreter = Interpreter(ZFC())
             interpreter.run_file(str(filename))
 

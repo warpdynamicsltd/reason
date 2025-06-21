@@ -24,10 +24,18 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
     def logic_expression(self, logic_simple):
         return AbstractSyntaxTree(ASSERTION, self._logic_simple(logic_simple))
 
+    @v_args_return_with_meta
+    def definition_expression(self, logic_simple):
+        return AbstractSyntaxTree(DEFINITION, self._logic_simple(logic_simple))
+
     # @v_args(inline=True)
     @v_args_return_with_meta
     def assumption_expression(self, logic_simple):
         return AbstractSyntaxTree(ASSUMPTION, self._logic_simple(logic_simple))
+
+    @v_args_return_with_meta
+    def axiom_expression(self, logic_simple):
+        return AbstractSyntaxTree(ATOMIC_AXIOM, self._logic_simple(logic_simple))
 
     # @v_args(inline=True)
     @v_args_return_with_meta

@@ -25,6 +25,8 @@ abstract_term_list_spec: [(logic_simple ",")+ (logic_simple|)]
 fname_list: [fname ("," fname)*]
 
 expression: logic_simple -> logic_expression
+  | "axiom" logic_simple -> axiom_expression
+  | "let" logic_simple -> definition_expression
   | "assume" logic_simple -> assumption_expression
   | "then" logic_simple -> conclusion_expression 
   | "take" fname_list -> const_declaration

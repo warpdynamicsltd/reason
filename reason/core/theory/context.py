@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Generator, Iterator
 from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
-from reason.core.theory import BaseTheory
+from reason.core.theory import BaseTheory, AssertionStatus
 from reason.core.transform.base import remove_universal_quantifiers, conjunction, closure
 from reason.core.transform.describe import describe
 from reason.parser.tree.consts import *
@@ -53,18 +53,18 @@ class Context:
         self.theory._push(formula)
         return formula
 
-    def add(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
+    def add(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
         else:
             formula = self.L(s)
-        self.theory.add_formula(formula)
-        return closure(formula)
+        formula, status = self.theory.add_formula(formula)
+        return formula, status
 
-    def conclude(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
-        formula = self.add(s)
+    def conclude(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
+        formula, status = self.add(s)
         self.conclusions.append(formula)
-        return formula
+        return formula, status
 
     def close(self) -> FirstOrderFormula:
         context_produced = self.theory.get_stack_len() - self.context_theory_stack_start
