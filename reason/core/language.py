@@ -5,6 +5,7 @@ from reason.parser import Parser
 from reason.printer import Printer
 from reason.core.fof_types import FirstOrderFormula
 from reason.parser.tree import AbstractSyntaxTree
+
 # from reason.tools.math.transform import utf8_to_varname
 from reason.core.fof import FormulaBuilder
 
@@ -27,10 +28,9 @@ class Language:
 
         if c_value in self.const_values:
             raise RuntimeError(f"const value {c_value} already in use")
-        
+
         self.consts[c] = c_value
         self.const_values.add(c_value)
-        
 
     @beartype
     def to_formula_and_required_axioms(
@@ -45,12 +45,12 @@ class Language:
     def to_formula(self, ast: AbstractSyntaxTree) -> FirstOrderFormula:
         formula, _ = self.to_formula_and_required_axioms(ast)
         return formula
-    
-    def __call__(self, text : str):
+
+    def __call__(self, text: str):
         ast = self.parser(text)
         formula, _ = self.to_formula_and_required_axioms(ast)
         return formula
-    
+
     def display(self, call, formula):
         call(self.printer(formula))
 

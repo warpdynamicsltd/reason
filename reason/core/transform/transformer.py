@@ -1,5 +1,6 @@
 from reason.core.fof_types import *
 
+
 class Transformer:
     def __init__(self, formula):
         self.stack = []
@@ -7,7 +8,7 @@ class Transformer:
 
     def variable(self, obj, name):
         pass
-    
+
     def const(self, obj, name):
         pass
 

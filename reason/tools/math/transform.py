@@ -10,6 +10,7 @@ def int_to_varname(n):
         n //= base
     return result
 
+
 def varname_to_int(s):
     if s == "0":
         return 0
@@ -30,10 +31,9 @@ def utf8_to_varname(s):
 
 
 def int_to_uft8(n):
-    length = (n.bit_length() + 7) // 8  
+    length = (n.bit_length() + 7) // 8
     return n.to_bytes(length, byteorder="little").decode("utf-8")
+
 
 def varname_to_utf8(s):
     return int_to_uft8(varname_to_int(s))
-
-

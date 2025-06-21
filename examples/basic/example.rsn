@@ -10,15 +10,15 @@ assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 assume {a, b} = {a} ∪ {b};
 assume (a, b) = {a, {a, b}};
 
-begin
-    take a, b;
-    assume a ∈ b;
-    assume b ∈ a;
+theorem ~(a ∈ b ∧ b ∈ a)
+proof
+  take a, b;
+  assume a ∈ b;
+  assume b ∈ a;
 
-    take e;
-    assume e = {a, b};
-    ~(a ∩ e = ∅);
-    b ∩ e = ∅;
-    then ~(a ∈ b);
-end;
-~(a ∈ b ∧ b ∈ a);
+  take e;
+  assume e = {a, b};
+  ~(a ∩ e = ∅);
+  b ∩ e = ∅;
+  then ~(a ∈ b);
+qed;

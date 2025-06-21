@@ -1,14 +1,15 @@
-import os
-import structlog
-
 from pathlib import Path
+from typing import Iterable
+
+import structlog
+from beartype import beartype
 
 from reason.core.fof_types import FirstOrderFormula
 from reason.core.theory import BaseTheory
 from reason.core.theory.context import Context
-from reason.parser.tree import AbstractSyntaxTree
-from reason.parser.tree.consts import *
-from reason.parser import ProgramParser
+from reason.parser import ProgramParser, AbstractSyntaxTree
+from reason.parser.tree import const
+from reason.interpreter import context_exps, theory_exps
 
 
 class Interpreter:
@@ -20,7 +21,14 @@ class Interpreter:
         self.file_stack = []
         self.logger = structlog.get_logger()
 
-    def log(self, log_type="info", message="", formula: FirstOrderFormula = None, ast=None):
+    @beartype
+    def log(
+        self,
+        log_type: str = "info",
+        message: str = "",
+        formula: FirstOrderFormula | None = None,
+        ast: AbstractSyntaxTree | None = None,
+    ):
         if self.context_stack:
             L = self.current_context().L
         else:
@@ -28,9 +36,9 @@ class Interpreter:
 
         match log_type:
             case "info":
-                logger = (self.logger.info)
+                logger = self.logger.info
             case "error":
-                logger = (self.logger.error)
+                logger = self.logger.error
 
         comment = {}
         if formula is not None:
@@ -45,13 +53,14 @@ class Interpreter:
 
         logger(message, **comment)
 
-
-    def get_file_absolute_path(self, filename : str) -> str:
+    @beartype
+    def get_file_absolute_path(self, filename: str) -> str:
         if self.file_stack:
             return str((self.file_stack[-1].parent / filename).resolve())
         else:
             return filename
 
+    @beartype
     def preprocess_code(self, code: str) -> str:
         res_code = ""
         column_translator = []
@@ -62,100 +71,99 @@ class Interpreter:
             else:
                 transformed_line = line
             # print(line)
-            res_code += transformed_line + '\n'
+            res_code += transformed_line + "\n"
             # for k in line:
             #     co
         return res_code
 
+    @beartype
     def current_context(self) -> Context:
         return self.context_stack[-1]
 
-    def current_filename(self):
+    @beartype
+    def current_filename(self) -> str | None:
         if self.file_stack:
             return str(self.file_stack[-1].resolve())
         else:
             return None
 
+    @beartype
     def run_expression(self, expression: AbstractSyntaxTree):
         # if hasattr(expression, "meta"):
         #     print(expression.meta.line, expression.meta.column, self.current_filename())
 
         match expression:
             case AbstractSyntaxTree(name=const.CONST_DECLARATION, args=consts):
-                context = self.current_context()
-                for c in consts:
-                    context.declare(c)
-
+                context_exps.declare_consts(self, consts)
                 return
-
 
             case AbstractSyntaxTree(name=const.ASSERTION, args=[formula_ast]):
-                if not self.context_stack:
-                    formula = self.theory.formula(formula_ast)
-                    self.theory.add_formula(formula)
-                    self.log("info", "assertion", formula=formula, ast=formula_ast)
+                if self.context_stack:
+                    context_exps.assert_formula(self, formula_ast)
                 else:
-                    formula = self.current_context().add(formula_ast)
-                    self.log("info", "context assertion", formula=formula, ast=formula_ast)
-
+                    theory_exps.assert_formula(self, formula_ast)
                 return
-
 
             case AbstractSyntaxTree(name=const.ASSUMPTION, args=[formula_ast]):
                 if self.context_stack:
-                    context = self.current_context()
-                    formula = context.assume(formula_ast)
-                    self.log("info", "context assumption", formula=formula, ast=formula_ast)
+                    context_exps.assume_formula(self, formula_ast)
                 else:
-                    formula = self.theory.formula(formula_ast)
-                    self.log("info", "assumption", formula=formula, ast=formula_ast)
-                    self.theory.add_atomic_axiom(formula)
+                    theory_exps.assume_formula(self, formula_ast)
                 return
-
 
             case AbstractSyntaxTree(name=const.CONCLUSION, args=[formula_ast]):
-                context = self.current_context()
-                formula = context.conclude(formula_ast)
-                self.log("info", "context conclusion", formula=formula, ast=formula_ast)
+                if self.context_stack:
+                    context_exps.conclude_formula(self, formula_ast)
+                else:
+                    theory_exps.assert_formula(self, formula_ast)
                 return
-
 
             case AbstractSyntaxTree(name=const.CONTEXT_BLOCK, args=expressions):
-                if not self.context_stack:
-                    context = Context(self.theory)
-
-                else:
-                    context = self.current_context().open_context()
-
-                self.context_stack.append(context)
-
-                self.log("info", "open context", ast=expression)
-
-                self.run_expressions(expressions)
-
-                context.close()
-                self.context_stack.pop()
-                self.log("info", "close context", ast=expression)
+                self.run_context(expression)
                 return
+
+            case AbstractSyntaxTree(name=const.THEOREM_CONTEXT_BLOCK, args=[proof_ast, theorem_ast]):
+                self.run_expression(proof_ast)
+                self.run_expression(theorem_ast)
+
 
             case AbstractSyntaxTree(name=const.INCLUDE_FILE, args=[s]):
                 self.run_file(path=self.get_file_absolute_path(s))
                 return
 
-
-    def run_expressions(self, expressions : list[AbstractSyntaxTree]):
+    @beartype
+    def run_expressions(self, expressions: Iterable[AbstractSyntaxTree]):
         for expression in expressions:
             self.run_expression(expression)
 
-    def run_code(self, code : str):
+    @beartype
+    def run_code(self, code: str):
         code = self.preprocess_code(code)
         program_ast_list = self.parser(code)
         self.run_expressions(program_ast_list)
 
-    def run_file(self, path : str):
+    @beartype
+    def run_file(self, path: str):
         self.file_stack.append(Path(path))
         with open(path, "r") as f:
             self.run_code(f.read())
         self.file_stack.pop()
 
+    @beartype
+    def run_context(self, expression: AbstractSyntaxTree):
+        expressions = expression.args
+        if not self.context_stack:
+            context = Context(self.theory)
 
+        else:
+            context = self.current_context().open_context()
+
+        self.context_stack.append(context)
+
+        self.log("info", "open context", ast=expression)
+
+        self.run_expressions(expressions)
+
+        context.close()
+        self.context_stack.pop()
+        self.log("info", "close context", ast=expression)

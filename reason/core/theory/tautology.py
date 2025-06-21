@@ -83,7 +83,6 @@ class Tautology:
 
         self.proof_json = proof_json
 
-
         tptp_parser = TPTPParser()
 
         self.premises = []

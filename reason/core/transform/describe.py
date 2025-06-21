@@ -1,14 +1,10 @@
 from reason.core.fof_types import *
 from reason.core.transform.transformer import Transformer
 
+
 class Describer(Transformer):
     def __init__(self, formula):
-        self.description = {
-            Variable: set(),
-            Const: set(),
-            Function: set(),
-            Predicate: set()
-        }
+        self.description = {Variable: set(), Const: set(), Function: set(), Predicate: set()}
 
         super().__init__(formula)
 
@@ -26,6 +22,7 @@ class Describer(Transformer):
 
     def create_result(self, transformed):
         return self.description
-    
+
+
 def describe(formula):
     return Describer(formula).result

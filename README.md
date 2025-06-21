@@ -32,7 +32,7 @@ and/or get vampire binary compiled somewhere else and copy it manually to `reaso
 
 ### examples/basic/example.rsn
 
-```
+```reason
 assume ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
 assume empty(e) ⟷ (∀(x) ~(x ∈ e));
 assume empty(∅);
@@ -45,18 +45,18 @@ assume ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 assume {a, b} = {a} ∪ {b};
 assume (a, b) = {a, {a, b}};
 
-begin
-    take a, b;
-    assume a ∈ b;
-    assume b ∈ a;
+theorem ~(a ∈ b ∧ b ∈ a)
+proof
+  take a, b;
+  assume a ∈ b;
+  assume b ∈ a;
 
-    take e;
-    assume e = {a, b};
-    ~(a ∩ e = ∅);
-    b ∩ e = ∅;
-    then ~(a ∈ b);
-end;
-~(a ∈ b ∧ b ∈ a);
+  take e;
+  assume e = {a, b};
+  ~(a ∩ e = ∅);
+  b ∩ e = ∅;
+  then ~(a ∈ b);
+qed;
 ```
 
 You can run the above proof with:
