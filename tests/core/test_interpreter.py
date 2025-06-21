@@ -2,7 +2,7 @@ import unittest
 
 from importlib.resources import files
 from reason.core.theory.zfc import ZFC
-from reason.core.interpreter import Interpreter
+from reason.interpreter import Interpreter
 
 
 class TestZFCTheory(unittest.TestCase):
@@ -62,12 +62,13 @@ class TestZFCTheory(unittest.TestCase):
     def test_interpreter_zfc_files(self):
         filenames = [
             "basic/hello.rsn",
-            "basic/tuples.rsn"
+            "basic/tuples.rsn",
+            "basic/example.rsn"
         ]
         root_examples = files("reason") / ".." / "examples"
 
         interpreter = Interpreter(ZFC())
         for filename in filenames:
             filename = root_examples / filename
-            interpreter.run_file(filename)
+            interpreter.run_file(str(filename))
 

@@ -57,6 +57,7 @@ def quantifier_signature(formula: FirstOrderFormula) -> tuple[FirstOrderFormula,
 
     return formula, deque()
 
+
 def remove_universal_quantifiers(formula: FirstOrderFormula) -> FirstOrderFormula:
     match formula:
         case LogicQuantifier(name=const.FORALL, args=[var, arg]):

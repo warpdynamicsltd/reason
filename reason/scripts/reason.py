@@ -3,24 +3,18 @@ import logging
 
 from time import perf_counter
 
-from reason.parser import ProgramParser
 from reason.core.theory.zfc import ZFC
-from reason.core.interpreter import Interpreter
+from reason.interpreter import Interpreter
 
 logging.basicConfig(level=logging.INFO)
 
+
 def get_args():
     """Entry point for the command-line interface."""
-    parser = argparse.ArgumentParser(
-        description="Reason CLI - Execute a file"
-    )
+    parser = argparse.ArgumentParser(description="Reason CLI - Execute a file")
 
     # Accept any file as a positional argument
-    parser.add_argument(
-        "file",
-        type=str,
-        help="The path to the file to execute"
-    )
+    parser.add_argument("file", type=str, help="The path to the file to execute")
 
     args = parser.parse_args()
     return args
@@ -38,7 +32,6 @@ def main():
     # program_ast_list = program_parser(code)
     interpreter = Interpreter(ZFC())
 
-
     start_time = perf_counter()
     interpreter.run_file(args.file)
     end_time = perf_counter()
@@ -46,5 +39,6 @@ def main():
     print("\nQUOD ERAT DEMONSTRANDUM")
     print(f"proved in {end_time - start_time:.3f} seconds")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

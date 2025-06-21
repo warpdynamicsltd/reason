@@ -11,5 +11,4 @@ begin
     b ∩ e = ∅;
     then ~(a ∈ b);
 end;
-
 ~(a ∈ b ∧ b ∈ a);

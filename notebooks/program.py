@@ -3,7 +3,7 @@ import logging
 
 from reason.parser import ProgramParser
 from reason.core.theory.zfc import ZFC
-from reason.core.interpreter import Interpreter
+from reason.interpreter import Interpreter
 
 logging.basicConfig(level=logging.INFO)
 

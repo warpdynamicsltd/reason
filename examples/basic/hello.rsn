@@ -3,12 +3,15 @@ include "zfc_axioms.rsn";
 #p = a ∩ (b ∪ c) ∧ q = (a ∩ b) ∪ (a ∩ c) → p = q;
 #a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
 
-begin
+theorem a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c)
+proof
     take a, b, c, p, q;
     assume p = a ∩ (b ∪ c);
     assume q = (a ∩ b) ∪ (a ∩ c);
 
-    begin
+    proposition
+      p = q
+    proof
       take k;
       k ∈ p ⟷ k ∈ a ∩ (b ∪ c);
       k ∈ a ∩ (b ∪ c) ⟷ k ∈ a ∧ (k ∈ b ∨ k ∈ c);
@@ -16,8 +19,5 @@ begin
       (k ∈ a ∧ k ∈ b) ∨ (k ∈ a ∧ k ∈ c) ⟷ k ∈ (a ∩ b) ∨ k ∈ (a ∩ c);
       k ∈ (a ∩ b) ∨ k ∈ (a ∩ c) ⟷ k ∈ q;
       then k ∈ p ⟷ k ∈ q;
-    end;
-    then p = q;
-end;
-
-a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
+    qed;
+qed;

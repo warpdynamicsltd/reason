@@ -5,8 +5,10 @@ from reason.core.fof_types import LogicPredicate
 from reason.core.fof_types import Const, FirstOrderFormula, Function, Predicate, Variable
 from reason.tools.math.transform import utf8_to_varname, varname_to_utf8
 
+
 def name_tptp_encode(s: str):
     return utf8_to_varname(s)
+
 
 def name_tptp_decode(s: str):
     return varname_to_utf8(s)

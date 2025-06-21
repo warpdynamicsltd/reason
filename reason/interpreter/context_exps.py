@@ -1,0 +1,30 @@
+from beartype import beartype
+
+from reason.parser.tree import AbstractSyntaxTree
+
+
+@beartype
+def declare_consts(self, consts: tuple[str, ...]):
+    context = self.current_context()
+    for c in consts:
+        context.declare(c)
+
+
+@beartype
+def assert_formula(self, formula_ast: AbstractSyntaxTree):
+    formula = self.current_context().add(formula_ast)
+    self.log("info", "context assertion", formula=formula, ast=formula_ast)
+
+
+@beartype
+def assume_formula(self, formula_ast: AbstractSyntaxTree):
+    context = self.current_context()
+    formula = context.assume(formula_ast)
+    self.log("info", "context assumption", formula=formula, ast=formula_ast)
+
+
+@beartype
+def conclude_formula(self, formula_ast: AbstractSyntaxTree):
+    context = self.current_context()
+    formula = context.conclude(formula_ast)
+    self.log("info", "context conclusion", formula=formula, ast=formula_ast)

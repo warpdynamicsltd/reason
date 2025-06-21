@@ -17,7 +17,7 @@ class Context:
 
         self.context_const_index = const_index
         self.context_theory_stack_start = self.theory.get_stack_len()
-        
+
         # self.const_map = {}
         # self.const_map_inv = {}
         self.const_values = set()
@@ -66,13 +66,12 @@ class Context:
         self.conclusions.append(formula)
         return formula
 
-
     def close(self) -> FirstOrderFormula:
         context_produced = self.theory.get_stack_len() - self.context_theory_stack_start
         if context_produced:
             while self.theory.get_stack_len() > self.context_theory_stack_start:
                 self.theory._pop()
-            
+
             if self.premises:
                 theorem = LogicConnective(IMP, conjunction(*self.premises), conjunction(*self.conclusions))
             else:
@@ -90,32 +89,23 @@ class Context:
             for p in description[Predicate]:
                 if not self.theory.is_used(Predicate, p):
                     raise RuntimeError(f"unseen predicate {p}")
-                
+
             for f in description[Function]:
                 if not self.theory.is_used(Function, f):
                     raise RuntimeError(f"unseen function {f}")
-                
+
             self.theory._push(theorem)
             return theorem
 
         raise SyntaxError("context without conclusions")
-        
+
     def open_context(self):
-        return Context(theory=self.theory,
-                       L=derive(self.L),
-                       name=str(int(self.name) + 1),
-                       const_index=self.context_const_index)
-    
+        return Context(
+            theory=self.theory, L=derive(self.L), name=str(int(self.name) + 1), const_index=self.context_const_index
+        )
+
     def __enter__(self):
         return self
-    
+
     def __exit__(self, type, value, traceback):
         self.close()
-
-
-
-        
-        
-
-
-    

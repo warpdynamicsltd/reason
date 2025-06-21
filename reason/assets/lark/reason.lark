@@ -30,5 +30,6 @@ expression: logic_simple -> logic_expression
   | "take" fname_list -> const_declaration
   | "begin" expression_list "end" -> context_block
   | "include" ESCAPED_STRING -> include_expression
+  | ("theorem" | "lemma" | "proposition") logic_simple "proof" expression_list "qed" -> theorem_context_block
 
 expression_list: [expression (";" expression)* (|";")]
