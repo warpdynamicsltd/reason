@@ -2,6 +2,17 @@ from beartype import beartype
 
 from reason.parser.tree import AbstractSyntaxTree
 
+def add_selection_axioms(self, formula_ast: AbstractSyntaxTree):
+    formula, axioms = self.theory.get_langauge().to_formula_and_required_axioms(formula_ast)
+    for axiom in axioms:
+        self.theory.add_atomic_axiom(axiom)
+        self.log("info", "atomic axiom", formula=axiom, ast=formula_ast)
+
+def define_formula(self, formula_ast: AbstractSyntaxTree):
+    formula = self.theory.formula(formula_ast)
+    formula = self.theory.add_definition(formula)
+    self.log("info", "context definition", formula=formula, ast=formula_ast)
+    return formula
 
 @beartype
 def assert_formula(self, formula_ast: AbstractSyntaxTree):

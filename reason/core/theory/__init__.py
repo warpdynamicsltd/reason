@@ -1,13 +1,18 @@
+import sys
+import subprocess
+
 from enum  import Enum
 from abc import ABC, abstractmethod
-from typing import List, Generator, Iterator
+from typing import Iterator
 from beartype import beartype
+
 
 from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
 from reason.core.transform.base import remove_universal_quantifiers
 from reason.core.transform.describe import describe
 from reason.core.language import Language, derive
+from reason.core.transform.base import closure, prepend_quantifier_signature
 from reason.parser.tree.consts import *
 
 class AssertionStatus(Enum):
@@ -68,6 +73,34 @@ class BaseTheory(ABC):
 
         return None
 
+    def is_definition_axiom_with_consts(self, formula: FirstOrderFormula, consts: list[Const]) -> bool:
+        formula = closure(formula)
+
+        test_formula = formula
+
+        q_signature = []
+        for c in consts:
+            if not self.is_used(Const, c):
+                var = Variable(c)
+                test_formula = test_formula.replace(Const(c), var)
+                q_signature.append((EXISTS, var))
+
+
+        if not q_signature:
+            return False
+
+        test_formula = prepend_quantifier_signature(test_formula, q_signature)
+
+        if prove(test_formula, self.get_stack_iter()):
+            return True
+
+        return False
+
+    def is_consts_definition_axiom(self, formula: FirstOrderFormula) -> bool:
+        description = describe(formula)
+        return self.is_definition_axiom_with_consts(formula, description[Const])
+
+
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
         formula = remove_universal_quantifiers(formula)
         match formula:
@@ -96,9 +129,6 @@ class BaseTheory(ABC):
         if self.is_computed_axiom(formula):
             return AssertionStatus.computed_axiom
 
-        if self.is_definition_axiom(formula):
-            return AssertionStatus.definition
-
         return AssertionStatus.null
 
     def is_provable(self, formula: FirstOrderFormula) -> AssertionStatus:
@@ -110,12 +140,35 @@ class BaseTheory(ABC):
             return status
 
         premises = self.get_stack_iter()
-        proof = prove(formula, premises=premises)
+        try:
+            proof = prove(formula, premises=premises)
+        except subprocess.CalledProcessError as e:
+            print(f"can't prove {self.L.printer(closure(formula))}")
+            sys.exit(1)
+
         if proof is not None:
             self.store(formula, proof)
             return AssertionStatus.proved
 
         return AssertionStatus.null
+
+    def add_definition(self, formula: FirstOrderFormula) -> FirstOrderFormula:
+        formula = closure(formula)
+        if self.is_definition_axiom(formula):
+            formula = self._push(formula)
+            return formula
+
+        raise RuntimeError("formula is not a definition axiom")
+
+    @beartype
+    def add_consts_definition(self, formula: FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:
+        formula = closure(formula)
+        if self.is_definition_axiom_with_consts(formula, consts):
+            formula = self._push(formula)
+            return formula
+
+        raise RuntimeError("formula is not a definition axiom")
+
 
     def add_formula(self, formula: FirstOrderFormula) -> tuple[FirstOrderFormula | None, AssertionStatus]:
         status = self.is_provable(formula)

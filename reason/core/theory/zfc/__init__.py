@@ -1,14 +1,12 @@
-from typing import List, Sequence
-from abc import ABC, abstractmethod
 from collections import Counter
-import logging
+from typing import Sequence
 
+from reason.core.fof_types import Const, Function, Predicate, FirstOrderFormula
+from reason.core.language import Language
 from reason.core.theory import BaseTheory, overwritten
-from reason.core.language import Language, derive
-from reason.core.fof_types import *
-from reason.core.transform.signature import formula_sha256
 from reason.core.transform.base import closure
 from reason.core.transform.describe import describe
+from reason.core.transform.signature import formula_sha256
 
 
 class ZFC(BaseTheory):
@@ -90,3 +88,7 @@ class ZFC(BaseTheory):
     def add(self, s: str):
         formula = self.L(s)
         self.add_formula(formula)
+
+    def add_def(self, s: str):
+        formula = self.L(s)
+        return self.add_definition(formula)

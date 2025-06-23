@@ -1,5 +1,4 @@
 import unittest
-import logging
 from reason.core.theory.zfc import ZFC
 from reason.core.theory.context import Context
 
@@ -18,9 +17,9 @@ class TestZFCTheory(unittest.TestCase):
         zfc.axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
         # END OF AXIOMS
 
-        zfc.add("{a, b} = {a} ∪ {b}")
-        zfc.add("{a, b, c} = {a} ∪ {b} ∪ {c}")
-        zfc.add("(a, b) = {a, {a, b}}")
+        zfc.add_def("{a, b} = {a} ∪ {b}")
+        zfc.add_def("{a, b, c} = {a} ∪ {b} ∪ {c}")
+        zfc.add_def("(a, b) = {a, {a, b}}")
 
         #%%
         zfc._add_const("_a")
@@ -47,9 +46,9 @@ class TestZFCTheory(unittest.TestCase):
         zfc.axiom("∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅)")
         # END OF AXIOMS
 
-        zfc.add("{a, b} = {a} ∪ {b}")
-        zfc.add("{a, b, c} = {a} ∪ {b} ∪ {c}")
-        zfc.add("(a, b) = {a, {a, b}}")
+        zfc.add_def("{a, b} = {a} ∪ {b}")
+        zfc.add_def("{a, b, c} = {a} ∪ {b} ∪ {c}")
+        zfc.add_def("(a, b) = {a, {a, b}}")
 
         with Context(zfc) as c1:
             c1.declare("a")

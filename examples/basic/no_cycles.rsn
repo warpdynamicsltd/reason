@@ -5,8 +5,7 @@ begin
     assume a ∈ b;
     assume b ∈ a;
 
-    take e;
-    let e = {a, b};
+    we have e such as e = {a, b};
     ~(a ∩ e = ∅);
     b ∩ e = ∅;
     then ~(a ∈ b);

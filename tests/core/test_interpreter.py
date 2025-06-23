@@ -44,10 +44,11 @@ class TestZFCTheory(unittest.TestCase):
         axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 
         begin
-            take a, b, c, p, q;
-            let p = a ∩ (b ∪ c);
-            let q = (a ∩ b) ∪ (a ∩ c);
-            then p = q; 
+            take a, b, c;
+            we have p such as p = a ∩ (b ∪ c);
+            we have q such as q = (a ∩ b) ∪ (a ∩ c);
+            p = q;
+            then a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
         end;
 
         a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
@@ -62,8 +63,10 @@ class TestZFCTheory(unittest.TestCase):
     def test_interpreter_zfc_files(self):
         filenames = [
             "basic/hello.rsn",
+            "basic/hello2.rsn",
             "basic/tuples.rsn",
-            "basic/example.rsn"
+            "basic/example.rsn",
+            "basic/example2.rsn"
         ]
         root_examples = files("reason") / ".." / "examples"
 

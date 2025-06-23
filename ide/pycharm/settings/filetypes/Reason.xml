@@ -11,8 +11,8 @@
       <option name="HAS_PARENS" value="true" />
       <option name="HAS_STRING_ESCAPES" value="true" />
     </options>
-    <keywords keywords="begin;end;include;lemma;proof;proposition;qed;theorem" ignore_case="false" />
-    <keywords2 keywords="assume;axiom;take;then;let" />
+    <keywords keywords="begin;end;include;lemma;proof;proposition;qed;theorem;" ignore_case="false" />
+    <keywords2 keywords="assume;axiom;take;then;let;we;have;such;as" />
     <keywords3 keywords="=;and;or;~;→;⇒;⇔;∀;∃;∈;∧;∨;∩;∪;⊂;⟷" />
     <keywords4 keywords="∅" />
   </highlighting>

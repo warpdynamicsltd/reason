@@ -4,7 +4,7 @@ from typing import Iterable
 import structlog
 from beartype import beartype
 
-from reason.core.fof_types import FirstOrderFormula
+from reason.core.fof_types import FirstOrderFormula, Const
 from reason.core.transform.base import closure
 from reason.core.theory import BaseTheory, AssertionStatus
 from reason.core.theory.context import Context
@@ -60,9 +60,24 @@ class Interpreter:
 
     def assert_formula(self, formula_ast: AbstractSyntaxTree) -> AssertionStatus:
         if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
             return context_exps.assert_formula(self, formula_ast)
         else:
+            theory_exps.add_selection_axioms(self, formula_ast)
             return theory_exps.assert_formula(self, formula_ast)
+
+    def define_formula(self, formula_ast: AbstractSyntaxTree):
+        if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
+            return context_exps.define_formula(self, formula_ast)
+        else:
+            theory_exps.add_selection_axioms(self, formula_ast)
+            return theory_exps.define_formula(self, formula_ast)
+
+    @beartype
+    def define_consts(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+        context_exps.add_selection_axioms(self, formula_ast)
+        context_exps.define_consts(self, formula_ast, consts)
 
     @beartype
     def get_file_absolute_path(self, filename: str) -> str:
@@ -108,6 +123,10 @@ class Interpreter:
                 context_exps.declare_consts(self, consts)
                 return
 
+            case AbstractSyntaxTree(name=const.CONST_DEFINITION, args=[formula_ast, *consts]):
+                self.define_consts(formula_ast, consts)
+                return
+
             case AbstractSyntaxTree(name=const.ATOMIC_AXIOM, args=[formula_ast]):
                 if not self.context_stack:
                     theory_exps.add_atomic_axiom_formula(self, formula_ast)
@@ -121,9 +140,7 @@ class Interpreter:
                 return
 
             case AbstractSyntaxTree(name=const.DEFINITION, args=[formula_ast]):
-                status = self.assert_formula(formula_ast)
-                if status != AssertionStatus.definition:
-                    raise RuntimeError(f"not a valid definition")
+                self.define_formula(formula_ast)
                 return
 
 
