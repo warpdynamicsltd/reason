@@ -25,8 +25,7 @@ class TestZFCTheory(unittest.TestCase):
             assume a ∈ b;
             assume b ∈ a;
         
-            take e;
-            let e = {a, b};
+            pick e where e = {a, b};
             ~(a ∩ e = ∅);
             b ∩ e = ∅;
             then ~(a ∈ b);
@@ -45,8 +44,8 @@ class TestZFCTheory(unittest.TestCase):
 
         begin
             take a, b, c;
-            we have p such as p = a ∩ (b ∪ c);
-            we have q such as q = (a ∩ b) ∪ (a ∩ c);
+            pick p where p = a ∩ (b ∪ c);
+            pick q where q = (a ∩ b) ∪ (a ∩ c);
             p = q;
             then a ∩ (b ∪ c) = (a ∩ b) ∪ (a ∩ c);
         end;
@@ -66,7 +65,8 @@ class TestZFCTheory(unittest.TestCase):
             "basic/hello2.rsn",
             "basic/tuples.rsn",
             "basic/example.rsn",
-            "basic/example2.rsn"
+            "basic/example2.rsn",
+            "basic/sum.rsn"
         ]
         root_examples = files("reason") / ".." / "examples"
 

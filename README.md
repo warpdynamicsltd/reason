@@ -51,10 +51,9 @@ proof
   assume a ∈ b;
   assume b ∈ a;
 
-  take e;
-  let e = {a, b};
-  ~(a ∩ e = ∅);
-  b ∩ e = ∅;
+  pick x where x = {a, b};
+  ~(a ∩ x = ∅);
+  b ∩ x = ∅;
   then ~(a ∈ b);
 qed;
 ```

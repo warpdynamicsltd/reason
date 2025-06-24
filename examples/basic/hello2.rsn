@@ -6,9 +6,9 @@ axiom Q(a) ⟷ Q(a);
 theorem {t ∈ a : P(t)} ∩ {t ∈ a : Q(t)} = {t ∈ a : P(t) ∧ Q(t)}
 proof
     take a;
-    we have p such as p = {t ∈ a : P(t)};
-    we have q such as q = {t ∈ a : Q(t)};
-    we have r such as r = {t ∈ a : P(t) ∧ Q(t)};
+    pick p where p = {t ∈ a : P(t)};
+    pick q where q = {t ∈ a : Q(t)};
+    pick r where r = {t ∈ a : P(t) ∧ Q(t)};
 
     k ∈ p ∩ q ⟷ k ∈({t ∈ a : P(t)} ∩ {t ∈ a : Q(t)});
     k ∈ p ∩ q ⟷ (k ∈ a ∧ P(k)) ∧ (k ∈ a ∧ Q(k));

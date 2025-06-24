@@ -11,7 +11,7 @@ def add_selection_axioms(self, formula_ast: AbstractSyntaxTree):
 def define_formula(self, formula_ast: AbstractSyntaxTree):
     formula = self.theory.formula(formula_ast)
     formula = self.theory.add_definition(formula)
-    self.log("info", "context definition", formula=formula, ast=formula_ast)
+    self.log("info", "definition", formula=formula, ast=formula_ast)
     return formula
 
 @beartype

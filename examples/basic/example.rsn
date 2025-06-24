@@ -16,8 +16,8 @@ proof
   assume a ∈ b;
   assume b ∈ a;
 
-  we have e such as e = {a, b};
-  ~(a ∩ e = ∅);
-  b ∩ e = ∅;
+  pick x where x = {a, b};
+  ~(a ∩ x = ∅);
+  b ∩ x = ∅;
   then ~(a ∈ b);
 qed;

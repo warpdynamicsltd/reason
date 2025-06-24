@@ -24,9 +24,9 @@ def define_formula(self, formula_ast: AbstractSyntaxTree):
     return formula
 
 @beartype
-def define_consts(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+def declare_consts_with_constrain(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
     context = self.current_context()
-    formula = context.define_consts(formula_ast, consts)
+    formula = context.declare_consts_with_constrain(formula_ast, consts)
     self.log("info", "context definition", formula=formula, ast=formula_ast)
     return formula
 

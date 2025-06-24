@@ -19,8 +19,8 @@ proof
   assume a ∈ b;
   assume b ∈ a;
 
-  we have e such as two(a, b, e);
-  ~(a ∩ e = ∅);
-  b ∩ e = ∅;
+  pick x where two(a, b, x);
+  ~(a ∩ x = ∅);
+  b ∩ x = ∅;
   then ~(a ∈ b);
 qed;

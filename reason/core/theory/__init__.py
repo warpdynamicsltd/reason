@@ -18,9 +18,8 @@ from reason.parser.tree.consts import *
 class AssertionStatus(Enum):
     null = 0
     computed_axiom = 1
-    definition = 2
-    on_stack = 3
-    proved = 4
+    on_stack = 2
+    proved = 3
 
 
 
@@ -73,7 +72,7 @@ class BaseTheory(ABC):
 
         return None
 
-    def is_definition_axiom_with_consts(self, formula: FirstOrderFormula, consts: list[Const]) -> bool:
+    def is_consts_declaration_with_constrain(self, formula: FirstOrderFormula, consts: list[Const]) -> bool:
         formula = closure(formula)
 
         test_formula = formula
@@ -91,14 +90,11 @@ class BaseTheory(ABC):
 
         test_formula = prepend_quantifier_signature(test_formula, q_signature)
 
-        if prove(test_formula, self.get_stack_iter()):
+        _, status = self.add_formula(test_formula)
+        if status != AssertionStatus.null:
             return True
 
         return False
-
-    def is_consts_definition_axiom(self, formula: FirstOrderFormula) -> bool:
-        description = describe(formula)
-        return self.is_definition_axiom_with_consts(formula, description[Const])
 
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
@@ -114,10 +110,6 @@ class BaseTheory(ABC):
             case Predicate(name=const.EQ, args=[a, b]):
                 description = describe(b)
                 match a:
-                    case Const(name=name):
-                        if name not in description[Const] and not self.is_used(Const, name):
-                            return True
-
                     case Function(name=name):
                         if name not in description[Function] and not self.is_used(Function, name):
                             return True
@@ -161,9 +153,9 @@ class BaseTheory(ABC):
         raise RuntimeError("formula is not a definition axiom")
 
     @beartype
-    def add_consts_definition(self, formula: FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:
+    def declare_consts_with_constrain(self, formula: FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:
         formula = closure(formula)
-        if self.is_definition_axiom_with_consts(formula, consts):
+        if self.is_consts_declaration_with_constrain(formula, consts):
             formula = self._push(formula)
             return formula
 

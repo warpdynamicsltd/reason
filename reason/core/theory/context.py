@@ -70,7 +70,7 @@ class Context:
             formula = self.L(s)
         return self.theory.add_definition(formula)
 
-    def define_consts(self, s: str | AbstractSyntaxTree, consts: list[str]) -> FirstOrderFormula:
+    def declare_consts_with_constrain(self, s: str | AbstractSyntaxTree, consts: list[str]) -> FirstOrderFormula:
         for c in consts:
             c_value = self.declare(c)
             self.local_const_values.add(c_value)
@@ -79,7 +79,7 @@ class Context:
             formula = self.L.to_formula(s)
         else:
             formula = self.L(s)
-        return self.theory.add_consts_definition(formula, [self.L.consts[c] for c in consts])
+        return self.theory.declare_consts_with_constrain(formula, [self.L.consts[c] for c in consts])
 
     def conclude(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
         formula, status = self.add(s)

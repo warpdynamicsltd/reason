@@ -1,0 +1,26 @@
+include "zfc_axioms.rsn";
+include "zfc_simple_lemmas.rsn";
+
+theorem U({x, y}) = x ∪ y
+proof
+  take x, y;
+
+  proposition U({x, y}) ⊂ x ∪ y
+  proof
+    take k;
+    assume k ∈ U({x, y});
+    pick z where z ∈ {x, y} ∧ k ∈ z;
+    z = x ∨ z = y;
+    k ∈ x ∨ k ∈ y;
+    then k ∈ x ∪ y;
+  qed;
+
+  proposition x ∪ y ⊂ U({x, y})
+  proof
+    take k;
+    assume k ∈ x ∪ y;
+    k ∈ x ∨ k ∈ y;
+    pick z where z ∈ {x, y} ∧ k ∈ z;
+    then k ∈ U({x, y});
+  qed;
+qed;
