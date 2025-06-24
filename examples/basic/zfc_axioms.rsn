@@ -5,6 +5,7 @@ axiom ∀(x, z) z ∈ {x} ⟷ z = x;
 axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
 axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
 axiom ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
+axiom ∀(x,y) x ∈ U(y) ⟷ (∃z. z ∈ y ∧ x ∈ z);
 axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
 
 let {a, b} = {a} ∪ {b};

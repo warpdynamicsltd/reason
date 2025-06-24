@@ -21,6 +21,7 @@ class Context:
         # self.const_map = {}
         # self.const_map_inv = {}
         self.const_values = set()
+        self.local_const_values = set()
         if L is None:
             self.L = self.theory.derive_language()
         else:
@@ -32,7 +33,7 @@ class Context:
     def const_name(index: int):
         return f"local_const_{index}"
 
-    def declare(self, c: str):
+    def declare(self, c: str) -> str:
         # self.const_map[c] = self.context_const_index
         # self.const_map_inc[self.context_const_index] = c
         # c_value = self.const_name(self.context_const_index)
@@ -41,6 +42,7 @@ class Context:
         # self.L.add_const(c_value, c_value=c_value)
         self.const_values.add(c_value)
         self.context_const_index += 1
+        return c_value
 
     def assume(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
         if isinstance(s, AbstractSyntaxTree):
@@ -61,6 +63,24 @@ class Context:
         formula, status = self.theory.add_formula(formula)
         return formula, status
 
+    def define(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
+        if isinstance(s, AbstractSyntaxTree):
+            formula = self.L.to_formula(s)
+        else:
+            formula = self.L(s)
+        return self.theory.add_definition(formula)
+
+    def declare_consts_with_constrain(self, s: str | AbstractSyntaxTree, consts: list[str]) -> FirstOrderFormula:
+        for c in consts:
+            c_value = self.declare(c)
+            self.local_const_values.add(c_value)
+
+        if isinstance(s, AbstractSyntaxTree):
+            formula = self.L.to_formula(s)
+        else:
+            formula = self.L(s)
+        return self.theory.declare_consts_with_constrain(formula, [self.L.consts[c] for c in consts])
+
     def conclude(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
         formula, status = self.add(s)
         self.conclusions.append(formula)
@@ -79,13 +99,13 @@ class Context:
 
             description = describe(theorem)
             for c in description[Const]:
+                if c in self.local_const_values:
+                    raise RuntimeError(f"const {c} is bound to the context")
                 if c in self.const_values:
                     theorem = theorem.replace(Const(c), Variable(c))
 
             description = describe(theorem)
-            # for c in description[Const]:
-            #     if not self.theory.is_used(Const, c):
-            #         raise RuntimeError(f"unseen const {c}")
+
             for p in description[Predicate]:
                 if not self.theory.is_used(Predicate, p):
                     raise RuntimeError(f"unseen predicate {p}")

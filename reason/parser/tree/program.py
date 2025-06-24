@@ -28,6 +28,10 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
     def definition_expression(self, logic_simple):
         return AbstractSyntaxTree(DEFINITION, self._logic_simple(logic_simple))
 
+    @v_args_return_with_meta
+    def const_declaration_with_constrain_expression(self, consts, logic_simple):
+        return AbstractSyntaxTree(CONST_DECLARATION_WITH_CONSTRAIN, self._logic_simple(logic_simple), *consts)
+
     # @v_args(inline=True)
     @v_args_return_with_meta
     def assumption_expression(self, logic_simple):

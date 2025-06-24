@@ -1,10 +1,11 @@
 from pathlib import Path
 from typing import Iterable
+from functools import cache
 
 import structlog
 from beartype import beartype
 
-from reason.core.fof_types import FirstOrderFormula
+from reason.core.fof_types import FirstOrderFormula, Const
 from reason.core.transform.base import closure
 from reason.core.theory import BaseTheory, AssertionStatus
 from reason.core.theory.context import Context
@@ -60,9 +61,32 @@ class Interpreter:
 
     def assert_formula(self, formula_ast: AbstractSyntaxTree) -> AssertionStatus:
         if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
             return context_exps.assert_formula(self, formula_ast)
         else:
+            theory_exps.add_selection_axioms(self, formula_ast)
             return theory_exps.assert_formula(self, formula_ast)
+
+    def define_formula(self, formula_ast: AbstractSyntaxTree):
+        if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
+            return context_exps.define_formula(self, formula_ast)
+        else:
+            theory_exps.add_selection_axioms(self, formula_ast)
+            return theory_exps.define_formula(self, formula_ast)
+
+    def conclude_formula(self, formula_ast: AbstractSyntaxTree):
+        if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
+            context_exps.conclude_formula(self, formula_ast)
+        else:
+            theory_exps.add_selection_axioms(self, formula_ast)
+            theory_exps.assert_formula(self, formula_ast)
+
+    @beartype
+    def declare_consts_with_constrain(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+        context_exps.add_selection_axioms(self, formula_ast)
+        context_exps.declare_consts_with_constrain(self, formula_ast, consts)
 
     @beartype
     def get_file_absolute_path(self, filename: str) -> str:
@@ -108,6 +132,10 @@ class Interpreter:
                 context_exps.declare_consts(self, consts)
                 return
 
+            case AbstractSyntaxTree(name=const.CONST_DECLARATION_WITH_CONSTRAIN, args=[formula_ast, *consts]):
+                self.declare_consts_with_constrain(formula_ast, consts)
+                return
+
             case AbstractSyntaxTree(name=const.ATOMIC_AXIOM, args=[formula_ast]):
                 if not self.context_stack:
                     theory_exps.add_atomic_axiom_formula(self, formula_ast)
@@ -116,14 +144,12 @@ class Interpreter:
 
             case AbstractSyntaxTree(name=const.ASSERTION, args=[formula_ast]):
                 status = self.assert_formula(formula_ast)
-                if status in {AssertionStatus.null, AssertionStatus.definition}:
+                if status == AssertionStatus.null:
                     raise RuntimeError(f"not a valid assertion")
                 return
 
             case AbstractSyntaxTree(name=const.DEFINITION, args=[formula_ast]):
-                status = self.assert_formula(formula_ast)
-                if status != AssertionStatus.definition:
-                    raise RuntimeError(f"not a valid definition")
+                self.define_formula(formula_ast)
                 return
 
 
@@ -135,10 +161,7 @@ class Interpreter:
                 return
 
             case AbstractSyntaxTree(name=const.CONCLUSION, args=[formula_ast]):
-                if self.context_stack:
-                    context_exps.conclude_formula(self, formula_ast)
-                else:
-                    theory_exps.assert_formula(self, formula_ast)
+                self.conclude_formula(formula_ast)
                 return
 
             case AbstractSyntaxTree(name=const.CONTEXT_BLOCK, args=expressions):
@@ -151,6 +174,8 @@ class Interpreter:
 
 
             case AbstractSyntaxTree(name=const.INCLUDE_FILE, args=[s]):
+                if self.context_stack:
+                    raise RuntimeError("include not allowed in context")
                 self.run_file(path=self.get_file_absolute_path(s))
                 return
 
@@ -166,6 +191,7 @@ class Interpreter:
         self.run_expressions(program_ast_list)
 
     @beartype
+    @cache
     def run_file(self, path: str):
         self.file_stack.append(Path(path))
         with open(path, "r") as f:

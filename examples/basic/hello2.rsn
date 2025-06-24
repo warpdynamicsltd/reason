@@ -1,0 +1,20 @@
+include "zfc_axioms.rsn";
+
+axiom P(a) ⟷ P(a);
+axiom Q(a) ⟷ Q(a);
+
+theorem {t ∈ a : P(t)} ∩ {t ∈ a : Q(t)} = {t ∈ a : P(t) ∧ Q(t)}
+proof
+    take a;
+    pick p where p = {t ∈ a : P(t)};
+    pick q where q = {t ∈ a : Q(t)};
+    pick r where r = {t ∈ a : P(t) ∧ Q(t)};
+
+    k ∈ p ∩ q ⟷ k ∈({t ∈ a : P(t)} ∩ {t ∈ a : Q(t)});
+    k ∈ p ∩ q ⟷ (k ∈ a ∧ P(k)) ∧ (k ∈ a ∧ Q(k));
+    k ∈ p ∩ q ⟷ k ∈ a ∧ (P(k) ∧ Q(k));
+    k ∈ p ∩ q ⟷ k ∈ {t ∈ a : P(t) ∧ Q(t)};
+    k ∈ p ∩ q ⟷ k ∈ r;
+    p ∩ q = r;
+    then {t ∈ a : P(t)} ∩ {t ∈ a : Q(t)} = {t ∈ a : P(t) ∧ Q(t)}
+qed;

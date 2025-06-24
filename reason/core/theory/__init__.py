@@ -1,21 +1,25 @@
+import sys
+import subprocess
+
 from enum  import Enum
 from abc import ABC, abstractmethod
-from typing import List, Generator, Iterator
+from typing import Iterator
 from beartype import beartype
+
 
 from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
 from reason.core.transform.base import remove_universal_quantifiers
 from reason.core.transform.describe import describe
 from reason.core.language import Language, derive
+from reason.core.transform.base import closure, prepend_quantifier_signature
 from reason.parser.tree.consts import *
 
 class AssertionStatus(Enum):
     null = 0
     computed_axiom = 1
-    definition = 2
-    on_stack = 3
-    proved = 4
+    on_stack = 2
+    proved = 3
 
 
 
@@ -68,6 +72,31 @@ class BaseTheory(ABC):
 
         return None
 
+    def is_consts_declaration_with_constrain(self, formula: FirstOrderFormula, consts: list[Const]) -> bool:
+        formula = closure(formula)
+
+        test_formula = formula
+
+        q_signature = []
+        for c in consts:
+            if not self.is_used(Const, c):
+                var = Variable(c)
+                test_formula = test_formula.replace(Const(c), var)
+                q_signature.append((EXISTS, var))
+
+
+        if not q_signature:
+            return False
+
+        test_formula = prepend_quantifier_signature(test_formula, q_signature)
+
+        _, status = self.add_formula(test_formula)
+        if status != AssertionStatus.null:
+            return True
+
+        return False
+
+
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
         formula = remove_universal_quantifiers(formula)
         match formula:
@@ -81,10 +110,6 @@ class BaseTheory(ABC):
             case Predicate(name=const.EQ, args=[a, b]):
                 description = describe(b)
                 match a:
-                    case Const(name=name):
-                        if name not in description[Const] and not self.is_used(Const, name):
-                            return True
-
                     case Function(name=name):
                         if name not in description[Function] and not self.is_used(Function, name):
                             return True
@@ -95,9 +120,6 @@ class BaseTheory(ABC):
     def is_axiom(self, formula: FirstOrderFormula) -> AssertionStatus:
         if self.is_computed_axiom(formula):
             return AssertionStatus.computed_axiom
-
-        if self.is_definition_axiom(formula):
-            return AssertionStatus.definition
 
         return AssertionStatus.null
 
@@ -110,12 +132,35 @@ class BaseTheory(ABC):
             return status
 
         premises = self.get_stack_iter()
-        proof = prove(formula, premises=premises)
+        try:
+            proof = prove(formula, premises=premises)
+        except subprocess.CalledProcessError as e:
+            print(f"can't prove {self.L.printer(closure(formula))}")
+            sys.exit(1)
+
         if proof is not None:
             self.store(formula, proof)
             return AssertionStatus.proved
 
         return AssertionStatus.null
+
+    def add_definition(self, formula: FirstOrderFormula) -> FirstOrderFormula:
+        formula = closure(formula)
+        if self.is_definition_axiom(formula):
+            formula = self._push(formula)
+            return formula
+
+        raise RuntimeError("formula is not a definition axiom")
+
+    @beartype
+    def declare_consts_with_constrain(self, formula: FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:
+        formula = closure(formula)
+        if self.is_consts_declaration_with_constrain(formula, consts):
+            formula = self._push(formula)
+            return formula
+
+        raise RuntimeError("formula is not a definition axiom")
+
 
     def add_formula(self, formula: FirstOrderFormula) -> tuple[FirstOrderFormula | None, AssertionStatus]:
         status = self.is_provable(formula)

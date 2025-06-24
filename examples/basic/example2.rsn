@@ -12,11 +12,14 @@ let (a, b) = {a, {a, b}};
 
 theorem ~(a ∈ b ∧ b ∈ a)
 proof
+  let two(x, y, z) ⟷ z = {x, y};
+
   take a, b;
+
   assume a ∈ b;
   assume b ∈ a;
 
-  pick x where x = {a, b};
+  pick x where two(a, b, x);
   ~(a ∩ x = ∅);
   b ∩ x = ∅;
   then ~(a ∈ b);
