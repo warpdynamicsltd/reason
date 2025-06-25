@@ -81,8 +81,13 @@ class Context:
             formula = self.L(s)
         return self.theory.declare_consts_with_constrain(formula, [self.L.consts[c] for c in consts])
 
-    def conclude(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
+    def conclude(self, s: str | AbstractSyntaxTree, auto_skip=False) -> tuple[FirstOrderFormula, AssertionStatus]:
         formula, status = self.add(s)
+        description = describe(formula)
+
+        if auto_skip and len(self.local_const_values.intersection(description[Const])) > 0:
+            return formula, status
+
         self.conclusions.append(formula)
         return formula, status
 
