@@ -161,11 +161,11 @@ class BaseTheory(ABC):
 
         raise RuntimeError("formula is not a definition axiom")
 
-
-    def add_formula(self, formula: FirstOrderFormula) -> tuple[FirstOrderFormula | None, AssertionStatus]:
+    @beartype
+    def add_formula(self, formula: FirstOrderFormula) -> tuple[FirstOrderFormula, AssertionStatus]:
         status = self.is_provable(formula)
         if status == AssertionStatus.on_stack:
-            return None, status
+            return formula, status
         elif status != AssertionStatus.null:
             formula = self._push(formula)
             return formula, status

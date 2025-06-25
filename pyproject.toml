@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-reason = "reason.scripts.reason:main"
+reason = "reason.scripts.main:main"
 
 [tool.uv.sources]
 lark = { path = "repositories/lark" }

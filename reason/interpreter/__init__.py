@@ -75,10 +75,10 @@ class Interpreter:
             theory_exps.add_selection_axioms(self, formula_ast)
             return theory_exps.define_formula(self, formula_ast)
 
-    def conclude_formula(self, formula_ast: AbstractSyntaxTree):
+    def conclude_formula(self, formula_ast: AbstractSyntaxTree, auto_skip=False):
         if self.context_stack:
             context_exps.add_selection_axioms(self, formula_ast)
-            context_exps.conclude_formula(self, formula_ast)
+            context_exps.conclude_formula(self, formula_ast, auto_skip=auto_skip)
         else:
             theory_exps.add_selection_axioms(self, formula_ast)
             theory_exps.assert_formula(self, formula_ast)
@@ -168,9 +168,11 @@ class Interpreter:
                 self.run_context(expression)
                 return
 
-            case AbstractSyntaxTree(name=const.THEOREM_CONTEXT_BLOCK, args=[proof_ast, theorem_ast]):
+            case AbstractSyntaxTree(
+                name=const.THEOREM_CONTEXT_BLOCK,
+                args=[proof_ast, theorem_ast]):
                 self.run_expression(proof_ast)
-                self.run_expression(theorem_ast)
+                self.conclude_formula(theorem_ast, auto_skip=True)
 
 
             case AbstractSyntaxTree(name=const.INCLUDE_FILE, args=[s]):

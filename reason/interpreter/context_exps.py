@@ -45,7 +45,7 @@ def assume_formula(self, formula_ast: AbstractSyntaxTree):
 
 
 @beartype
-def conclude_formula(self, formula_ast: AbstractSyntaxTree):
+def conclude_formula(self, formula_ast: AbstractSyntaxTree, auto_skip=False):
     context = self.current_context()
-    formula, status = context.conclude(formula_ast)
+    formula, status = context.conclude(formula_ast, auto_skip=auto_skip)
     self.log("info", f"context conclusion {status.name}", formula=formula, ast=formula_ast)

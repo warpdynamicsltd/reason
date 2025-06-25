@@ -67,7 +67,7 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
         return AbstractSyntaxTree(
             THEOREM_CONTEXT_BLOCK,
             self.context_block(meta, [expression_list]),
-            self.conclusion_expression(meta, [theorem]),)
+            self._logic_simple(theorem))
 
     # @v_args(inline=True)
     @v_args_return_with_meta
