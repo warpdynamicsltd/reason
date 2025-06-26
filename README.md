@@ -33,9 +33,10 @@ and/or get vampire binary compiled somewhere else and copy it manually to `reaso
 ### examples/basic/example.rsn
 
 ```reason
+use ∅;
+
 axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
-axiom empty(∅);
+axiom ∀(x) ~(x ∈ ∅);
 axiom ∀(x, z) z ∈ {x} ⟷ z = x;
 axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
 axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
