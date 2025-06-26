@@ -1,6 +1,7 @@
+use ∅;
+
 axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
-axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
-axiom empty(∅);
+axiom ∀(x) ~(x ∈ ∅);
 axiom ∀(x, z) z ∈ {x} ⟷ z = x;
 axiom ∀(x, y, z) z ∈ x ∪ y ⟷ z ∈ x ∨ z ∈ y;
 axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;

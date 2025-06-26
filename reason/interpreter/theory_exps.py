@@ -15,6 +15,20 @@ def define_formula(self, formula_ast: AbstractSyntaxTree):
     return formula
 
 @beartype
+def declare_consts(self, consts: tuple[str, ...]):
+    for c in consts:
+        self.theory.declare_const(c)
+
+@beartype
+def declare_consts_with_constrain(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+    for c in consts:
+        self.theory.declare_const(c)
+    formula = self.theory.formula(formula_ast)
+    formula = self.theory.declare_consts_with_constrain(formula, consts)
+    self.log("info", "definition", formula=formula, ast=formula_ast)
+    return formula
+
+@beartype
 def assert_formula(self, formula_ast: AbstractSyntaxTree):
     formula = self.theory.formula(formula_ast)
     formula, status = self.theory.add_formula(formula)

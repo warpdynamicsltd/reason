@@ -66,6 +66,9 @@ class BaseTheory(ABC):
     def formula(self, ast: AbstractSyntaxTree):
         return self.get_langauge().to_formula(ast)
 
+    def declare_const(self, c: str):
+        return self.get_langauge().add_const(c)
+
     def add_atomic_axiom(self, formula: FirstOrderFormula) -> FirstOrderFormula | None:
         if not self.is_on_stack(formula):
             return self._push(formula)
