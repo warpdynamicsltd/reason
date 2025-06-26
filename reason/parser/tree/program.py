@@ -29,8 +29,12 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
         return AbstractSyntaxTree(DEFINITION, self._logic_simple(logic_simple))
 
     @v_args_return_with_meta
-    def const_declaration_with_constrain_expression(self, consts, logic_simple):
+    def pick_const_declaration_with_constrain_expression(self, consts, logic_simple):
         return AbstractSyntaxTree(CONST_DECLARATION_WITH_CONSTRAIN, self._logic_simple(logic_simple), *consts)
+
+    @v_args_return_with_meta
+    def use_const_declaration_with_constrain_expression(self, consts, logic_simple):
+        return AbstractSyntaxTree(CONST_USE_DECLARATION_WITH_CONSTRAIN, self._logic_simple(logic_simple), *consts)
 
     # @v_args(inline=True)
     @v_args_return_with_meta
@@ -53,9 +57,12 @@ class ProgramTreeToAbstractSyntaxTree(Transformer):
 
     # @v_args(inline=True)
     @v_args_return_with_meta
-    def const_declaration(self, consts):
+    def take_const_declaration(self, consts):
         return AbstractSyntaxTree(CONST_DECLARATION, *consts)
 
+    @v_args_return_with_meta
+    def use_const_declaration(self, consts):
+        return AbstractSyntaxTree(CONST_USE_DECLARATION, *consts)
 
     # @v_args(inline=True)
     @v_args_return_with_meta

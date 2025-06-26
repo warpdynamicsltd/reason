@@ -7,6 +7,7 @@ class TestZFCTheory(unittest.TestCase):
         zfc = ZFC()
 
         # BEGIN OF AXIOMS
+        zfc.declare_const("∅")
         zfc.axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
         zfc.axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))")
         zfc.axiom("empty(∅)")
@@ -22,10 +23,9 @@ class TestZFCTheory(unittest.TestCase):
         zfc.add_def("(a, b) = {a, {a, b}}")
 
         #%%
-        zfc._add_const("_a")
-        zfc._add_const("_b")
-        zfc._add_const("_c")
-        # zfc._add_const("k")
+        zfc.declare_const("_a")
+        zfc.declare_const("_b")
+        zfc.declare_const("_c")
 
         #%%
         zfc.add("k ∈ _a ∩ (_b ∪ _c) ⟷ k ∈ (_a ∩ _b) ∪ (_a ∩ _c)")
@@ -36,6 +36,7 @@ class TestZFCTheory(unittest.TestCase):
     def test_zfc_context_proof(self):
         zfc = ZFC()
         # BEGIN OF AXIOMS
+        zfc.declare_const("∅")
         zfc.axiom("∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y)")
         zfc.axiom("empty(e) ⟷ (∀(x) ~(x ∈ e))")
         zfc.axiom("empty(∅)")

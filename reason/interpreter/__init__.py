@@ -84,9 +84,20 @@ class Interpreter:
             theory_exps.assert_formula(self, formula_ast)
 
     @beartype
-    def declare_consts_with_constrain(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
-        context_exps.add_selection_axioms(self, formula_ast)
-        context_exps.declare_consts_with_constrain(self, formula_ast, consts)
+    def declare_consts_with_constrain_context(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+        if self.context_stack:
+            context_exps.add_selection_axioms(self, formula_ast)
+            context_exps.declare_consts_with_constrain(self, formula_ast, consts)
+        else:
+            raise RuntimeError("pick not allowed in main")
+
+    @beartype
+    def declare_consts_with_constrain_theory(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
+        if not self.context_stack:
+            theory_exps.add_selection_axioms(self, formula_ast)
+            theory_exps.declare_consts_with_constrain(self, formula_ast, consts)
+        else:
+            raise RuntimeError("use not allowed in context")
 
     @beartype
     def get_file_absolute_path(self, filename: str) -> str:
@@ -129,11 +140,25 @@ class Interpreter:
 
         match expression:
             case AbstractSyntaxTree(name=const.CONST_DECLARATION, args=consts):
-                context_exps.declare_consts(self, consts)
+                if self.context_stack:
+                    context_exps.declare_consts(self, consts)
+                else:
+                    raise RuntimeError("take not allowed in main")
+                return
+
+            case AbstractSyntaxTree(name=const.CONST_USE_DECLARATION, args=consts):
+                if not self.context_stack:
+                    theory_exps.declare_consts(self, consts)
+                else:
+                    raise RuntimeError("use not allowed in context")
                 return
 
             case AbstractSyntaxTree(name=const.CONST_DECLARATION_WITH_CONSTRAIN, args=[formula_ast, *consts]):
-                self.declare_consts_with_constrain(formula_ast, consts)
+                self.declare_consts_with_constrain_context(formula_ast, consts)
+                return
+
+            case AbstractSyntaxTree(name=const.CONST_USE_DECLARATION_WITH_CONSTRAIN, args=[formula_ast, *consts]):
+                self.declare_consts_with_constrain_theory(formula_ast, consts)
                 return
 
             case AbstractSyntaxTree(name=const.ATOMIC_AXIOM, args=[formula_ast]):

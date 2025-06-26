@@ -27,10 +27,12 @@ fname_list: [fname ("," fname)*]
 expression: logic_simple -> logic_expression
   | "axiom" logic_simple -> axiom_expression
   | "let" logic_simple -> definition_expression
-  | "pick" fname_list "where" logic_simple -> const_declaration_with_constrain_expression
+  | "pick" fname_list "where" logic_simple -> pick_const_declaration_with_constrain_expression
+  | "use" fname_list "where" logic_simple -> use_const_declaration_with_constrain_expression
   | "assume" logic_simple -> assumption_expression
   | "then" logic_simple -> conclusion_expression 
-  | "take" fname_list -> const_declaration
+  | "take" fname_list -> take_const_declaration
+  | "use" fname_list -> use_const_declaration
   | "begin" expression_list "end" -> context_block
   | "include" ESCAPED_STRING -> include_expression
   | ("theorem" | "lemma" | "proposition") logic_simple "proof" expression_list "qed" -> theorem_context_block

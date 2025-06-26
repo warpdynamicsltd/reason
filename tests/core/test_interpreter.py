@@ -8,6 +8,7 @@ from reason.interpreter import Interpreter
 class TestZFCTheory(unittest.TestCase):
     codes = [
         """
+        use ∅;
         axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
         axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
         axiom empty(∅);
@@ -33,6 +34,7 @@ class TestZFCTheory(unittest.TestCase):
         ~(a ∈ b ∧ b ∈ a);
         """,
         """
+        use ∅;
         axiom ∀(x, y) x = y ⟷ (∀(z) z ∈ x ⟷ z ∈ y);
         axiom empty(e) ⟷ (∀(x) ~(x ∈ e));
         axiom empty(∅);
@@ -66,7 +68,8 @@ class TestZFCTheory(unittest.TestCase):
             "basic/tuples.rsn",
             "basic/example.rsn",
             "basic/example2.rsn",
-            "basic/sum.rsn"
+            "basic/sum.rsn",
+            "basic/int.rsn"
         ]
         root_examples = files("reason") / ".." / "examples"
 

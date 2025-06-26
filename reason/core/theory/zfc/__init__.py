@@ -13,7 +13,7 @@ class ZFC(BaseTheory):
     def __init__(self):
         self.L = Language()
 
-        self._add_const("∅")
+        # self._add_const("∅")
 
         self.simple_axioms_signatures = set()
         self.formulas_stack = []
@@ -78,8 +78,8 @@ class ZFC(BaseTheory):
                 for item in description[key]:
                     self.description[key][item] -= 1
 
-    def _add_const(self, c: str):
-        self.L.add_const(c)
+    # def _add_const(self, c: str):
+    #     self.L.add_const(c)
 
     def axiom(self, s: str):
         formula = self.L(s)
