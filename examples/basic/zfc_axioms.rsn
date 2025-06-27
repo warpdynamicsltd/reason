@@ -8,7 +8,13 @@ axiom ∀(x, y, z) z ∈ x ∩ y ⟷ z ∈ x ∧ z ∈ y;
 axiom ∀(x, y) x ⊂ y ⟷ (∀(z) z ∈ x → z ∈ y);
 axiom ∀(x,y) x ∈ U(y) ⟷ (∃z. z ∈ y ∧ x ∈ z);
 axiom ∀(x) ~(x = ∅) → (∃(y) y ∈ x ∧ y ∩ x = ∅);
-axiom ∅ ∈ N ∧ (∀x. x ∈ N → x ∪ {x} ∈ N);
+
+let next(x) = x ∪ {x};
+
+let super_natural(m) ⟷ ∅ ∈ m ∧ (∀x. x ∈ m → next(x) ∈ m);
+let minimal_natural(n) ⟷ super_natural(n) ∧ (∀m. super_natural(m) → n ⊂ m);
+
+axiom minimal_natural(N);
 
 let {a, b} = {a} ∪ {b};
 let (a, b) = {a, {a, b}};

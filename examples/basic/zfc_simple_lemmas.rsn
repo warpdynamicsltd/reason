@@ -3,3 +3,5 @@ include "zfc_axioms.rsn";
 a ⊂ b ∧ b ⊂ a → a = b;
 let empty(e) ⟷ (∀(x) ~(x ∈ e));
 empty(e) → e = ∅;
+∀x. ~x = next(x);
+minimal_natural(n) → n = N;

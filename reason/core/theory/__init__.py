@@ -9,7 +9,7 @@ from beartype import beartype
 
 from reason.core.fof import *
 from reason.core.theory.tautology import prove, Tautology
-from reason.core.transform.base import remove_universal_quantifiers
+from reason.core.transform.base import remove_universal_quantifiers, quantifier_signature, free_variables
 from reason.core.transform.describe import describe
 from reason.core.language import Language, derive
 from reason.core.transform.base import closure, prepend_quantifier_signature
@@ -101,12 +101,15 @@ class BaseTheory(ABC):
 
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
-        formula = remove_universal_quantifiers(formula)
+        formula, signature = quantifier_signature(formula)
+        variables = set(var for _, var in signature)
         match formula:
             case LogicConnective(name=const.IFF, args=[a, b]):
                 description = describe(b)
                 match a:
                     case Predicate(name=name):
+                        if set(free_variables(a)) != variables:
+                            return False
                         if name not in description[Predicate] and not self.is_used(Predicate, name):
                             return True
 
@@ -114,6 +117,8 @@ class BaseTheory(ABC):
                 description = describe(b)
                 match a:
                     case Function(name=name):
+                        if set(free_variables(a)) != variables:
+                            return False
                         if name not in description[Function] and not self.is_used(Function, name):
                             return True
 

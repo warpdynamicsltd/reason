@@ -69,7 +69,8 @@ class TestZFCTheory(unittest.TestCase):
             "basic/example.rsn",
             "basic/example2.rsn",
             "basic/sum.rsn",
-            "basic/int.rsn"
+            "basic/int.rsn",
+            "basic/ind.rsn"
         ]
         root_examples = files("reason") / ".." / "examples"
 
