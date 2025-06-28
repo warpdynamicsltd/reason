@@ -1,0 +1,34 @@
+include "zfc_axioms.rsn";
+include "zfc_simple_lemmas.rsn";
+
+proposition x ∈ a ∧ y ∈ b → {x, y} ⊂ a ∪ b
+proof
+  take a, b, x, y, k;
+  assume x ∈ a ∧ y ∈ b;
+  assume k ∈ {x, y};
+  k = x ∨ k = y;
+  then k ∈ a ∪ b;
+qed;
+
+x ∈ a ∧ y ∈ b → (x, y) ∈ Pow(Pow(a ∪ b));
+
+#theorem x ∈ a ∧ y ∈ b → (x, y) ∈ Pow(Pow(a ∪ b))
+#proof
+#  take a, b, x, y;
+#  assume x ∈ a ∧ y ∈ b;
+#  (x, y) = {{x}, {x, y}};
+#  {x} ⊂ a ∪ b;
+#  {x} ∈ Pow(a ∪ b);
+#  {x, y} ⊂ a ∪ b;
+#  {x, y} ∈ Pow(a ∪ b);
+#  #pick p where p = {x};
+#  #pick q where q = {x, y};
+#  #pick A where A = Pow(a ∪ b);
+#  #p ∈ A ∧ q ∈ A;
+#  #{p, q} ⊂ A ∪ A;
+#  #A = A ∪ A;
+#  {{x}, {x, y}} ⊂ Pow(a ∪ b);
+#  then (x, y) ∈ Pow(Pow(a ∪ b));
+#qed;
+
+# let prod(a, b) = z → z = {k ∈ Pow(Pow(a ∪ b)) : ∃(x, y) x ∈ a ∧ y ∈ b ∧ (x, y) = k};

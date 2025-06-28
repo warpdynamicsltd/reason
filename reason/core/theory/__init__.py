@@ -99,6 +99,30 @@ class BaseTheory(ABC):
 
         return False
 
+    def is_term_definition(self, formula: FirstOrderFormula) -> bool:
+        formula = remove_universal_quantifiers(formula)
+        match formula:
+            case LogicConnective(name=const.IMP, args=[definition, condition]):
+                definition_variables = free_variables(definition)
+                condition_variables = free_variables(condition)
+                if condition_variables.issubset(definition_variables):
+                    match definition:
+                        case Predicate(name=const.EQ, args=[f, y]):
+                            if (type(y) is Variable and
+                                type(f) is Function and
+                                not self.is_used(Function, f.name)):
+
+                                condition_variables.remove(y)
+                                test_formula = condition
+                                signature = [(FORALL, v) for v in condition_variables] + [(EXISTS, y)]
+                                test_formula = prepend_quantifier_signature(test_formula, signature)
+                                _, status = self.add_formula(test_formula)
+                                if status != AssertionStatus.null:
+                                    return True
+
+        return False
+
+
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
         formula = remove_universal_quantifiers(formula)
@@ -121,6 +145,9 @@ class BaseTheory(ABC):
                             return False
                         if name not in description[Function] and not self.is_used(Function, name):
                             return True
+
+        if self.is_term_definition(formula):
+            return True
 
         return False
 
