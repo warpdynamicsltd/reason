@@ -101,14 +101,14 @@ class BaseTheory(ABC):
 
 
     def is_definition_axiom(self, formula: FirstOrderFormula) -> bool:
-        formula, signature = quantifier_signature(formula)
-        variables = set(var for _, var in signature)
+        formula = remove_universal_quantifiers(formula)
+        variables = free_variables(formula)
         match formula:
             case LogicConnective(name=const.IFF, args=[a, b]):
                 description = describe(b)
                 match a:
                     case Predicate(name=name):
-                        if set(free_variables(a)) != variables:
+                        if free_variables(a) != variables:
                             return False
                         if name not in description[Predicate] and not self.is_used(Predicate, name):
                             return True
@@ -117,7 +117,7 @@ class BaseTheory(ABC):
                 description = describe(b)
                 match a:
                     case Function(name=name):
-                        if set(free_variables(a)) != variables:
+                        if free_variables(a) != variables:
                             return False
                         if name not in description[Function] and not self.is_used(Function, name):
                             return True
