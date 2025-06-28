@@ -1,0 +1,17 @@
+include "zfc_axioms.rsn";
+include "zfc_simple_lemmas.rsn";
+
+use 0 where 0 = ∅;
+
+axiom P(x) ⟷ P(x);
+
+theorem P(0) ∧ (∀x. P(x) → P(next(x))) → (∀x. x ∈ N → P(x))
+proof
+  assume P(0) ∧ (∀x. P(x) → P(next(x)));
+  pick a where a = {x ∈ N : P(x)};
+  P(0);
+  0 ∈ a;
+  (∀n. n ∈ a → next(n) ∈ a);
+  a = N;
+  then (∀x. x ∈ N → P(x));
+qed;

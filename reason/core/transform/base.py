@@ -99,6 +99,10 @@ def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
 
     return set()
 
+def universal_variables(f: FirstOrderFormula) -> set[Variable]:
+    f = remove_universal_quantifiers(f)
+    return free_variables(f)
+
 
 def closure(formula):
     variables = free_variables(formula)
