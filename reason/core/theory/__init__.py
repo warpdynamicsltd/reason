@@ -75,6 +75,23 @@ class BaseTheory(ABC):
 
         return None
 
+    def add_selection_axiom(self, formula: FirstOrderFormula) -> FirstOrderFormula | None:
+        formula = remove_universal_quantifiers(formula)
+        free_vars = free_variables(formula)
+        res_formula = None
+        match formula:
+            case LogicQuantifier(name=const.EXISTS, args=[var, f]):
+                if free_vars:
+                    res_formula = f.replace(var, Function(self.get_langauge().get_unique_const_name(), *free_vars))
+                else:
+                    res_formula = f.replace(var, Const(name=self.get_langauge().get_unique_const_name()))
+
+        if  res_formula is None:
+            raise RuntimeError(f"unexpected formula {formula}")
+        return self.add_atomic_axiom(res_formula)
+
+
+
     def is_consts_declaration_with_constrain(self, formula: FirstOrderFormula, consts: list[Const]) -> bool:
         formula = closure(formula)
 
@@ -185,7 +202,7 @@ class BaseTheory(ABC):
             formula = self._push(formula)
             return formula
 
-        raise RuntimeError("formula is not a definition axiom")
+        raise RuntimeError(f"formula {formula} is not a definition axiom")
 
     @beartype
     def declare_consts_with_constrain(self, formula: FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:

@@ -1,4 +1,7 @@
 include "zfc_axioms.rsn";
+#include "no_cycles.rsn";
+
+{a} = {b} ⟷ a = b;
 
 a ⊂ b ∧ b ⊂ a → a = b;
 
@@ -13,3 +16,39 @@ minimal_natural(n) → n = N;
 x = y → Pow(x) = Pow(y);
 
 a = a ∪ a;
+
+{a, x} = {a, y} ⟷ x = y;
+
+theorem (a, b) = (x, y) → a = x ∧ b = y
+proof
+    take a, b, x, y;
+    assume (a, b) = (x, y);
+    (a, b) = {{a}, {a, b}};
+    (x, y) = {{x}, {x, y}};
+
+    {{a}, {a, b}} = {{x}, {x, y}};
+
+    {a} ∈ {{x}, {x, y}};
+
+    {a} = {x} ∨ {a} = {x, y};
+
+    begin
+        assume {a} = {x, y};
+        x = y;
+        a = x;
+        (a, b) = {{a}};
+        {a, b} = {a};
+        b = a;
+        then a = x ∧ b = y;
+    end;
+
+    begin
+        assume {a} = {x};
+        a = x;
+        {a, b} ∈ {{a}, {a, y}};
+        {a, b} = {a, y};
+        then a = x ∧ y = b;
+    end;
+
+    then a = x ∧ b = y;
+qed;

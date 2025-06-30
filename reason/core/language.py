@@ -18,6 +18,12 @@ class Language:
         self.const_values = set()
         self.inspect = inspect
 
+        self.unique_const_index = 0
+
+    def get_unique_const_name(self):
+        self.unique_const_index += 1
+        return f"uc{self.unique_const_index}"
+
     def add_const(self, c: str, c_value=None):
         if c in self.consts:
             raise RuntimeError(f"const {c} already defined")

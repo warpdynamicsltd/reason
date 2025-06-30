@@ -11,19 +11,12 @@ from reason.core.fof_types import (
     Term,
     Variable,
 )
-from reason.core.transform.base import prepend_quantifier_signature, conjunction, free_variables
+from reason.core.transform.base import prepend_quantifier_signature, conjunction
 from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tree.consts import *
 
 
 class FormulaBuilder:
-    selector_name_index = 0
-
-    @staticmethod
-    def get_selector_name():
-        FormulaBuilder.selector_name_index += 1
-        return f"sel{FormulaBuilder.selector_name_index}"
-
     def __init__(self, ast: AbstractSyntaxTree, consts: dict[str, str] = {}, select_vars_prefix="u"):
         self.consts = consts
         self.select_vars_count = 0
@@ -41,24 +34,16 @@ class FormulaBuilder:
 
     def _transform_selector(
         self, index_tree: AbstractSyntaxTree, selector_tree: AbstractSyntaxTree, embedded_selectors: list = []
-    ) -> Function:
+    ) -> Variable:
         index_formula, embedded_selectors_index = self._transform(index_tree)
         selector_formula, _ = self._transform(selector_tree)
-
-        index_free_variables = free_variables(selector_formula)
-        selector_free_variables = free_variables(selector_formula)
-        variables = index_free_variables.union(selector_free_variables)
-
         embedded_selectors.extend(embedded_selectors_index)
         match index_formula:
             case Predicate(name=const.IN, args=[v, t]) if type(v) is Variable and isinstance(t, Term):
-                variables.remove(v)
-                if variables:
-                    transformed_selector_formula = Function(self.get_selector_name(), *variables)
-                else:
-                    transformed_selector_formula = Const(self.get_selector_name())
-                embedded_selectors.append((transformed_selector_formula, v, t, selector_formula))
-                return transformed_selector_formula
+                self.select_vars_count += 1
+                selector_var = Variable(f"{self.select_vars_prefix}{self.select_vars_count}")
+                embedded_selectors.append((selector_var, v, t, selector_formula))
+                return selector_var
 
         raise RuntimeError("formula can't be parsed")
 
@@ -71,24 +56,26 @@ class FormulaBuilder:
             _args.append(f)
             embedded_selectors.extend(_embedded_selectors)
 
-        # formulas = []
+        formulas = []
         axioms = []
         quantifier_signature = []
-        for transformed_selector_formula, v, t, selector_formula in embedded_selectors:
+        for selector_var, v, t, selector_formula in embedded_selectors:
             f = LogicQuantifier(
                 FORALL,
                 v,
                 LogicConnective(
                     IFF,
-                    Predicate(IN, v, transformed_selector_formula),
+                    Predicate(IN, v, selector_var),
                     LogicConnective(AND, Predicate(IN, v, t), selector_formula),
                 ),
             )
-            # formulas.append(f)
-            axioms.append(f)
+            formulas.append(f)
+            axioms.append(LogicQuantifier(EXISTS, selector_var, f))
+            quantifier_signature.append((EXISTS, selector_var))
 
         self.axioms.extend(axioms)
-        result_formula = Predicate(name, *_args)
+        result_formula = conjunction(Predicate(name, *_args), *formulas)
+        result_formula = prepend_quantifier_signature(result_formula, quantifier_signature)
 
         return result_formula
 

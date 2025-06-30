@@ -44,9 +44,11 @@ class Context:
         self.context_const_index += 1
         return c_value
 
-    def assume(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
+    def assume(self, s: str | AbstractSyntaxTree | FirstOrderFormula) -> FirstOrderFormula:
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
+        elif isinstance(s, FirstOrderFormula):
+            formula = s
         else:
             formula = self.L(s)
 
@@ -55,33 +57,48 @@ class Context:
         self.theory._push(formula)
         return formula
 
-    def add(self, s: str | AbstractSyntaxTree) -> tuple[FirstOrderFormula, AssertionStatus]:
+    def add(self, s: str | AbstractSyntaxTree | FirstOrderFormula) -> tuple[FirstOrderFormula, AssertionStatus]:
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
+        elif isinstance(s, FirstOrderFormula):
+            formula = s
         else:
             formula = self.L(s)
         formula, status = self.theory.add_formula(formula)
         return formula, status
 
-    def define(self, s: str | AbstractSyntaxTree) -> FirstOrderFormula:
+    def define(self, s: str | AbstractSyntaxTree | FirstOrderFormula) -> FirstOrderFormula:
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
+        elif isinstance(s, FirstOrderFormula):
+            formula = s
         else:
             formula = self.L(s)
         return self.theory.add_definition(formula)
 
-    def declare_consts_with_constrain(self, s: str | AbstractSyntaxTree, consts: list[str]) -> FirstOrderFormula:
+    def declare_consts_with_constrain(self, s: str | AbstractSyntaxTree| FirstOrderFormula, consts: list[str]) -> FirstOrderFormula:
+        c_values = []
         for c in consts:
             c_value = self.declare(c)
+            c_values.append(c_value)
             self.local_const_values.add(c_value)
+
 
         if isinstance(s, AbstractSyntaxTree):
             formula = self.L.to_formula(s)
+        elif isinstance(s, FirstOrderFormula):
+            formula = s
+            formula = remove_universal_quantifiers(formula)
+            for c, c_value in zip(consts, c_values):
+                formula = formula.replace(Variable(c), Const(c_value))
+
+
         else:
             formula = self.L(s)
+
         return self.theory.declare_consts_with_constrain(formula, [self.L.consts[c] for c in consts])
 
-    def conclude(self, s: str | AbstractSyntaxTree, auto_skip=False) -> tuple[FirstOrderFormula, AssertionStatus]:
+    def conclude(self, s: str | AbstractSyntaxTree | FirstOrderFormula, auto_skip=False) -> tuple[FirstOrderFormula, AssertionStatus]:
         formula, status = self.add(s)
         description = describe(formula)
 
