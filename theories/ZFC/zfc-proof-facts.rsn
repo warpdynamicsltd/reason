@@ -1,0 +1,179 @@
+include "zfc-axioms.rsn";
+include "zfc-no-proof-facts.rsn";
+
+theorem ~(a ∈ b ∧ b ∈ a)
+proof
+  take a, b;
+  assume a ∈ b;
+  assume b ∈ a;
+
+  pick x where x = {a, b};
+  ~(a ∩ x = ∅);
+  b ∩ x = ∅;
+  then ~(a ∈ b);
+qed;
+
+theorem (a, b) = (x, y) → a = x ∧ b = y
+proof
+    take a, b, x, y;
+    assume (a, b) = (x, y);
+    (a, b) = {{a}, {a, b}};
+    (x, y) = {{x}, {x, y}};
+
+    {{a}, {a, b}} = {{x}, {x, y}};
+
+    {a} ∈ {{x}, {x, y}};
+
+    {a} = {x} ∨ {a} = {x, y};
+
+    begin
+        assume {a} = {x, y};
+        x = y;
+        a = x;
+        (a, b) = {{a}};
+        {a, b} = {a};
+        b = a;
+        then a = x ∧ b = y;
+    end;
+
+    begin
+        assume {a} = {x};
+        a = x;
+        {a, b} ∈ {{a}, {a, y}};
+        {a, b} = {a, y};
+        then a = x ∧ y = b;
+    end;
+
+    then a = x ∧ b = y;
+qed;
+
+
+proposition x ∈ a ∧ y ∈ b → {x, y} ⊂ a ∪ b
+proof
+  take a, b, x, y, k;
+  assume x ∈ a ∧ y ∈ b;
+  assume k ∈ {x, y};
+  k = x ∨ k = y;
+  then k ∈ a ∪ b;
+qed;
+
+
+theorem x ∈ a ∧ y ∈ b → (x, y) ∈ Pow(Pow(a ∪ b))
+proof
+  take a, b, x, y;
+  assume x ∈ a ∧ y ∈ b;
+  (x, y) = {{x}, {x, y}};
+  {x} ⊂ a ∪ b;
+  {x} ∈ Pow(a ∪ b);
+  {x, y} ⊂ a ∪ b;
+  {x, y} ∈ Pow(a ∪ b);
+  {{x}, {x, y}} ⊂ Pow(a ∪ b);
+  then (x, y) ∈ Pow(Pow(a ∪ b));
+qed;
+
+x ∈ a ∧ y ∈ b → (x, y) ∈ prod(a, b);
+
+theorem (x, y) ∈ prod(a, b) → x ∈ a ∧ y ∈ b
+proof
+    take x, y, a, b;
+    assume (x, y) ∈ prod(a, b);
+    pick k where k = (x, y);
+    k ∈ prod(a, b);
+    pick x1, y1 where x1 ∈ a ∧ y1 ∈ b ∧ (x1, y1) = k;
+    (x1, y1) = (x, y);
+    x = x1 ∧ y = y1;
+    then x ∈ a;
+    then y ∈ b;
+qed;
+
+x ∈ a ∧ y ∈ b ⟷ (x, y) ∈ prod(a, b);
+
+prod(a, ∅) = ∅;
+prod(∅, a) = ∅;
+
+lemma ~a=∅ ∧ ~b=∅ ∧ prod(a, b) = prod(x, y) → a ⊂ x ∧ b ⊂ y
+proof
+    take a, b, x, y;
+    assume ~a=∅ ∧ ~b=∅ ∧ prod(a, b) = prod(x, y);
+    begin
+        take p;
+        assume p ∈ a;
+        ~b=∅;
+        pick q where q ∈ b;
+        (p, q) ∈ prod(a, b);
+        (p, q) ∈ prod(x, y);
+        then p ∈ x;
+    end;
+    then a ⊂ x;
+
+    begin
+        take q;
+        assume q ∈ b;
+        ~a=∅;
+        pick p where p ∈ a;
+        (p, q) ∈ prod(a, b);
+        (p, q) ∈ prod(x, y);
+        then q ∈ y;
+    end;
+    then b ⊂ y;
+qed;
+
+~a=∅ ∧ ~b=∅ ∧ prod(a, b) = prod(x, y) → a = x ∧ b = y;
+
+let maps(f, a, b) ⟷ (
+    ~a=∅ ∧ ~b=∅ ∧ f ⊂ prod(a, b)
+    ∧ (
+        ∀x. x ∈ a →
+            (
+               ∃y. y ∈ b ∧ ((x, y) ∈ f ∧ (∀z. z ∈ b ∧ (x, z) ∈ f → z = y))
+            )
+       )
+    );
+
+let f : a ↦ b ⟷ maps(f, a, b);
+
+lemma f : a ↦ b → (∀x. x ∈ a ⟷ (∃y. (x, y) ∈ f))
+proof
+    take f, a, b;
+    assume f : a ↦ b;
+
+    begin
+        take x;
+        assume x ∈ a;
+        ∃y. y ∈ b ∧ (x, y) ∈ f;
+        then ∃y. (x, y) ∈ f
+    end;
+
+    begin
+        take x;
+        assume ∃y. (x, y) ∈ f;
+        pick y where (x, y) ∈ f;
+        (x, y) ∈ f;
+        f ⊂ prod(a, b);
+        (x, y) ∈ prod(a, b);
+        then x ∈ a;
+    end;
+
+    then (∀x. x ∈ a ⟷ (∃y. (x, y) ∈ f));
+qed;
+
+f : a1 ↦ b1 ∧ f : a2 ↦ b2 → a1 = a2;
+
+let acts(f, x) = y → ((∃(a, b) x ∈ a ∧ f: a ↦ b) → (x, y) ∈ f);
+
+theorem f : a ↦ b ∧ x ∈ a → acts(f, x) ∈ b
+proof
+    take f, a, b, x;
+    assume f : a ↦ b;
+    assume x ∈ a;
+
+    pick y where y = acts(f, x);
+    acts(f, x) = y → ((∃(a, b) x ∈ a ∧ f: a ↦ b) → (x, y) ∈ f);
+    (x, y) ∈ f;
+    f ⊂ prod(a, b);
+    (x, y) ∈ prod(a, b);
+    y ∈ b;
+    then acts(f, x) ∈ b;
+qed;
+
+f: N ↦ N ∧ (∀x. acts(f, x) = {x}) → acts(f, ∅) = {∅};
