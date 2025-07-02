@@ -13,9 +13,9 @@ axiom ∀x. ∀k. k ∈ Pow(x) ⟷ k ⊂ x;
 let next(x) = x ∪ {x};
 
 let super_natural(m) ⟷ ∅ ∈ m ∧ (∀x. x ∈ m → next(x) ∈ m);
-let minimal_natural(n) ⟷ super_natural(n) ∧ (∀m. super_natural(m) → n ⊂ m);
+let natural(n) ⟷ super_natural(n) ∧ (∀m. super_natural(m) → n ⊂ m);
 
-axiom minimal_natural(N);
+axiom natural(N);
 
 let {a, b} = {a} ∪ {b};
 let (a, b) = {{a}, {a, b}};

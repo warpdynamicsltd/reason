@@ -10,7 +10,7 @@ empty(e) → e = ∅;
 
 ∀x. ~x = next(x);
 
-minimal_natural(n) → n = N;
+natural(n) → n = N;
 
 x = y → Pow(x) = Pow(y);
 
