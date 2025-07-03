@@ -57,40 +57,53 @@ class FormulaBuilder:
                     transformed_selector_formula = Function(self.get_selector_name(), *variables)
                 else:
                     transformed_selector_formula = Const(self.get_selector_name())
-                embedded_selectors.append((transformed_selector_formula, v, t, selector_formula))
+                # embedded_selectors.append((transformed_selector_formula, v, t, selector_formula))
+
+                f = LogicQuantifier(
+                    FORALL,
+                    v,
+                    LogicConnective(
+                        IFF,
+                        Predicate(IN, v, transformed_selector_formula),
+                        LogicConnective(AND, Predicate(IN, v, t), selector_formula),
+                    ),
+                )
+                # formulas.append(f)
+                self.axioms.append(f)
+
                 return transformed_selector_formula
 
         raise RuntimeError("formula can't be parsed")
 
-    def _transform_selectors_to_predicate(
-        self, ast: AbstractSyntaxTree, name: str, embedded_selectors: list
-    ) -> FirstOrderFormula:
-        _args = []
-        for arg in ast.args:
-            f, _embedded_selectors = self._transform(arg, Predicate)
-            _args.append(f)
-            embedded_selectors.extend(_embedded_selectors)
-
-        # formulas = []
-        axioms = []
-        quantifier_signature = []
-        for transformed_selector_formula, v, t, selector_formula in embedded_selectors:
-            f = LogicQuantifier(
-                FORALL,
-                v,
-                LogicConnective(
-                    IFF,
-                    Predicate(IN, v, transformed_selector_formula),
-                    LogicConnective(AND, Predicate(IN, v, t), selector_formula),
-                ),
-            )
-            # formulas.append(f)
-            axioms.append(f)
-
-        self.axioms.extend(axioms)
-        result_formula = Predicate(name, *_args)
-
-        return result_formula
+    # def _transform_selectors_to_predicate(
+    #     self, ast: AbstractSyntaxTree, name: str, embedded_selectors: list
+    # ) -> FirstOrderFormula:
+    #     _args = []
+    #     for arg in ast.args:
+    #         f, _embedded_selectors = self._transform(arg, Predicate)
+    #         _args.append(f)
+    #         embedded_selectors.extend(_embedded_selectors)
+    #
+    #     # formulas = []
+    #     axioms = []
+    #     quantifier_signature = []
+    #     for transformed_selector_formula, v, t, selector_formula in embedded_selectors:
+    #         f = LogicQuantifier(
+    #             FORALL,
+    #             v,
+    #             LogicConnective(
+    #                 IFF,
+    #                 Predicate(IN, v, transformed_selector_formula),
+    #                 LogicConnective(AND, Predicate(IN, v, t), selector_formula),
+    #             ),
+    #         )
+    #         # formulas.append(f)
+    #         axioms.append(f)
+    #
+    #     self.axioms.extend(axioms)
+    #     result_formula = Predicate(name, *_args)
+    #
+    #     return result_formula
 
     def _transform_args_and_update_embedded_selectors(self, ast: AbstractSyntaxTree, embedded_selectors: list):
         _args = []
@@ -116,7 +129,8 @@ class FormulaBuilder:
             case AbstractSyntaxTree(name=name) if (
                 parent_type in {LogicConnective, LogicQuantifier} or parent_type is None
             ):
-                return self._transform_selectors_to_predicate(ast, name, embedded_selectors), []
+                #return self._transform_selectors_to_predicate(ast, name, embedded_selectors), []
+                return Predicate(name, *map(lambda a: self._transform(a, Predicate)[0], ast.args)), []
 
             case AbstractSyntaxTree(name=x, args=[]):
                 if x in self.consts:
