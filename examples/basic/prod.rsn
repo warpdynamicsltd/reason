@@ -1,0 +1,56 @@
+include "zfc_axioms.rsn";
+include "zfc_simple_lemmas.rsn";
+
+proposition x ∈ a ∧ y ∈ b → {x, y} ⊂ a ∪ b
+proof
+  take a, b, x, y, k;
+  assume x ∈ a ∧ y ∈ b;
+  assume k ∈ {x, y};
+  k = x ∨ k = y;
+  then k ∈ a ∪ b;
+qed;
+
+#x ∈ a ∧ y ∈ b → (x, y) ∈ Pow(Pow(a ∪ b));
+
+theorem x ∈ a ∧ y ∈ b → (x, y) ∈ Pow(Pow(a ∪ b))
+proof
+  take a, b, x, y;
+  assume x ∈ a ∧ y ∈ b;
+  (x, y) = {{x}, {x, y}};
+  {x} ⊂ a ∪ b;
+  {x} ∈ Pow(a ∪ b);
+  {x, y} ⊂ a ∪ b;
+  {x, y} ∈ Pow(a ∪ b);
+  #pick p where p = {x};
+  #pick q where q = {x, y};
+  #pick A where A = Pow(a ∪ b);
+  #p ∈ A ∧ q ∈ A;
+  #{p, q} ⊂ A ∪ A;
+  #A = A ∪ A;
+  {{x}, {x, y}} ⊂ Pow(a ∪ b);
+  then (x, y) ∈ Pow(Pow(a ∪ b));
+qed;
+
+# axiom k ∈ c(a, b) ⟷ k ∈ Pow(Pow(a ∪ b)) ∧ ( ∃(x, y) x ∈ a ∧ y ∈ b ∧ (x, y) = k );
+# ∃z. z = {k ∈ Pow(Pow(a ∪ b)): ∃(x, y) x ∈ a ∧ y ∈ b ∧ (x, y) = k};
+
+# let u(a, b) = z → z = c(a, b);
+
+let prod(a, b) = {k ∈ Pow(Pow(a ∪ b)): ∃(x, y) x ∈ a ∧ y ∈ b ∧ (x, y) = k};
+
+x ∈ a ∧ y ∈ b → (x, y) ∈ prod(a, b);
+
+theorem (x, y) ∈ prod(a, b) → x ∈ a ∧ y ∈ b
+proof
+    take x, y, a, b;
+    assume (x, y) ∈ prod(a, b);
+    pick k where k = (x, y);
+    k ∈ prod(a, b);
+    pick x1, y1 where x1 ∈ a ∧ y1 ∈ b ∧ (x1, y1) = k;
+    (x1, y1) = (x, y);
+    x = x1 ∧ y = y1;
+    then x ∈ a;
+    then y ∈ b;
+qed;
+
+x ∈ a ∧ y ∈ b ⟷ (x, y) ∈ prod(a, b);

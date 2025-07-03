@@ -1,7 +1,15 @@
-from reason.core.fof_types import *
+from reason.parser.tree import AbstractSyntaxTree
 from reason.parser.tree.consts import *
 
-def is_selection_axiom(formula: FirstOrderFormula):
-    match formula:
-        case LogicQuantifier(name=const.EXISTS, args=[v, f]):
-            raise NotImplementedError()
+class SelectionAxiomsBuilder:
+    def __init__(self, ast: AbstractSyntaxTree):
+        self.ast = ast
+        self.axioms = []
+
+    def _transform(self, ast: AbstractSyntaxTree):
+
+        match ast:
+            case AbstractSyntaxTree(name=const.SELECT, args=[index_tree, selector_tree]):
+
+
+        return AbstractSyntaxTree(ast.name, *map(self._transform, ast.args))

@@ -35,6 +35,7 @@ class OperatorGrammarCreator:
         ("std", 2, ["∩"]),
         ("std", 2, ["∪"]),
         ("std", 2, ["∈", "=", "⊂"]),
+        ("std", 3, {(":", "↦"): MAPS}),
         ("std", 1, ["~"]),
         ("std", 2, ["and", "∧"]),
         ("std", 2, ["or", "∨"]),
@@ -65,6 +66,7 @@ class OperatorGrammarCreator:
         self.super_rule = super_rule
         self.main_rule = main_rule
         self.prefix = prefix
+        self.longer_ops = {}
 
     def create_terminal_rule(self, level, arity, terms):
         return f"OP{arity}_{level}.1: {'| '.join(map(lambda s: chr(34) + s + chr(34), terms))}\n"
@@ -73,18 +75,49 @@ class OperatorGrammarCreator:
         res = str()
         for i, (t, arity, terms) in enumerate(self.precedence):
             level = i + 1
-            res += self.create_terminal_rule(level, arity, terms)
+            if arity <= 2:
+                res += self.create_terminal_rule(level, arity, terms)
 
         return res
 
     def create_rule(self, level, arity):
-        res = str()
-        if arity == 2:
-            res = f"{self.prefix}_{level}: {self.prefix}_{level} OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
-        else:
-            res = f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level} -> _op{arity} | {self.prefix}_{level - 1}\n"
+        match arity:
+            case 1:
+                return f"{self.prefix}_{level}: OP{arity}_{level} {self.prefix}_{level} -> _op{arity} | {self.prefix}_{level - 1}\n"
+            case 2:
+                return f"{self.prefix}_{level}: {self.prefix}_{level} OP{arity}_{level} {self.prefix}_{level - 1} -> _op{arity} | {self.prefix}_{level - 1}\n"
 
-        return res
+        raise RuntimeError(f"Unknown arity: {arity}")
+
+    def create_longer_operator_rule(self, level, term):
+        rule = f"{self.prefix}_{level}: "
+        for i, key in enumerate(term):
+            name = term[key]
+            rule += f"{self.prefix}_{level}"
+            for c in key:
+                rule += f' "{c}" {self.prefix}_{level}'
+
+            rule += f" -> op_{name.lower()}"
+            rule += " | "
+        rule += f"{self.prefix}_{level - 1}\n"
+
+        return rule
+
+
+    def create_longer_operator_rules(self):
+        rule = f"{self.main_rule}_longer_op: "
+        for i, key in enumerate(self.longer_ops):
+            name = self.longer_ops[key]
+            rule += f"{self.main_rule}"
+            for c in key:
+                rule += f' "{c}" {self.main_rule}'
+
+            rule += f" -> op_{name.lower()}"
+
+            if i < len(self.longer_ops) - 1:
+                rule += " | "
+
+        return rule
 
     def create_quantifier_rule(self, level):
         return f'{self.prefix}_{level}: OP1_{level} "(" abstract_term_list ")" {self.prefix}_{level} -> _op_quant | OP1_{level} abstract_term_list "." {self.prefix}_{level} -> _op_quant | {self.prefix}_{level - 1}\n'
@@ -93,11 +126,15 @@ class OperatorGrammarCreator:
         res = str()
         for i, (t, arity, terms) in enumerate(self.precedence):
             level = i + 1
-            match t:
-                case "std":
-                    res += self.create_rule(level, arity)
-                case "quantifier":
-                    res += self.create_quantifier_rule(level)
+            if arity <= 2:
+                match t:
+                    case "std":
+                        res += self.create_rule(level, arity)
+                    case "quantifier":
+                        res += self.create_quantifier_rule(level)
+            else:
+                res += self.create_longer_operator_rule(level, terms)
+
 
         return res
 
@@ -113,6 +150,7 @@ class OperatorGrammarCreator:
         res += self.create_bracket_rule() + "\n"
         res += self.create_terminals() + "\n"
         res += self.create_rules() + "\n"
+        # res += self.create_longer_operator_rules() + "\n"
 
         return res
 
@@ -182,6 +220,10 @@ class ReasonTreeToAbstractSyntaxTree(Transformer):
             res = AbstractSyntaxTree(op, v, res)
 
         return res
+
+    @v_args_return_with_meta
+    def op_maps(self, agr1, arg2, arg3):
+        return AbstractSyntaxTree("MAPS", agr1, arg2, arg3)
 
     # @v_args(inline=True)
     @v_args_return_with_meta

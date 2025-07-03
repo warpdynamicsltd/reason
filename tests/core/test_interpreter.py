@@ -63,16 +63,20 @@ class TestZFCTheory(unittest.TestCase):
 
     def test_interpreter_zfc_files(self):
         filenames = [
-            "basic/hello.rsn",
-            "basic/hello2.rsn",
-            "basic/tuples.rsn",
-            "basic/example.rsn",
-            "basic/example2.rsn",
-            "basic/sum.rsn",
-            "basic/int.rsn",
-            "basic/ind.rsn"
+            "examples/basic/hello.rsn",
+            "examples/basic/hello2.rsn",
+            "examples/basic/tuples.rsn",
+            "examples/basic/example.rsn",
+            "examples/basic/example2.rsn",
+            "examples/basic/sum.rsn",
+            "examples/basic/int.rsn",
+            "examples/basic/ind.rsn",
+            "examples/basic/fun_def.rsn",
+            "examples/basic/prod.rsn",
+            "theories/ZFC/zfc.rsn"
+
         ]
-        root_examples = files("reason") / ".." / "examples"
+        root_examples = files("reason") / ".."
 
 
         for filename in filenames:

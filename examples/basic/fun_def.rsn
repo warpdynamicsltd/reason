@@ -1,0 +1,7 @@
+include "zfc_axioms.rsn";
+include "int.rsn";
+
+let suc(a, b) = y → (a ∈ N → next(a) = y);
+
+suc(0, 0) = 1;
+∀x. x ∈ N → suc(x, x) = next(x);

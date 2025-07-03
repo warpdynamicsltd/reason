@@ -88,7 +88,8 @@ def free_variables(f: Term | FirstOrderFormula) -> set[Variable]:
 
         case LogicQuantifier(name=op, args=[var, arg]):
             variables = free_variables(arg)
-            variables.remove(var)
+            if var in variables:
+                variables.remove(var)
             return variables
 
         case AbstractTerm(name=name, args=args):

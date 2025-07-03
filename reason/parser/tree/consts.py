@@ -16,6 +16,7 @@ INCLUDES = "INCLUDES"
 SEQ = "SEQ"
 SET = "SET"
 SELECT = "SELECT"
+MAPS = "MAPS"
 
 const = SimpleNamespace()
 const.NEG = NEG
@@ -34,6 +35,7 @@ const.INCLUDES = INCLUDES
 const.SEQ = SEQ
 const.SET = SET
 const.SELECT = SELECT
+const.MAPS = MAPS
 
 # PROGRAM
 

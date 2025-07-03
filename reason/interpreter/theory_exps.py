@@ -1,5 +1,6 @@
 from beartype import beartype
 
+from reason.core.fof_types import Variable, Const
 from reason.parser.tree import AbstractSyntaxTree
 
 def add_selection_axioms(self, formula_ast: AbstractSyntaxTree):
@@ -7,6 +8,8 @@ def add_selection_axioms(self, formula_ast: AbstractSyntaxTree):
     for axiom in axioms:
         self.theory.add_atomic_axiom(axiom)
         self.log("info", "atomic axiom", formula=axiom, ast=formula_ast)
+
+    return formula
 
 def define_formula(self, formula_ast: AbstractSyntaxTree):
     formula = self.theory.formula(formula_ast)
@@ -23,7 +26,9 @@ def declare_consts(self, consts: tuple[str, ...]):
 def declare_consts_with_constrain(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
     for c in consts:
         self.theory.declare_const(c)
+
     formula = self.theory.formula(formula_ast)
+
     formula = self.theory.declare_consts_with_constrain(formula, consts)
     self.log("info", "definition", formula=formula, ast=formula_ast)
     return formula
