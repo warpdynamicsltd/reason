@@ -61,41 +61,41 @@ class Interpreter:
 
     def assert_formula(self, formula_ast: AbstractSyntaxTree) -> AssertionStatus:
         if self.context_stack:
-            formula = context_exps.add_selection_axioms(self, formula_ast)
-            return context_exps.assert_formula(self, formula_ast, direct_formula=formula)
+            context_exps.add_selection_axioms(self, formula_ast)
+            return context_exps.assert_formula(self, formula_ast)
         else:
-            formula = theory_exps.add_selection_axioms(self, formula_ast)
-            return theory_exps.assert_formula(self, formula_ast, direct_formula=formula)
+            theory_exps.add_selection_axioms(self, formula_ast)
+            return theory_exps.assert_formula(self, formula_ast)
 
     def define_formula(self, formula_ast: AbstractSyntaxTree):
         if self.context_stack:
-            formula = context_exps.add_selection_axioms(self, formula_ast)
-            return context_exps.define_formula(self, formula_ast, direct_formula=formula)
+            context_exps.add_selection_axioms(self, formula_ast)
+            return context_exps.define_formula(self, formula_ast)
         else:
-            formula = theory_exps.add_selection_axioms(self, formula_ast)
-            return theory_exps.define_formula(self, formula_ast, direct_formula=formula)
+            theory_exps.add_selection_axioms(self, formula_ast)
+            return theory_exps.define_formula(self, formula_ast)
 
     def conclude_formula(self, formula_ast: AbstractSyntaxTree, auto_skip=False):
         if self.context_stack:
-            formula = context_exps.add_selection_axioms(self, formula_ast)
-            context_exps.conclude_formula(self, formula_ast, auto_skip=auto_skip, direct_formula=formula)
+            context_exps.add_selection_axioms(self, formula_ast)
+            context_exps.conclude_formula(self, formula_ast, auto_skip=auto_skip)
         else:
-            formula = theory_exps.add_selection_axioms(self, formula_ast)
-            theory_exps.assert_formula(self, formula_ast, direct_formula=formula)
+            theory_exps.add_selection_axioms(self, formula_ast)
+            theory_exps.assert_formula(self, formula_ast)
 
     @beartype
     def declare_consts_with_constrain_context(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
         if self.context_stack:
-            formula = context_exps.add_selection_axioms(self, formula_ast)
-            context_exps.declare_consts_with_constrain(self, formula_ast, consts, direct_formula=formula)
+            context_exps.add_selection_axioms(self, formula_ast)
+            context_exps.declare_consts_with_constrain(self, formula_ast, consts)
         else:
             raise RuntimeError("pick not allowed in main")
 
     @beartype
     def declare_consts_with_constrain_theory(self, formula_ast: AbstractSyntaxTree, consts: list[str]):
         if not self.context_stack:
-            formula = theory_exps.add_selection_axioms(self, formula_ast)
-            theory_exps.declare_consts_with_constrain(self, formula_ast, consts, direct_formula=formula)
+            theory_exps.add_selection_axioms(self, formula_ast)
+            theory_exps.declare_consts_with_constrain(self, formula_ast, consts)
         else:
             raise RuntimeError("use not allowed in context")
 

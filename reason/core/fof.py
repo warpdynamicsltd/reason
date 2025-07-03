@@ -1,5 +1,4 @@
-from typing import Tuple
-
+from functools import cache
 from reason.core.fof_types import (
     Const,
     FirstOrderFormula,
@@ -20,7 +19,8 @@ class FormulaBuilder:
     selector_name_index = 0
 
     @staticmethod
-    def get_selector_name():
+    @cache
+    def get_selector_name(index_formula, selector_formula):
         FormulaBuilder.selector_name_index += 1
         return f"sel{FormulaBuilder.selector_name_index}"
 
@@ -29,7 +29,7 @@ class FormulaBuilder:
         self.select_vars_count = 0
         self.select_vars_prefix = select_vars_prefix
         self.axioms = []
-        self.formula = self._transform(ast)[0]
+        self.formula = self._transform(ast)
 
     @staticmethod
     def unflatten_conjunctions(ast: AbstractSyntaxTree) -> AbstractSyntaxTree:
@@ -40,24 +40,22 @@ class FormulaBuilder:
         return ast
 
     def _transform_selector(
-        self, index_tree: AbstractSyntaxTree, selector_tree: AbstractSyntaxTree, embedded_selectors: list = []
+        self, index_tree: AbstractSyntaxTree, selector_tree: AbstractSyntaxTree
     ) -> Function:
-        index_formula, embedded_selectors_index = self._transform(index_tree)
-        selector_formula, _ = self._transform(selector_tree)
+        index_formula = self._transform(index_tree)
+        selector_formula = self._transform(selector_tree)
 
         index_free_variables = free_variables(selector_formula)
         selector_free_variables = free_variables(selector_formula)
         variables = index_free_variables.union(selector_free_variables)
 
-        embedded_selectors.extend(embedded_selectors_index)
         match index_formula:
             case Predicate(name=const.IN, args=[v, t]) if type(v) is Variable and isinstance(t, Term):
                 variables.remove(v)
                 if variables:
-                    transformed_selector_formula = Function(self.get_selector_name(), *variables)
+                    transformed_selector_formula = Function(self.get_selector_name(index_formula, selector_formula), *variables)
                 else:
-                    transformed_selector_formula = Const(self.get_selector_name())
-                # embedded_selectors.append((transformed_selector_formula, v, t, selector_formula))
+                    transformed_selector_formula = Const(self.get_selector_name(index_formula, selector_formula))
 
                 f = LogicQuantifier(
                     FORALL,
@@ -68,82 +66,39 @@ class FormulaBuilder:
                         LogicConnective(AND, Predicate(IN, v, t), selector_formula),
                     ),
                 )
-                # formulas.append(f)
+
                 self.axioms.append(f)
 
                 return transformed_selector_formula
 
         raise RuntimeError("formula can't be parsed")
 
-    # def _transform_selectors_to_predicate(
-    #     self, ast: AbstractSyntaxTree, name: str, embedded_selectors: list
-    # ) -> FirstOrderFormula:
-    #     _args = []
-    #     for arg in ast.args:
-    #         f, _embedded_selectors = self._transform(arg, Predicate)
-    #         _args.append(f)
-    #         embedded_selectors.extend(_embedded_selectors)
-    #
-    #     # formulas = []
-    #     axioms = []
-    #     quantifier_signature = []
-    #     for transformed_selector_formula, v, t, selector_formula in embedded_selectors:
-    #         f = LogicQuantifier(
-    #             FORALL,
-    #             v,
-    #             LogicConnective(
-    #                 IFF,
-    #                 Predicate(IN, v, transformed_selector_formula),
-    #                 LogicConnective(AND, Predicate(IN, v, t), selector_formula),
-    #             ),
-    #         )
-    #         # formulas.append(f)
-    #         axioms.append(f)
-    #
-    #     self.axioms.extend(axioms)
-    #     result_formula = Predicate(name, *_args)
-    #
-    #     return result_formula
-
-    def _transform_args_and_update_embedded_selectors(self, ast: AbstractSyntaxTree, embedded_selectors: list):
-        _args = []
-        for arg in ast.args:
-            f, _embedded_selectors = self._transform(arg, Function)
-            _args.append(f)
-            embedded_selectors.extend(_embedded_selectors)
-
-        return _args
 
     def _transform(
-        self, ast: AbstractSyntaxTree, parent_type: type = None, embedded_selectors: list = []
-    ) -> Tuple[FirstOrderFormula | Const | Variable | Function, list]:
-        embedded_selectors = list(embedded_selectors)
-        ast = self.unflatten_conjunctions(ast)
+        self, ast: AbstractSyntaxTree, parent_type: type = None
+    ) -> FirstOrderFormula | Const | Variable | Function:
         match ast:
             case AbstractSyntaxTree(name=name) if name in {OR, AND, NEG, IMP, IFF}:
-                return LogicConnective(name, *map(lambda a: self._transform(a, LogicConnective)[0], ast.args)), []
+                return LogicConnective(name, *map(lambda a: self._transform(a, LogicConnective), ast.args))
 
             case AbstractSyntaxTree(name=name, args=[variable, arg]) if name in {FORALL, EXISTS}:
-                return LogicQuantifier(name, Variable(variable.name), self._transform(arg, LogicQuantifier)[0]), []
+                return LogicQuantifier(name, Variable(variable.name), self._transform(arg, LogicQuantifier))
 
             case AbstractSyntaxTree(name=name) if (
                 parent_type in {LogicConnective, LogicQuantifier} or parent_type is None
             ):
-                #return self._transform_selectors_to_predicate(ast, name, embedded_selectors), []
-                return Predicate(name, *map(lambda a: self._transform(a, Predicate)[0], ast.args)), []
+                return Predicate(name, *map(lambda a: self._transform(a, Predicate), ast.args))
 
             case AbstractSyntaxTree(name=x, args=[]):
                 if x in self.consts:
-                    return Const(name=self.consts[x]), []
+                    return Const(name=self.consts[x])
                 else:
-                    return Variable(name=x), []
+                    return Variable(name=x)
 
             case AbstractSyntaxTree(name=const.SELECT, args=[index_tree, selector_tree]):
-                return self._transform_selector(index_tree, selector_tree, embedded_selectors), embedded_selectors
+                return self._transform_selector(index_tree, selector_tree)
 
-        return Function(
-            ast.name, *self._transform_args_and_update_embedded_selectors(ast, embedded_selectors)
-        ), embedded_selectors
+        return Function(ast.name, *map(lambda a: self._transform(a, Function), ast.args))
 
     def _well_formed(self, obj: Const | Variable | Predicate | Function | LogicPredicate | FirstOrderFormula) -> bool:
         match obj:
