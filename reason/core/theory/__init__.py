@@ -169,6 +169,9 @@ class BaseTheory(ABC):
         premises = self.get_stack_iter()
         try:
             proof = prove(formula, premises=premises)
+
+            import json
+            print(json.dumps(proof, indent=2))
         except subprocess.CalledProcessError as e:
             print(f"can't prove {self.L.printer(closure(formula))}")
             sys.exit(1)
