@@ -43,7 +43,8 @@ is_valid_proof
   Axiom(2);
   Step([0; 0], Rule_Add2, 2);
   Step([1; 2], Rule_Mul2, 4);
-  Step([1; 2; 3], Rule_Add3, 8)
+  Step([1; 2; 3], Rule_Add3, 8);
+  Step([3; 4], Rule_Add2, 12);
 ];;
 
 is_valid_proof
