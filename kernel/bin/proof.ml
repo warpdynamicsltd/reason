@@ -1,4 +1,3 @@
-
 type first_order_formula = int;;
 
 type rule_id = 
@@ -6,10 +5,9 @@ type rule_id =
   | Rule_Add2
   | Rule_Add3
 
-let rule = function
-  | Rule_Mul2 -> (
-        fun ([a; b], k)-> a * b
-      )
+
+let rule r = match r with 
+  | Rule_Mul2 -> (fun ([a; b], k)-> a * b)
   | Rule_Add2 -> (fun ([a; b], k) -> a + b)
   | Rule_Add3 -> (fun ([a1; a2; a3], k) -> a1 + a2 + a3);; 
 
