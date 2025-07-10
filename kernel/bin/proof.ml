@@ -25,7 +25,7 @@ let conclusion proof_lst i =
 
 let rec is_proved proof k =
   match List.nth proof k with
-    | Axiom formula -> true
+    | Axiom _ -> true
     | Step(indecies, rule_id, formula) 
       when
         List.for_all (fun i -> i < k && is_proved proof i) indecies &&
