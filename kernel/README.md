@@ -1,3 +1,3 @@
-`dune init proj hello`
+`dune init proj kernel`
 
 `dune utop`

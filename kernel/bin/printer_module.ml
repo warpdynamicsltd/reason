@@ -26,38 +26,35 @@ let rec string_of_formula f =
 (* Recursive function to handle JSON -> term conversion *)
 let rec term_of_json (json : Yojson.Safe.t) =
   match json with
-  | `Assoc [("type", `String "Var"); ("name", `String v)] -> Var v
+  | `Assoc [("type", `String "Variable"); ("name", `String v)] -> Var v
   | `Assoc [("type", `String "Const"); ("name", `String c)] -> Const c
-  | `Assoc [("type", `String "Func"); ("name", `String f); ("args", `List args)] ->
+  | `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List args)] ->
       Func (f, List.map term_of_json args)
   | _ -> failwith "Invalid term JSON"
 
-(* Helper to fold a JSON list into nested binary operations *)
-let rec fold_binary op_constructor formulas =
-  match formulas with
-  | [] -> failwith "Invalid empty list for binary operation"
-  | [single] -> formula_of_json single
-  | first :: rest -> op_constructor (formula_of_json first) (fold_binary op_constructor rest)
-
 (* Function to parse JSON into `first_order_formula` *)
-and formula_of_json (json : Yojson.Safe.t) =
+let rec formula_of_json (json : Yojson.Safe.t) =
   match json with
-  | `Assoc [("type", `String "True")] -> True
-  | `Assoc [("type", `String "False")] -> False
-  | `Assoc [("type", `String "Pred"); ("name", `String name); ("args", `List args)] ->
+    | `Assoc [("type", `String "True")] -> True
+    | `Assoc [("type", `String "False")] -> False
+    | `Assoc [("type", `String "Predicate"); ("name", `String name); ("args", `List args)] ->
       Pred (name, List.map term_of_json args)
-  | `Assoc [("type", `String "Not"); ("formula", subformula)] ->
-      Not (formula_of_json subformula)
-  | `Assoc [("type", `String "And"); ("formulas", `List formulas)] ->
-      fold_binary (fun a b -> And (a, b)) formulas
-  | `Assoc [("type", `String "Or"); ("formulas", `List formulas)] ->
-      fold_binary (fun a b -> Or (a, b)) formulas
-  | `Assoc [("type", `String "Implies"); ("left", left); ("right", right)] ->
+    | `Assoc [("type", `String "LogicConnective"); ("name", `String "NEG"); ("args", `List [f])] ->
+      Not (formula_of_json f)
+    | `Assoc [("type", `String "LogicConnective"); ("name", `String "OR"); ("args", `List [left; right])] ->
+      Or (formula_of_json left, formula_of_json right)
+    | `Assoc [("type", `String "LogicConnective"); ("name", `String "AND"); ("args", `List [left; right])] ->
+      And (formula_of_json left, formula_of_json right)
+    | `Assoc [("type", `String "LogicConnective"); ("name", `String "IMP"); ("args", `List [left; right])] ->
       Implies (formula_of_json left, formula_of_json right)
-  | `Assoc [("type", `String "Iff"); ("left", left); ("right", right)] ->
+    | `Assoc [("type", `String "LogicConnective"); ("name", `String "IFF"); ("args", `List [left; right])] ->
       Iff (formula_of_json left, formula_of_json right)
-  | `Assoc [("type", `String "Forall"); ("variable", `String v); ("formula", subformula)] ->
-      Forall (v, formula_of_json subformula)
-  | `Assoc [("type", `String "Exists"); ("variable", `String v); ("formula", subformula)] ->
-      Exists (v, formula_of_json subformula)
-  | _ -> failwith "Invalid formula JSON"
+    | `Assoc [("type", `String "LogicQuantifier"); ("name", `String "FORALL"); ("args", `List [v; formula])] ->
+      (match term_of_json v with 
+        | Var(name) -> Forall(name, formula_of_json formula)
+        | _ -> failwith "Invalid formula JSON")
+    | `Assoc [("type", `String "LogicQuantifier"); ("name", `String "EXISTS"); ("args", `List [v; formula])] ->
+      (match term_of_json v with 
+        | Var(name) -> Exists(name, formula_of_json formula)
+        | _ -> failwith "Invalid formula JSON")
+    | _ -> failwith "Invalid formula JSON"
