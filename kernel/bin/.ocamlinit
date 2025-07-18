@@ -1,6 +1,7 @@
 #mod_use "formula.ml";;
 #mod_use "printer_module.ml";;
 #mod_use "proof.ml";;
+#mod_use "core.ml"
 
 open Formula;;
 open Proof;;
