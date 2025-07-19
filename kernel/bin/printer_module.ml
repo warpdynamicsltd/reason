@@ -58,3 +58,50 @@ let rec formula_of_json (json : Yojson.Safe.t) =
         | Var(name) -> Exists(name, formula_of_json formula)
         | _ -> failwith "Invalid formula JSON")
     | _ -> failwith "Invalid formula JSON"
+
+
+    open Formula
+
+(* Convert term to JSON *)
+let rec json_of_term (t : term) : Yojson.Safe.t =
+  match t with
+  | Var v -> 
+      `Assoc [("type", `String "Variable"); ("name", `String v)]
+  | Const c -> 
+      `Assoc [("type", `String "Const"); ("name", `String c)]
+  | Func (f, args) -> 
+      `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List (List.map json_of_term args))]
+
+(* Convert formula to JSON *)
+let rec json_of_formula (formula : first_order_formula) : Yojson.Safe.t =
+  match formula with
+  | True -> 
+      `Assoc [("type", `String "True")]
+  | False -> 
+      `Assoc [("type", `String "False")]
+  | Pred (name, args) -> 
+      `Assoc [("type", `String "Predicate"); ("name", `String name); ("args", `List (List.map json_of_term args))]
+  | Not f -> 
+      `Assoc [("type", `String "LogicConnective"); ("name", `String "NEG"); ("args", `List [json_of_formula f])]
+  | Or (left, right) -> 
+      `Assoc [("type", `String "LogicConnective"); ("name", `String "OR"); ("args", `List [json_of_formula left; json_of_formula right])]
+  | And (left, right) -> 
+      `Assoc [("type", `String "LogicConnective"); ("name", `String "AND"); ("args", `List [json_of_formula left; json_of_formula right])]
+  | Implies (left, right) -> 
+      `Assoc [("type", `String "LogicConnective"); ("name", `String "IMP"); ("args", `List [json_of_formula left; json_of_formula right])]
+  | Iff (left, right) -> 
+      `Assoc [("type", `String "LogicConnective"); ("name", `String "IFF"); ("args", `List [json_of_formula left; json_of_formula right])]
+  | Forall (var, f) -> 
+      let var_json = json_of_term (Var var) in
+      `Assoc [("type", `String "LogicQuantifier"); ("name", `String "FORALL"); ("args", `List [var_json; json_of_formula f])]
+  | Exists (var, f) -> 
+      let var_json = json_of_term (Var var) in
+      `Assoc [("type", `String "LogicQuantifier"); ("name", `String "EXISTS"); ("args", `List [var_json; json_of_formula f])]
+
+(* Helper function to convert to JSON string *)
+let formula_to_json_string (formula : first_order_formula) : string =
+  json_of_formula formula |> Yojson.Safe.pretty_to_string
+
+(* Helper function to convert from JSON string *)
+let formula_from_json_string (json_str : string) : first_order_formula =
+  json_str |> Yojson.Safe.from_string |> formula_of_json

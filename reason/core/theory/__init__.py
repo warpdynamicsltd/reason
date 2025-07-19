@@ -170,8 +170,8 @@ class BaseTheory(ABC):
         try:
             proof = prove(formula, premises=premises)
 
-            import json
-            print(json.dumps(proof, indent=2))
+            # import json
+            # print(json.dumps(proof, indent=2))
         except subprocess.CalledProcessError as e:
             print(f"can't prove {self.L.printer(closure(formula))}")
             sys.exit(1)

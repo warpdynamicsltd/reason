@@ -11,7 +11,7 @@ from beartype import beartype
 
 
 @beartype
-def prove(conjucture: FirstOrderFormula, premises: Iterator[FirstOrderFormula]) -> dict | None:
+def prove(conjecture: FirstOrderFormula, premises: Iterator[FirstOrderFormula] = []) -> dict | None:
     prover = Vampire()
     reference_dict = {}
     for premis in premises:
@@ -19,7 +19,7 @@ def prove(conjucture: FirstOrderFormula, premises: Iterator[FirstOrderFormula]) 
         reference_dict[inner_name] = premis
         prover.add_axiom(premis, name=inner_name)
 
-    res = prover.run(conjucture, output_axiom_names="on")
+    res = prover.run(conjecture, output_axiom_names="on")
     premises = []
     conclusions = []
     proof = []
@@ -47,7 +47,7 @@ def prove(conjucture: FirstOrderFormula, premises: Iterator[FirstOrderFormula]) 
                     f = reference_dict[reference_key]
                 elif reference_key == "formula":
                     name = None
-                    f = conjucture
+                    f = conjecture
                 else:
                     name = None
                     f = fof_formula

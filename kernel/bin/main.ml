@@ -6,6 +6,7 @@ let command c f =
   match c with
     | "ToNnf" -> to_nnf formula
     | "ToCnf" -> to_cnf formula
+    | "ToEnnf" -> full_ennf formula
     | "Skolemize" -> skolemize formula []
     | "Print" -> formula
     | _ -> failwith "Unknown Command"
@@ -19,5 +20,5 @@ let exec (json : Yojson.Safe.t) =
 let () =
   let content = In_channel.input_all In_channel.stdin in
   let json = Yojson.Safe.from_string content in
-  let out = string_of_formula (exec json) in
+  let out = formula_to_json_string (exec json) in
   Printf.printf "%s\n" out;;
