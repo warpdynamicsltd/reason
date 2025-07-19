@@ -6,8 +6,14 @@ from json import dumps
 
 L = Language()
 L.add_const("∅")
-payload = dumps(jsonize(L("∀x. P(x, ∅) → Q(x) and R(x)")), indent=2)
+f_json = jsonize(L("∀a. ∃x. P(a, x, ∅) → Q(x, a) and R(x)"))
 
-Kernel().run(payload)
+payload = {
+    "type": "Command",
+    "name": "ToCnf",
+    "args": [f_json]
+}
+
+Kernel().run(dumps(payload))
 
 

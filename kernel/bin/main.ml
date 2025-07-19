@@ -1,13 +1,23 @@
 open Printer_module
+open Core
 
-(* Function to stringify a formula *)
-let export_formula_string input_json =
-  let json = Yojson.Safe.from_string input_json in
-  let formula = formula_of_json json in
-  string_of_formula formula
-;;
+let command c f =
+  let formula = formula_of_json f in
+  match c with
+    | "ToNnf" -> to_nnf formula
+    | "ToCnf" -> to_cnf formula
+    | "Skolemize" -> skolemize formula []
+    | "Print" -> formula
+    | _ -> failwith "Unknown Command"
+
+let exec (json : Yojson.Safe.t) = 
+  match json with 
+    | `Assoc [("type", `String "Command"); ("name", `String c); ("args", `List [f])] -> command c f
+    | _ -> failwith "Invalid formula JSON"
+
 
 let () =
   let content = In_channel.input_all In_channel.stdin in
-  let out = export_formula_string content in
-  Printf.printf "%s\n" out
+  let json = Yojson.Safe.from_string content in
+  let out = string_of_formula (exec json) in
+  Printf.printf "%s\n" out;;

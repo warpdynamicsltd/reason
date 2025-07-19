@@ -123,10 +123,9 @@ and extract_literals (formula : first_order_formula) : literal list =
   | Not (Pred (name, args)) -> [Neg (name, args)]
   | _ -> failwith "Expected literal in clause"
  
-let rec to_cnf (formula : first_order_formula) : cnf =
+let to_cnf (formula : first_order_formula) =
   formula
   |> to_nnf                    (* Step 1: Convert to NNF *)
   |> (fun f -> skolemize f []) (* Step 2: Skolemization *)
   |> drop_universals           (* Step 3: Drop universal quantifiers *)
   |> distribute_or             (* Step 4: Distribute OR over AND *)
-  |> extract_clauses           (* Step 5: Extract clauses *)
