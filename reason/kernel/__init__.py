@@ -8,7 +8,7 @@ from unittest import case
 from reason.tools.binary import run_binary
 from reason.core.transform.jsonize import jsonize
 from reason.core.transform.from_json import from_json
-from reason.core.fof_types import FirstOrderFormula
+from reason.core.fof_types import FirstOrderFormula, Term
 
 
 def run(input):
@@ -47,14 +47,8 @@ def kernel_command(command_name):
                 match value:
                     case FirstOrderFormula():
                         serialized_args.append(jsonize(value))
-                    case int():
-                        serialized_args.append(
-                            {
-                                "type": "Int",
-                                "name": name if name in kwargs else f"arg{i}",
-                                "args": [value]
-                            }
-                        )
+                    case Term():
+                        serialized_args.append(jsonize(value))
                     case _:
                         # Default serialization rule for unrecognized types
                         serialized_args.append(value)
@@ -73,11 +67,22 @@ def kernel_command(command_name):
             return_type = func_signature.return_annotation
 
             match return_type.__name__:
+                case "Term":
+                    return from_json(response)
+
                 case "FirstOrderFormula":
                     return from_json(response)
 
                 case "int":
-                    return int(response["args"][0])
+                    if response["type"] == "Int":
+                        return int(response["args"][0])
+                    else:
+                        raise RuntimeError("Unexpected return type")
+                case "bool":
+                    if response["type"] == "Bool":
+                        return response["args"][0];
+                    else:
+                        raise RuntimeError("Unexpected return type")
 
                 case _:
                     raise RuntimeError("Unknown return type")
@@ -107,4 +112,19 @@ class Kernel:
     @staticmethod
     @kernel_command("Skolemize")
     def skolemize(formula: FirstOrderFormula) -> FirstOrderFormula:
+        pass
+
+    @staticmethod
+    @kernel_command("Print")
+    def echo(formula: FirstOrderFormula) -> FirstOrderFormula:
+        pass
+
+    @staticmethod
+    @kernel_command("IsSimpleAxiom")
+    def is_simple_axiom(formula: FirstOrderFormula) -> bool:
+        pass
+
+    @staticmethod
+    @kernel_command("Sub")
+    def substitute(var: str, replacement: Term, formula: FirstOrderFormula) -> FirstOrderFormula:
         pass

@@ -1,24 +1,32 @@
 open Printer_module
 open Core
+open Kernel
 
 let command c f =
   let formula = formula_of_json f in
   match c with
-    | "ToNnf" -> to_nnf formula
-    | "ToCnf" -> to_cnf formula
-    | "ToEnnf" -> full_ennf formula
-    | "Skolemize" -> skolemize formula []
-    | "Print" -> formula
+    | "ToNnf" -> json_of_formula(to_nnf formula)
+    | "ToCnf" -> json_of_formula(to_cnf formula)
+    | "ToEnnf" -> json_of_formula(full_ennf formula)
+    | "Skolemize" -> json_of_formula(skolemize formula [])
+    | "Print" -> json_of_formula(formula)
+    | "IsSimpleAxiom" -> json_of_bool(is_simple_axiom formula)
     | _ -> failwith "Unknown Command"
+
+let substitute var t f = 
+  let formula = formula_of_json f in
+  let term = term_of_json t in
+  substitute_in_formula var term formula |> json_of_formula |> Yojson.Safe.pretty_to_string
 
 let exec (json : Yojson.Safe.t) = 
   match json with 
-    | `Assoc [("type", `String "Command"); ("name", `String c); ("args", `List [f])] -> command c f
-    | _ -> failwith "Invalid formula JSON"
+    | `Assoc [("type", `String "Command"); ("name", `String c); ("args", `List [f])] -> Yojson.Safe.pretty_to_string (command c f)
+    | `Assoc [("type", `String "Command"); ("name", `String "Sub"); ("args", `List [`String var; t; f])] -> substitute var t f
+    | _ -> failwith "Invalid JSON"
 
 
 let () =
   let content = In_channel.input_all In_channel.stdin in
   let json = Yojson.Safe.from_string content in
-  let out = formula_to_json_string (exec json) in
+  let out = exec json in
   Printf.printf "%s\n" out;;

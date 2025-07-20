@@ -105,3 +105,6 @@ let formula_to_json_string (formula : first_order_formula) : string =
 (* Helper function to convert from JSON string *)
 let formula_from_json_string (json_str : string) : first_order_formula =
   json_str |> Yojson.Safe.from_string |> formula_of_json
+
+let json_of_bool (b : bool) : Yojson.Safe.t = `Assoc [("type", `String "Bool"); ("name", `String "return"); ("args", `List [`Bool b])]
+
