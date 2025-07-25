@@ -1,6 +1,7 @@
 import json
 from functools import wraps
 from inspect import signature, Parameter
+from subprocess import CalledProcessError
 from typing import get_type_hints
 from importlib.resources import files
 from unittest import case
@@ -9,7 +10,11 @@ from reason.tools.binary import run_binary
 from reason.core.transform.jsonize import jsonize
 from reason.core.transform.from_json import from_json
 from reason.core.fof_types import FirstOrderFormula, Term
+from reason.kernel.proof import Proof
 
+
+class KernelError(Exception):
+    pass
 
 def run(input):
     bin_path = files("reason") / "assets" / "bin" / "kernel"
@@ -49,6 +54,8 @@ def kernel_command(command_name):
                         serialized_args.append(jsonize(value))
                     case Term():
                         serialized_args.append(jsonize(value))
+                    case Proof():
+                        serialized_args.append(value.to_json())
                     case _:
                         # Default serialization rule for unrecognized types
                         serialized_args.append(value)
@@ -62,7 +69,13 @@ def kernel_command(command_name):
 
             # Run the serialized input through Kernel run method
             input_json = json.dumps(payload)
-            response = json.loads(run(input_json))
+
+            try:
+                res = run(input_json)
+            except CalledProcessError as e:
+                raise KernelError(e.stderr.strip())
+
+            response = json.loads(res)
 
             return_type = func_signature.return_annotation
 
@@ -127,4 +140,9 @@ class Kernel:
     @staticmethod
     @kernel_command("Sub")
     def substitute(var: str, replacement: Term, formula: FirstOrderFormula) -> FirstOrderFormula:
+        pass
+
+    @staticmethod
+    @kernel_command("IsValidProof")
+    def is_valid_proof(proof: Proof) -> bool:
         pass

@@ -1,4 +1,6 @@
 open Formula
+open Kernel
+open Yojson.Safe.Util
 
 let rec string_of_term t =
   match t with
@@ -107,4 +109,17 @@ let formula_from_json_string (json_str : string) : first_order_formula =
   json_str |> Yojson.Safe.from_string |> formula_of_json
 
 let json_of_bool (b : bool) : Yojson.Safe.t = `Assoc [("type", `String "Bool"); ("name", `String "return"); ("args", `List [`Bool b])]
+
+let step_of_json (json : Yojson.Safe.t) =
+  match json with 
+    | `Assoc [("type", `String "Axiom"); ("name", `String label); ("args", `List [`List formulas; formula])] ->
+      Axiom(label, List.map formula_of_json formulas, formula_of_json formula)
+    | `Assoc [("type", `String "Rule"); ("name", `String label); ("args", `List [`List indices; formula])] ->
+      Rule(label, List.map to_int indices, formula_of_json formula)
+    | _ -> failwith "Invalid Step JSON"
+
+let proof_of_json (json : Yojson.Safe.t) =
+  match json with 
+    | `Assoc [("type", `String "Proof"); ("name", _); ("args", `List steps)] -> List.map step_of_json steps
+    | _ -> failwith "Invalid Proof JSON"
 

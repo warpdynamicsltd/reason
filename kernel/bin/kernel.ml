@@ -30,9 +30,36 @@ let rec substitute_in_formula var replacement = function
     | Forall(_, _) -> failwith "substitution not admissible"
 
 
-let is_simple_axiom formula = 
-  match formula with
-    | Implies(a, b) when a = b -> true
-    | _ -> failwith "Not an axiom"
+let axiom = function
+  | "L0" -> (function [a] -> Or(a, Not a) | _ -> failwith "unknown argument")
+  | "L1" -> (function [a; b] -> Implies(a, (Implies(b, a))) | _ -> failwith "unknow argument")
+  | _ -> failwith "unknow schema"
+
+let rule = function
+  | "modus-ponens" -> (
+    function | [Implies(a, b); c] when c=a -> b | _ -> failwith "unknown argument"
+  )
+  | _ -> failwith "unknown rule"
+
+
+type step = 
+  | Axiom of string * first_order_formula list * first_order_formula
+  | Rule of string * int list * first_order_formula
+
+let nth_formula proof k = 
+  match List.nth proof k with 
+    | Axiom(_, _, formula) -> formula
+    | Rule(_, _, formula) -> formula
+
+let rec valid proof k =
+  match List.nth proof k with
+    | Axiom (label, formula_lst, formula) when (axiom label formula_lst = formula) -> true
+    | Rule (label, index_lst, formula) when (
+          (List.for_all (fun i -> i < k && valid proof i) index_lst) &&
+          (rule label (List.map (nth_formula proof) index_lst) = formula)
+        ) -> true
+    | _ -> false
+
+let is_valid proof = valid proof (List.length proof - 1);;
 
 

@@ -6,6 +6,7 @@ from reason.core.transform.from_json import from_json
 from reason.core.fof_types import *
 from reason.core.language import Language
 from reason.kernel import Kernel
+from reason.kernel.proof import Proof, Axiom, Rule
 from reason.core.theory.tautology import prove
 from reason.parser.tptp import TPTPParser
 
@@ -31,13 +32,20 @@ L.add_const("a")
 
 # print(dumps(proof_obj, indent=2))
 
+proof = Proof()
+proof.add(Axiom("L0", [L("P")], L("P or ~P")))
+proof.add(Axiom("L1", [L("P or ~P"), L("Q")], L("(P or ~P) → (Q → (P or ~P))")))
+proof.add(Rule("modus-ponens", [1, 0], L("Q → (P or ~P)")))
 
+print(proof.is_valid())
 
-f_in = L("(∀x. P(x, z)) → P(z, z)")
+# f_in = L("(∀x. P(x, z)) → P(z, z)")
+# #
+# f = Kernel.substitute("z", Function("f", Variable("u"), Variable("b")), f_in)
+# f = Kernel.substitute("z", Const("a"), f_in)
+# print(L.printer(f))
 #
-f = Kernel.substitute("z", Function("f", Variable("u"), Variable("b")), f_in)
-f = Kernel.substitute("z", Const("a"), f_in)
-print(L.printer(f))
+# print(Kernel.is_simple_axiom(L("P → Q")))
 #
 # f = Kernel.skolemize(f_in)
 # print(L.printer(f))
