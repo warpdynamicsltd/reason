@@ -143,6 +143,6 @@ class Kernel:
         pass
 
     @staticmethod
-    @kernel_command("IsValidProof")
-    def is_valid_proof(proof: Proof) -> bool:
+    @kernel_command("FinalTautology")
+    def final_tautology(proof: Proof) -> FirstOrderFormula:
         pass

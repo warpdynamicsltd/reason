@@ -3,23 +3,23 @@ from reason.core.transform.jsonize import jsonize
 import reason.kernel
 
 class Axiom:
-    def __init__(self, label : str, formulas : list[FirstOrderFormula], axiom_formula: FirstOrderFormula):
+    def __init__(self, label : str, formulas : list[FirstOrderFormula], terms: list[Term]):
         self.label = label
         self.formulas = formulas
-        self.axiom_formula = axiom_formula
+        self.terms = terms
 
     def to_json(self):
-        return dict(type="Axiom", name=self.label, args=[list(map(jsonize, self.formulas)), jsonize(self.axiom_formula)])
+        return dict(type="Axiom", name=self.label, args=[list(map(jsonize, self.formulas)), list(map(jsonize, self.terms))])
 
 
 class Rule:
-    def __init__(self, label: str, indices : list[int], formula: FirstOrderFormula):
+    def __init__(self, label: str, indices : list[int], terms: list[Term]):
         self.label = label
         self.indices = indices
-        self.formula = formula
+        self.terms = terms
 
     def to_json(self):
-        return dict(type="Rule", name=self.label, args=[self.indices, jsonize(self.formula)])
+        return dict(type="Rule", name=self.label, args=[self.indices, list(map(jsonize, self.terms))])
 
 class Proof:
     def __init__(self):
@@ -31,8 +31,19 @@ class Proof:
     def to_json(self):
         return dict(type="Proof", name="", args=list(map(lambda obj: obj.to_json(), self.proof)))
 
-    def is_valid(self):
+    def formula(self):
         try:
-            return reason.kernel.Kernel.is_valid_proof(self)
+            return reason.kernel.Kernel.final_tautology(self)
         except reason.kernel.KernelError:
             return False
+
+
+def lem(a: FirstOrderFormula):
+    return Axiom("LEM", [a], [])
+
+def imp(a: FirstOrderFormula, b: FirstOrderFormula):
+    return Axiom("IMP", [a, b], [])
+
+
+def mod(a: int, b: int):
+    return Rule("MOD", [a, b], [])

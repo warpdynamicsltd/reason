@@ -112,10 +112,10 @@ let json_of_bool (b : bool) : Yojson.Safe.t = `Assoc [("type", `String "Bool"); 
 
 let step_of_json (json : Yojson.Safe.t) =
   match json with 
-    | `Assoc [("type", `String "Axiom"); ("name", `String label); ("args", `List [`List formulas; formula])] ->
-      Axiom(label, List.map formula_of_json formulas, formula_of_json formula)
-    | `Assoc [("type", `String "Rule"); ("name", `String label); ("args", `List [`List indices; formula])] ->
-      Rule(label, List.map to_int indices, formula_of_json formula)
+    | `Assoc [("type", `String "Axiom"); ("name", `String label); ("args", `List [`List formulas; `List terms])] ->
+      Axiom(label, List.map formula_of_json formulas, List.map term_of_json terms)
+    | `Assoc [("type", `String "Rule"); ("name", `String label); ("args", `List [`List indices; `List terms])] ->
+      Rule(label, List.map to_int indices, List.map term_of_json terms)
     | _ -> failwith "Invalid Step JSON"
 
 let proof_of_json (json : Yojson.Safe.t) =

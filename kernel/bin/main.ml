@@ -19,8 +19,8 @@ let substitute var t f =
 
 let exec (json : Yojson.Safe.t) = 
   match json with 
-    | `Assoc [("type", `String "Command"); ("name", `String "IsValidProof"); ("args", `List [proof])] -> 
-      is_valid (proof_of_json proof) |> json_of_bool |> Yojson.Safe.pretty_to_string
+    | `Assoc [("type", `String "Command"); ("name", `String "FinalTautology"); ("args", `List [proof])] -> 
+      final_tautology (proof_of_json proof) |> json_of_formula |> Yojson.Safe.pretty_to_string
     | `Assoc [("type", `String "Command"); ("name", `String c); ("args", `List [f])] -> Yojson.Safe.pretty_to_string (command c f)
     | `Assoc [("type", `String "Command"); ("name", `String "Sub"); ("args", `List [`String var; t; f])] -> substitute var t f
     | _ -> failwith "Invalid JSON"
