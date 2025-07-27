@@ -28,6 +28,9 @@ class Proof:
     def add(self, element: Axiom | Rule):
         self.proof.append(element)
 
+    def clear(self):
+        self.proof = []
+
     def to_json(self):
         return dict(type="Proof", name="", args=list(map(lambda obj: obj.to_json(), self.proof)))
 
@@ -37,13 +40,30 @@ class Proof:
         except reason.kernel.KernelError:
             return False
 
+PROOF = Proof()
 
+def asm(func):
+    def wrapper(*args, **kwargs):
+        res = func(*args, **kwargs)
+        PROOF.add(res)
+        return len(PROOF.proof) - 1
+
+    return wrapper
+
+def begin():
+    PROOF.clear()
+
+def end():
+    return PROOF.formula()
+
+@asm
 def lem(a: FirstOrderFormula):
     return Axiom("LEM", [a], [])
 
+@asm
 def imp(a: FirstOrderFormula, b: FirstOrderFormula):
     return Axiom("IMP", [a, b], [])
 
-
+@asm
 def mod(a: int, b: int):
     return Rule("MOD", [a, b], [])

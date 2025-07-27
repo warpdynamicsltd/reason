@@ -34,12 +34,12 @@ L.add_const("a")
 
 # print(jsonize(L("x=x")))
 
-proof = Proof()
-proof.add(lem(L("P")))
-proof.add(imp(L("P or ~P"), L("Q")))
-proof.add(mod(1, 0))
-
-print(L.printer(proof.formula()))
+begin()
+a = lem(L("P"))
+b = imp(L("P or ~P"), L("Q"))
+mod(b, a)
+f = end()
+print(L.printer(f))
 
 # f_in = L("(∀x. P(x, z)) → P(z, z)")
 # #
