@@ -72,6 +72,7 @@ let axiom = function
   | _ -> failwith "unknown schema"
 
 let rule = function
+  | "IDN" -> (function [a], [] -> a | _ -> failwith "illformed rule")
   | "MOD" -> (function [Implies(a, b); c], [] when c=a -> b | _ -> failwith "illformed rule")
   | "GEN" -> (function [a], [Var(v)] -> Forall(v, a) | _ -> failwith "illformed rule")
   | _ -> failwith "unknown rule"
@@ -108,6 +109,11 @@ type reference =
   | Ref of int list
 
 type statement = 
+  | AssumptionStmt of 
+    {
+      ref: reference;
+      formula: first_order_formula;
+    }
   | AxiomStmt of 
     {
       ref: reference;
@@ -127,13 +133,14 @@ type statement =
   | BlockStmt of 
     {
       ref: reference;
-      assumption: first_order_formula;
+      (*assumption: first_order_formula;*)
       statements: statement list;
       formula: first_order_formula
     }
 
 let formula_of_statement s = 
   match s with
+    | AssumptionStmt {formula;_} -> formula
     | AxiomStmt {formula; _} -> formula
     | RuleStmt {formula; _} -> formula
     | BlockStmt {formula; _} -> formula
@@ -143,22 +150,11 @@ let rec get_statement proof =
     | BlockStmt {statements; _} -> 
           (fun ref -> 
             match ref with
-            | Ref [i] -> List.nth statements (i - 1)
-            | Ref (head::tail) -> get_statement (List.nth statements (head - 1)) (Ref tail)
-            | _ -> failwith "wrong reference")
-          
-    | _ -> failwith "non referencable"
+            | Ref [] -> proof
+            | Ref (head::tail) -> get_statement (List.nth statements head) (Ref tail))
+    | _ -> (fun _ -> proof)
 
-let get_formula proof = 
-  match proof with 
-    | BlockStmt {assumption; statements; _} ->
-      (fun ref -> 
-            match ref with
-            | Ref [0] -> assumption
-            | Ref [i] -> formula_of_statement (List.nth statements (i - 1))
-            | Ref (head::tail) -> get_statement (List.nth statements (head - 1)) (Ref tail) |> formula_of_statement
-            | _ -> failwith "wrong reference")
-    | _ -> failwith "non referencable"
+let get_formula proof ref = get_statement proof ref |> formula_of_statement
 
 let rec reference_allowed current_ref ref = 
   match current_ref, ref with 
@@ -169,18 +165,44 @@ let rec reference_allowed current_ref ref =
 
 let append ref i =
   match ref with
-  | Ref lst -> Ref (lst @ [i]) 
+  | Ref lst -> Ref (lst @ [i])
 
-let rec is_valid_formula proof r = 
+let last_elem lst = List.nth lst (List.length lst - 1)  
+
+let last_of_ref ref = match ref with Ref lst -> last_elem lst
+
+let is_assumption_statement s = 
+  match s with
+    | AssumptionStmt _ -> true
+    | _ -> false
+
+let rec is_valid_conclusion proof r = 
   match get_statement proof r with
+    | AssumptionStmt {ref; _} when ref = r && last_of_ref ref = 0 -> true
     | AxiomStmt {ref; label; fofs; terms; formula} when ref = r && formula = (axiom label (fofs, terms)) -> true
     | RuleStmt {ref; label; refs; terms; formula} when ref = r 
        && List.for_all (reference_allowed ref) refs
-       && List.for_all (is_valid_formula proof) refs
+       && List.for_all (is_valid_conclusion proof) refs
         -> formula = (rule label (List.map (get_formula proof) refs, terms))
-    | BlockStmt{ref; assumption; statements; formula} when ref = r 
+    | BlockStmt{ref; statements; formula} when ref = r && (List.length statements) > 0
       && 
-        let last_ref = append r (List.length statements) in
-        (is_valid_formula proof (last_ref) && formula = Implies(assumption, get_formula proof last_ref)) 
+        let statement0 = (List.hd statements) in
+        let last_ref = append r (List.length statements - 1) in
+        let f = last_elem statements |> formula_of_statement in
+        (
+          is_valid_conclusion proof (last_ref) && 
+          formula = 
+            if is_assumption_statement statement0 
+            then 
+              let assumption = statement0 |> formula_of_statement in
+              Implies(assumption, f) 
+            else f)
+
           -> true
     | _ -> false
+
+
+  let proved_tautology proof = 
+    match proof with
+      | BlockStmt {formula;_} when (is_valid_conclusion proof (Ref[])) -> formula
+      | _ -> failwith "invalid proof"

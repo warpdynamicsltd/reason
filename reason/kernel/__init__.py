@@ -11,6 +11,7 @@ from reason.core.transform.jsonize import jsonize
 from reason.core.transform.from_json import from_json
 from reason.core.fof_types import FirstOrderFormula, Term
 from reason.kernel.proof import Proof
+from reason.kernel.statement import AxiomStmt, RuleStmt, BlockStmt, Ref
 
 
 class KernelError(Exception):
@@ -55,6 +56,8 @@ def kernel_command(command_name):
                     case Term():
                         serialized_args.append(jsonize(value))
                     case Proof():
+                        serialized_args.append(value.to_json())
+                    case BlockStmt():
                         serialized_args.append(value.to_json())
                     case _:
                         # Default serialization rule for unrecognized types
@@ -145,4 +148,9 @@ class Kernel:
     @staticmethod
     @kernel_command("FinalTautology")
     def final_tautology(proof: Proof) -> FirstOrderFormula:
+        pass
+
+    @staticmethod
+    @kernel_command("ProvedTautology")
+    def prove_tautology(block: BlockStmt) -> FirstOrderFormula:
         pass

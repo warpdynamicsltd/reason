@@ -123,3 +123,46 @@ let proof_of_json (json : Yojson.Safe.t) =
     | `Assoc [("type", `String "Proof"); ("name", _); ("args", `List steps)] -> List.map step_of_json steps
     | _ -> failwith "Invalid Proof JSON"
 
+(* Convert JSON to a 'statement' type *)
+let rec statement_of_json (json : Yojson.Safe.t) : statement =
+  match json with
+  
+  | `Assoc [("type", `String "AssumptionStmt"); ("name", _); ("args", `List[ref_json; formula_json])] ->
+    let ref = reference_of_json ref_json in
+    let formula = formula_of_json formula_json in
+    AssumptionStmt {ref; formula}
+  
+  | `Assoc [("type", `String "AxiomStmt"); ("name", _); ("args", `List [ref_json; `String label; `List fofs_json; `List terms_json; formula_json])] ->
+      let ref = reference_of_json ref_json in
+      let fofs = List.map formula_of_json fofs_json in
+      let terms = List.map term_of_json terms_json in
+      let formula = formula_of_json formula_json in
+      AxiomStmt {ref; label; fofs; terms; formula}
+
+  | `Assoc [("type", `String "RuleStmt"); ("name", _); ("args", `List [ref_json; `String label; `List refs_json; `List terms_json; formula_json])] ->
+      let ref = reference_of_json ref_json in
+      let refs = List.map reference_of_json refs_json in
+      let terms = List.map term_of_json terms_json in
+      let formula = formula_of_json formula_json in
+      RuleStmt {ref; label; refs; terms; formula}
+
+  | `Assoc [("type", `String "BlockStmt"); ("name", _); ("args", `List [ref_json;  `List statements_json; formula_json])] ->
+      let ref = reference_of_json ref_json in
+      let statements = List.map statement_of_json statements_json in
+      let formula = formula_of_json formula_json in
+      BlockStmt {ref; statements; formula}
+
+  | _ -> failwith "Invalid Statement JSON"
+
+(* Helper function to parse a reference from JSON *)
+and reference_of_json (json : Yojson.Safe.t) : reference =
+  match json with
+  | `Assoc [("type", `String "Ref"); ("name", _); ("args", `List indices_json)] ->
+      let indices = List.map Yojson.Safe.Util.to_int indices_json in
+      Ref indices
+  | _ -> failwith "Invalid Reference JSON"
+
+
+
+
+
