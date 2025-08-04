@@ -53,6 +53,8 @@ let axiom = function
   | "ORR" -> (function [a; b], [] -> Implies(b, Or(a, b)) | _ -> axiom_error())
   | "DIS" -> (function [a; b; c], [] -> Implies(Implies(a, c), Implies(Implies(b, c), Implies(Or(a, b), c))) | _ -> axiom_error())
   | "CON" -> (function [a; b], [] -> Implies(Not a, Implies(a, b)) | _ -> axiom_error())
+  | "IFI" -> (function [a; b], [] -> Implies(Implies(a, b), Implies(Implies(b, a), Iff(a, b))) | _ -> axiom_error())
+  | "IFO" -> (function [a; b], [] -> Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))) | _ -> axiom_error())
   | "ALL" -> (function [a], [t; Var(v)] -> Implies(Forall(v, a), substitute_in_formula v t a) | _ -> axiom_error())
   | "EXT" -> (function [a], [t; Var(v)] -> Implies(substitute_in_formula v t a, Exists(v, a)) | _ -> axiom_error())
   | "ALH" -> (
@@ -102,3 +104,83 @@ let tautology proof =
 let final_tautology proof = tautology proof (List.length proof - 1)
 
 
+type reference =
+  | Ref of int list
+
+type statement = 
+  | AxiomStmt of 
+    {
+      ref: reference;
+      label: string;
+      fofs: first_order_formula list;
+      terms: term list;
+      formula: first_order_formula;
+    }
+  | RuleStmt of 
+    {
+      ref: reference;
+      label: string;
+      refs: reference list;
+      terms: term list;
+      formula: first_order_formula
+    }
+  | BlockStmt of 
+    {
+      ref: reference;
+      assumption: first_order_formula;
+      statements: statement list;
+      formula: first_order_formula
+    }
+
+let formula_of_statement s = 
+  match s with
+    | AxiomStmt {formula; _} -> formula
+    | RuleStmt {formula; _} -> formula
+    | BlockStmt {formula; _} -> formula
+
+let rec get_statement proof = 
+  match proof with 
+    | BlockStmt {statements; _} -> 
+          (fun ref -> 
+            match ref with
+            | Ref [i] -> List.nth statements (i - 1)
+            | Ref (head::tail) -> get_statement (List.nth statements (head - 1)) (Ref tail)
+            | _ -> failwith "wrong reference")
+          
+    | _ -> failwith "non referencable"
+
+let get_formula proof = 
+  match proof with 
+    | BlockStmt {assumption; statements; _} ->
+      (fun ref -> 
+            match ref with
+            | Ref [0] -> assumption
+            | Ref [i] -> formula_of_statement (List.nth statements (i - 1))
+            | Ref (head::tail) -> get_statement (List.nth statements (head - 1)) (Ref tail) |> formula_of_statement
+            | _ -> failwith "wrong reference")
+    | _ -> failwith "non referencable"
+
+let rec reference_allowed current_ref ref = 
+  match current_ref, ref with 
+    | Ref [k], Ref [i] when i < k -> true
+    | Ref (head::_), Ref [i] when i < head -> true
+    | Ref (head::tail), Ref(head_ref::tail_ref) when head = head_ref -> reference_allowed (Ref tail) (Ref tail_ref)
+    | _, _ -> false;;
+
+let append ref i =
+  match ref with
+  | Ref lst -> Ref (lst @ [i]) 
+
+let rec is_valid_formula proof r = 
+  match get_statement proof r with
+    | AxiomStmt {ref; label; fofs; terms; formula} when ref = r && formula = (axiom label (fofs, terms)) -> true
+    | RuleStmt {ref; label; refs; terms; formula} when ref = r 
+       && List.for_all (reference_allowed ref) refs
+       && List.for_all (is_valid_formula proof) refs
+        -> formula = (rule label (List.map (get_formula proof) refs, terms))
+    | BlockStmt{ref; assumption; statements; formula} when ref = r 
+      && 
+        let last_ref = append r (List.length statements) in
+        (is_valid_formula proof (last_ref) && formula = Implies(assumption, get_formula proof last_ref)) 
+          -> true
+    | _ -> false

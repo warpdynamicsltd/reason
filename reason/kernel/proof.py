@@ -112,6 +112,14 @@ def CON(a: FirstOrderFormula, b: FirstOrderFormula):
     return Axiom("CON", [a, b], []), Implies(Not(a), Implies(a, b))
 
 @asm
+def IFI(a: FirstOrderFormula, b: FirstOrderFormula):
+    return Axiom("IFI", [a, b], []), Implies(Implies(a, b), Implies(Implies(b, a), Iff(a, b)))
+
+@asm
+def IFO(a: FirstOrderFormula, b: FirstOrderFormula):
+    return Axiom("IFO", [a, b], []), Implies(Iff(a, b), And(Implies(a, b), Implies(b, a)))
+
+@asm
 def ALL(a: FirstOrderFormula, t: Term, v: Variable):
     if not isinstance(v, Variable):
         raise RuntimeError("Error: Term must be a variable")
