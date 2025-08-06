@@ -11,16 +11,16 @@ def p_implies_p(p: FirstOrderFormula) -> int:
     return mp3
 
 def p_and_q(p_index: int, q_index: int) -> int:
-    p_formula = GET_FORMULA(p_index)        # p
-    q_formula = GET_FORMULA(q_index)        # q
+    p_formula = formula(p_index)        # p
+    q_formula = formula(q_index)        # q
     ax      = AND(p_formula, q_formula)     # p→q→p∧q
     mp1     = MOD(ax, p_index)              # q→p∧q
     mp2     = MOD(mp1, q_index)             # p∧q
     return mp2
 
 def p_or_q(p_index: int, q_index: int) -> int:
-    p_formula = GET_FORMULA(p_index)        # p
-    q_formula = GET_FORMULA(q_index)        # q
+    p_formula = formula(p_index)        # p
+    q_formula = formula(q_index)        # q
     ax      = ORL(p_formula, q_formula)     # p→p∨q
     mp      = MOD(ax, p_index)              # p∨q
     return mp
@@ -36,8 +36,8 @@ def a_p_and_q(a_p_idx: int, a_q_idx: int) -> int:
     # ------------------------------------------------------------------
     # 1.  Extract the common antecedent a and the consequents p , q
     # ------------------------------------------------------------------
-    a_imp_p = GET_FORMULA(a_p_idx)           # a → p
-    a_imp_q = GET_FORMULA(a_q_idx)           # a → q
+    a_imp_p = formula(a_p_idx)           # a → p
+    a_imp_q = formula(a_q_idx)           # a → q
 
     match (a_imp_p, a_imp_q):
         case (LogicConnective(name=const.IMP, args=[a1, p]),
@@ -50,7 +50,7 @@ def a_p_and_q(a_p_idx: int, a_q_idx: int) -> int:
     # 2.  Obtain p → q → p ∧ q   (∧–introduction axiom)
     # ------------------------------------------------------------------
     and_idx   = AND(p, q)                             # p → q → p∧q
-    and_form  = GET_FORMULA(and_idx)
+    and_form  = formula(and_idx)
 
     # ------------------------------------------------------------------
     # 3.  Lift the axiom under the antecedent ‘a’

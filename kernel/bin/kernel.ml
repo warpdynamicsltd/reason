@@ -140,7 +140,7 @@ type statement =
 
 let formula_of_statement s = 
   match s with
-    | AssumptionStmt {formula;_} -> formula
+    | AssumptionStmt {formula; _} -> formula
     | AxiomStmt {formula; _} -> formula
     | RuleStmt {formula; _} -> formula
     | BlockStmt {formula; _} -> formula

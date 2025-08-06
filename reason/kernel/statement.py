@@ -1,21 +1,25 @@
 from typing import Self
 
 from reason.core.fof_types import *
+from reason.core.fof_ops import *
 from reason.core.transform.jsonize import jsonize
 
 class Ref:
     def __init__(self, indices: list[int]):
-        self.indices = indices
+        self.indices = tuple(indices)
 
     def to_json(self) -> dict:
         # { "type": "Ref", "name": None, "args": [ index ] }
         return {"type": "Ref", "name": None, "args": self.indices}
 
+    def __repr__(self):
+        return f"Ref({self.indices})"
+
 class Assumption:
     def __init__(
             self,
-            ref: Ref,
             formula: FirstOrderFormula,
+            ref: Ref = None,
     ):
         self.ref = ref
         self.formula = formula
@@ -33,17 +37,17 @@ class Assumption:
 class AxiomStmt:
     def __init__(
         self,
-        ref: Ref,
         label: str,
         fofs: list[FirstOrderFormula],
         terms: list[Term],
         formula: FirstOrderFormula,
+        ref: Ref = None
     ):
-        self.ref = ref
         self.label = label
         self.fofs = fofs
         self.terms = terms
         self.formula = formula
+        self.ref = ref
 
     def to_json(self) -> dict:
         return {
@@ -61,11 +65,11 @@ class AxiomStmt:
 class RuleStmt:
     def __init__(
         self,
-        ref: Ref,
         label: str,
         refs: list[Ref],
         terms: list[Term],
         formula: FirstOrderFormula,
+        ref: Ref = None,
     ):
         self.ref = ref
         self.label = label
@@ -90,13 +94,43 @@ class RuleStmt:
 class BlockStmt:
     def __init__(
         self,
-        ref: Ref,
-        statements: list[AxiomStmt | RuleStmt | Self],
-        formula: FirstOrderFormula,
+        statements: list[AxiomStmt | RuleStmt | Self] = [],
+        formula: FirstOrderFormula = None,
+        ref: Ref = Ref([]),
     ):
         self.ref = ref
-        self.statements = statements
+        self.statements = list(statements)
         self.formula = formula
+
+    def get_formula(self):
+        if self.statements:
+            if type(self.statements[0]) is Assumption:
+                return Implies(self.statements[0].formula, self.statements[-1].formula)
+            else:
+                return self.statements[-1].formula
+        else:
+            return None
+
+    def value(self, ref : Ref):
+        index = ref.indices[0]
+        statement = self.statements[index]
+        if type(statement) is BlockStmt:
+            if len(ref.indices) > 1:
+                ref = Ref(list(ref.indices)[1:])
+                return statement.value(ref)
+            else:
+                return statement.formula
+        else:
+            return statement.formula
+
+    def get_next_ref(self):
+        return Ref(list(self.ref.indices) + [len(self.statements)])
+
+    def add(self, statement: AxiomStmt | RuleStmt | Self):
+        statement.ref = self.get_next_ref()
+        self.statements.append(statement)
+        self.formula = self.get_formula()
+
 
     def to_json(self) -> dict:
         return {
