@@ -258,6 +258,33 @@ def de_morgan_not_and_to_or(p: FirstOrderFormula, q: FirstOrderFormula):
 
         return join_exclusive_cases(r8, r1)
 
+def p_to_p(p: FirstOrderFormula):
+    with Block():
+        ASM(p)
+        r2 = ref()
+    return r2
+
+def imp_inv(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    (a -> b) -> (~b -> ~a)
+    """
+    with Block():
+        r1 = ASM(Implies(a, b)) # a -> b
+        with Block():
+            r2 = ASM(Not(b)) # ~b
+            r3 = p_to_p(Not(a)) # ~a -> ~a
+            with Block():
+                r4 = ASM(a) # a
+                r5 = MOD(r1, r4)# b
+                contradiction(r5, r2, Not(a)) # ~a
+                r6 = ref() # a -> ~a
+            join_exclusive_cases(r6, r3) # ~a
+            r7 = ref() # ~b -> ~a
+        return ref() # (a -> b) -> (~b -> ~a)
+
+
+
+
 
 BEGIN()
 r = not_not_p_to_p(L("P"))
@@ -271,6 +298,16 @@ print(L.printer(f))
 
 BEGIN()
 r = de_morgan_not_and_to_or(L("P"), L("Q"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = p_to_p(L("P"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = imp_inv(L("P"), L("Q"))
 f = RETURN()
 print(L.printer(f))
 
