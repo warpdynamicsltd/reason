@@ -146,3 +146,131 @@ r5 = r_and(r1, r2)
 MOD(r3, r5)
 f = RETURN()
 print(L.printer(f))
+
+def join_cases(case1: Ref, case2: Ref):
+    """
+    a -> c, b -> c |- (a or b) -> c
+    """
+    f1 = formula(case1)
+    f2 = formula(case2)
+    match f1, f2:
+        case LogicConnective(name=const.IMP, args=[a, c]), LogicConnective(name=const.IMP, args=[b, c1]) if c == c1:
+            r1 = DIS(a, b, c)
+            r2 = MOD(r1, case1)
+            return MOD(r2, case2)
+
+        case _:
+            raise RuntimeError("non join cases")
+
+def join_exclusive_cases(case1: Ref, case2: Ref):
+    """
+    p -> c, ~p -> c |- c
+    """
+    f1 = formula(case1)
+    f2 = formula(case2)
+    match f1, f2:
+        case LogicConnective(name=const.IMP, args=[a, c]), LogicConnective(name=const.IMP, args=[b, c1]) if c == c1 and b == Not(a):
+            r1 = DIS(a, b, c) # (p -> c) -> ((~p -> c) -> (p or ~p -> c))
+            r2 = MOD(r1, case1) # (~p -> c) -> (p or ~p -> c)
+            r3 = MOD(r2, case2) # p or ~p -> c
+            r4 = LEM(a) # p or ~p
+            return MOD(r3, r4) #c
+
+        case _:
+            raise RuntimeError("non join cases")
+
+def not_not_p_to_p(p: FirstOrderFormula):
+    """
+    ~~p -> p
+    """
+    with Block():
+        r1 = ASM(Not(Not(p)))
+        with Block():
+            r2 = ASM(p)
+            r3 = ref()
+        assert formula(r3) == Implies(p, p)
+        with Block():
+            r4 = ASM(Not(p))
+            r5 = CON(Not(p), p) # ~~p -> (~p -> p)
+            r6 = MOD(r5, r1) # ~p -> p
+            MOD(r6, r4) # p
+            r7 = ref()
+        assert formula(r7) == Implies(Not(p), p)
+        r8 = join_cases(r3, r7) # p or ~p -> p
+        r9 = LEM(p)
+        r10 = MOD(r8, r9)
+    return r10
+
+def p_to_not_not_p(p: FirstOrderFormula):
+    """
+    p -> ~~p
+    """
+    with Block():
+        r1 = ASM(p)
+        with Block():
+            r2 = ASM(Not(Not(p)))
+            r3 = ref()
+        assert formula(r3) == Implies(Not(Not(p)), Not(Not(p)))
+        with Block():
+            r4 = ASM(Not(p))
+            r5 = CON(p, Not(Not(p))) # ~p -> (p -> ~~p)
+            r6 = MOD(r5, r4) # p -> ~~p
+            MOD(r6, r1) # ~~p
+            r7 = ref()
+        assert formula(r7) == Implies(Not(p), Not(Not(p)))
+        r8 = join_cases(r7, r3) # ~p or ~~p -> ~~p
+        r9 = LEM(Not(p))
+        r10 = MOD(r8, r9)
+    return r10
+
+def contradiction(a: Ref, b: Ref, outcome: FirstOrderFormula):
+    """
+    a = p
+    b = ~p
+    p, ~p |- outcome
+    """
+    p = formula(a)
+    q = formula(b)
+    if q == Not(p):
+        r1 = CON(p, outcome) # ~p -> (p -> outcome)
+        r2 = MOD(r1, b) # (p -> outcome)
+        return MOD(r2, a)
+    else:
+        raise RuntimeError("non contradiction")
+
+def de_morgan_not_and_to_or(p: FirstOrderFormula, q: FirstOrderFormula):
+    """
+    ~(p and q) -> ~p or ~q
+    """
+    with Block():
+        r0 = ASM(Not(And(p, q))) # ~(p and q)
+        r1 = ORL(Not(p), Not(q))  # ~p -> ~p or ~q
+        with Block():
+            r2 = ASM(p)
+            with Block():
+                r3 = ASM(q)
+                r4 = p_and_q(r2, r3) # p and q
+                r5 = contradiction(r4, r0, Or(Not(p), Not(q))) # ~p or ~q
+                r6 = ref() # q -> ~p or ~q
+            r7 = ORR(Not(p), Not(q))  # ~q -> ~p or ~q
+            join_exclusive_cases(r6, r7) # ~p or ~q
+            r8 = ref() # p -> ~p or ~q
+
+        return join_exclusive_cases(r8, r1)
+
+
+BEGIN()
+r = not_not_p_to_p(L("P"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = p_to_not_not_p(L("P"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = de_morgan_not_and_to_or(L("P"), L("Q"))
+f = RETURN()
+print(L.printer(f))
+
