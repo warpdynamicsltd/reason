@@ -167,7 +167,7 @@ let append ref i =
   match ref with
   | Ref lst -> Ref (lst @ [i])
 
-let last_elem lst = List.nth lst (List.length lst - 1)  
+let last_elem lst = List.nth lst (List.length lst - 1)
 
 let last_of_ref ref = match ref with Ref lst -> last_elem lst
 

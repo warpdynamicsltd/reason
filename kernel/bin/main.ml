@@ -1,5 +1,5 @@
 open Printer_module
-open Core
+open Transform
 open Kernel
 
 let command c f =
