@@ -1,0 +1,47 @@
+#%%
+
+from reason.core.language import Language
+
+L = Language()
+L.add_const("a")
+
+# parser = TPTPParser()
+#
+#
+# proof_obj = prove(L("(∀x.∀y. P(x, y)) → P(a, a)"))
+#
+# formulas = {}
+# for item in proof_obj["proof"]:
+#     if item["formula"] == "$false":
+#         continue
+#     print(item)
+#     formulas[item["id"]] = parser(item["formula"])
+#     print(L.printer(parser(item["formula"])))
+#
+#
+# print(L.printer(Kernel.to_ennf(formulas[3])))
+# print(L.printer(Kernel.to_cnf(formulas[4])))
+
+# print(dumps(proof_obj, indent=2))
+
+# print(jsonize(L("x=x")))
+
+begin()
+a = lem(L("P"))
+b = imp(L("P or ~P"), L("Q"))
+mod(b, a)
+f = end()
+print(L.printer(f))
+
+# f_in = L("(∀x. P(x, z)) → P(z, z)")
+# #
+# f = Kernel.substitute("z", Function("f", Variable("u"), Variable("b")), f_in)
+# f = Kernel.substitute("z", Const("a"), f_in)
+# print(L.printer(f))
+#
+# print(Kernel.is_simple_axiom(L("P → Q")))
+#
+# f = Kernel.skolemize(f_in)
+# print(L.printer(f))
+
+

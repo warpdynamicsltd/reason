@@ -27,8 +27,9 @@ predicate: fname -> predicate_name
 term_list: [term ("," term)*]
 
 formula: predicate
-  | "(" formula ")" -> bracket
-  | "~" formula -> logic_neg_op
+  | bracket
+  | "~" predicate -> logic_neg_op
+  | "~" bracket -> logic_neg_op
   | formula "&" formula -> logic_and_op
   | formula "|" formula -> logic_or_op
   | formula "=>" formula -> logic_imp_op
@@ -38,3 +39,4 @@ formula: predicate
 
 exists_quantifier: "?" "[" variables_list "]" ":" formula
 forall_quantifier: "!" "[" variables_list "]" ":" formula
+bracket: "(" formula ")"

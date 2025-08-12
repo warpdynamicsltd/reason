@@ -31,7 +31,7 @@ def run_binary(binary_path, input_string, *args):
 
     except subprocess.CalledProcessError as e:
         # Handle errors in execution
-        print(f"Error: {e.stderr.strip()}")
+        # print(f"Error: {e.stderr.strip()}")
         raise e
     except FileNotFoundError:
         # Handle case where binary does not exist

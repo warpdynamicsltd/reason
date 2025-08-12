@@ -1,0 +1,17 @@
+(lang dune 3.19)
+
+(name kernel)
+
+(generate_opam_files true)
+
+(authors "Michal Stanislaw Wojcik")
+
+(maintainers "Michal Stanislaw Wojcik")
+
+(package
+ (name kernel)
+ (synopsis "Kernel for FOL")
+ (description "Kernel for FOL")
+ (depends ocaml yojson))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
