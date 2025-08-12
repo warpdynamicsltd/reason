@@ -1,7 +1,7 @@
-#mod_use "formula.ml";;
-#mod_use "kernel.ml";;
-#mod_use "printer_module.ml";;
-#mod_use "core.ml";;
+#mod_use "./formula.ml";;
+#mod_use "./kernel.ml";;
+#mod_use "./printer_module.ml";;
+#mod_use "./transform.ml";;
 
 
 open Formula;;

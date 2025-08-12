@@ -20,5 +20,4 @@ fi
 eval $(opam env)
 opam update
 opam install . --deps-only -y
-opam install dune
 ./build.sh
