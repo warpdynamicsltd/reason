@@ -21,7 +21,7 @@ let exec (json : Yojson.Safe.t) =
   match json with 
     | `Assoc [("type", `String "Command"); ("name", `String "FinalTautology"); ("args", `List [proof])] -> 
       final_tautology (proof_of_json proof) |> json_of_formula |> Yojson.Safe.pretty_to_string
-    | `Assoc [("type", `String "Command"); ("name", `String "ProvedTautology"); ("args", `List [proof])] ->
+    | `Assoc [("type", `String "Command"); ("name", `String "KernelProof"); ("args", `List [proof])] ->
       proved_tautology (statement_of_json proof) |> json_of_formula |> Yojson.Safe.pretty_to_string
     | `Assoc [("type", `String "Command"); ("name", `String c); ("args", `List [f])] -> Yojson.Safe.pretty_to_string (command c f)
     | `Assoc [("type", `String "Command"); ("name", `String "Sub"); ("args", `List [`String var; t; f])] -> substitute var t f

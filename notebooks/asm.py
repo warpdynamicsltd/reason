@@ -1,20 +1,18 @@
 #%%
 from reason.core.language import Language
-from reason.kernel import Kernel
-from reason.kernel.proof import *
-from reason.kernel.statement import *
 from reason.core.fof_logic import *
+from reason.proofkit.kernel.proof import Assumption
 
 L = Language()
 
-proof = BlockStmt(
+proof = Block(
     ref=Ref([]),
     statements=[
         Assumption(
             ref=Ref([0]),
             formula=L("P")
         ),
-        RuleStmt(
+        Rule(
             ref=Ref([1]),
             label="IDN",
             refs=[Ref([0])],
@@ -25,14 +23,14 @@ proof = BlockStmt(
     formula=L("P → P")
 )
 
-proof2 = BlockStmt(
+proof2 = Block(
     ref=Ref([]),
     statements=[
         Assumption(
             ref=Ref([0]),
             formula=L("P")
         ),
-        BlockStmt(
+        Block(
             ref=Ref([1]),
             statements=[
                 Assumption(
@@ -40,7 +38,7 @@ proof2 = BlockStmt(
                     formula=L("Q")
                 ),
 
-                RuleStmt(
+                Rule(
                     ref=Ref([1, 1]),
                     label="IDN",
                     refs=[Ref([0])],
@@ -54,21 +52,21 @@ proof2 = BlockStmt(
     formula=L("P → (Q → P)")
 )
 
-proof3 = BlockStmt(
+proof3 = Block(
     ref=Ref([]),
     statements=[
         Assumption(
             ref=Ref([0]),
             formula=L("P")
         ),
-        BlockStmt(
+        Block(
             ref=Ref([1]),
             statements=[
                 Assumption(
                     ref=Ref([1, 0]),
                     formula=L("A")
                 ),
-                RuleStmt(
+                Rule(
                     ref=Ref([1, 1]),
                     label="IDN",
                     refs=[Ref([1, 0])],
@@ -78,14 +76,14 @@ proof3 = BlockStmt(
             ],
             formula=L("A → A")
         ),
-        BlockStmt(
+        Block(
             ref=Ref([2]),
             statements=[
                 Assumption(
                     ref=Ref([2, 0]),
                     formula=L("Q")
                 ),
-                RuleStmt(
+                Rule(
                     ref=Ref([2, 1]),
                     label="IDN",
                     refs=[Ref([1])],
@@ -99,17 +97,17 @@ proof3 = BlockStmt(
     formula=L("P → (Q → (A → A))")
 )
 
-proof4 = BlockStmt(
+proof4 = Block(
     ref=Ref([]),
     statements=[
-        BlockStmt(
+        Block(
             ref=Ref([0]),
             statements=[
                 Assumption(
                     ref=Ref([0, 0]),
                     formula=L("A")
                 ),
-                RuleStmt(
+                Rule(
                     ref=Ref([0, 1]),
                     label="IDN",
                     refs=[Ref([0, 0])],
@@ -119,14 +117,14 @@ proof4 = BlockStmt(
             ],
             formula=L("A → A")
         ),
-        BlockStmt(
+        Block(
             ref=Ref([1]),
             statements=[
                 Assumption(
                     ref=Ref([1, 0]),
                     formula=L("Q")
                 ),
-                RuleStmt(
+                Rule(
                     ref=Ref([1, 1]),
                     label="IDN",
                     refs=[Ref([0])],
@@ -141,21 +139,21 @@ proof4 = BlockStmt(
 )
 
 
-proof5 = BlockStmt(
+proof5 = Block(
     ref=Ref([]),
     statements=[
         Assumption(
             ref=Ref([0]),
             formula=L("P")
         ),
-        AxiomStmt(
+        Axiom(
             ref=Ref([1]),
             label="LEM",
             fofs=[L("P")],
             terms=[],
             formula=L("P or ~P")
         ),
-        RuleStmt(
+        Rule(
             ref=Ref([2]),
             label="IDN",
             refs=[Ref([1])],

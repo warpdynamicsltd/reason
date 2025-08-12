@@ -4,23 +4,14 @@
 
 (generate_opam_files true)
 
-(source
- (github username/reponame))
+(authors "Michal Stanislaw Wojcik")
 
-(authors "Author Name <author@example.com>")
-
-(maintainers "Maintainer Name <maintainer@example.com>")
-
-(license LICENSE)
-
-(documentation https://url/to/documentation)
+(maintainers "Michal Stanislaw Wojcik")
 
 (package
  (name kernel)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml yojson)
- (tags
-  ("add topics" "to describe" your project)))
+ (synopsis "Kernel for FOL")
+ (description "Kernel for FOL")
+ (depends ocaml yojson))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

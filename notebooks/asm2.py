@@ -1,14 +1,11 @@
 #%%
 from reason.core.language import Language
-from reason.kernel import Kernel
-from reason.kernel.proof import *
-from reason.kernel.statement import *
 from reason.core.fof_logic import *
 
 L = Language()
 
 def p_to_p(p: FirstOrderFormula):
-    with Block():
+    with Context():
         r1 = ASM(p)  # P
         r2 = IDN(r1);
         return ref()
@@ -21,9 +18,9 @@ f = RETURN()
 print(L.printer(f))
 
 BEGIN()
-with Block():
+with Context():
     r1 = ASM(L("P")) # P
-    with Block():
+    with Context():
         r2 = ASM(L("Q")) # Q
         IDN(r1); # P
         r3 = ref()
