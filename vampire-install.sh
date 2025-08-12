@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd repositories/vampire
+cd repositories/vampire || exit
 mkdir build
-cd build
+cd build || exit
 CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake ..
 make -j4
 chmod 777 ./vampire

@@ -16,10 +16,20 @@ with the most up to date versions of dependencies, you should follow the steps b
 
 1. Most likely you will need to install:
    ```bash
-   sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl
+   sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl opam
    ```
 1. Go to the root folder of Reason repository.
-2. Build binary for Vampire by `./vampire-install.sh`. This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
+2. Build binary for Vampire by 
+   ```bash
+   ./vampire-install.sh
+   ``` 
+   This will run `cmake` over Vampire codes and next `make` to build it from sources and copy vampire binary to `reason/assets/bin`.
+3. Build binary for Kernel by
+   ```bash
+   ./kernel-install.sh
+   ```
+   This will run `dune build` over `kernel` directory and copy kernel 
+   binary to `reason/assets/bin`. 
 3. One possible way to install `reason` package in your local Python environment:
    1. Install `uv` package manager by e.g. `curl -LsSf https://astral.sh/uv/install.sh | sh`.
    2. Run `uv sync` on the level of the project root directory.
