@@ -19,7 +19,7 @@ jobs:
         with:
           submodules: 'true'
 
-      - run: sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl
+      - run: sudo apt install -y build-essential cmake clang zlib1g-dev libgmp-dev python3 curl opam
 
       - name: cache vampire build
         id: cache-vampire
