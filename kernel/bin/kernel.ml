@@ -133,7 +133,6 @@ type statement =
   | BlockStmt of 
     {
       ref: reference;
-      (*assumption: first_order_formula;*)
       statements: statement list;
       formula: first_order_formula
     }

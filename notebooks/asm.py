@@ -1,7 +1,7 @@
 #%%
 from reason.core.language import Language
-from reason.core.fof_logic import *
-from reason.proofkit.kernel.proof import Assumption
+from reason.proofkit.kernel.proof import *
+from reason.proofkit.kernel import Kernel
 
 L = Language()
 

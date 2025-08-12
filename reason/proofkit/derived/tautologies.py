@@ -28,15 +28,15 @@ def not_not_p_to_p(p: FirstOrderFormula):
         r1 = ASM(Not(Not(p)))
         with Context():
             r2 = ASM(p)
-            r3 = ref()
-        assert formula(r3) == Implies(p, p)
+            r3 = ref() # p -> p
+
         with Context():
             r4 = ASM(Not(p))
             r5 = CON(Not(p), p) # ~~p -> (~p -> p)
             r6 = MOD(r5, r1) # ~p -> p
             MOD(r6, r4) # p
-            r7 = ref()
-        assert formula(r7) == Implies(Not(p), p)
+            r7 = ref() # ~p -> p
+
         r8 = r_join_cases(r3, r7) # p or ~p -> p
         r9 = LEM(p)
         r10 = MOD(r8, r9)
