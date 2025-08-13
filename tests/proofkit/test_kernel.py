@@ -1,9 +1,8 @@
 import unittest
 
 from reason.core.language import Language
-from reason.proofkit.derived.rules import r_and_left, r_and_right, r_and
-from reason.proofkit.derived.tautologies import iff_tau, not_not_p_to_p, p_to_not_not_p, de_morgan_not_and_to_or, \
-    p_to_p, imp_inv, imp_trans
+from reason.proofkit.derived.rules import *
+from reason.proofkit.derived.tautologies import *
 from reason.proofkit.kernel.proof import *
 
 L = Language()
@@ -142,6 +141,11 @@ class TestKernel(unittest.TestCase):
         self.assertEqual(f, L("~(P ∧ Q) → ~P ∨ ~Q"))
 
         BEGIN()
+        r = de_morgan_or_not_to_not_and(L("P"), L("Q"))
+        f = RETURN()
+        self.assertEqual(f, L("~P ∨ ~Q → ~(P ∧ Q)"))
+
+        BEGIN()
         r = p_to_p(L("P"))
         f = RETURN()
         self.assertEqual(f, L("P → P"))
@@ -150,3 +154,13 @@ class TestKernel(unittest.TestCase):
         r = imp_inv(L("P"), L("Q"))
         f = RETURN()
         self.assertEqual(f, L("P → Q → (~Q → ~P)"))
+
+        BEGIN()
+        r = p_iff_not_not_p(L("P"))
+        f = RETURN()
+        self.assertEqual(f, L("P ⟷ ~~P"))
+
+        BEGIN()
+        r = de_morgan_not_or_to_and_not(L("P"), L("Q"))
+        f = RETURN()
+        self.assertEqual(f, L("~(P ∨ Q) → ~P ∧ ~Q"))

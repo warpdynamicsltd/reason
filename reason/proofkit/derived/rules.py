@@ -2,7 +2,8 @@ from reason.core.fof_ops import Not
 from reason.core.fof_types import LogicConnective, FirstOrderFormula
 from reason.parser.tree import const
 from reason.proofkit.kernel import Ref
-from reason.proofkit.kernel.proof import formula, ANL, MOD, ANR, AND, DIS, LEM, CON
+from reason.proofkit.kernel.proof import *
+import reason.proofkit.derived.tautologies as tau
 
 
 def r_and_left(p: Ref):
@@ -86,3 +87,128 @@ def r_contradiction(a: Ref, b: Ref, outcome: FirstOrderFormula):
         return MOD(r2, a)
     else:
         raise RuntimeError("non contradiction")
+
+def r_imp_imp_iff(p: Ref, q: Ref):
+    """
+    a -> b, b -> a |- a <-> b
+    """
+    match formula(p), formula(q):
+        case LogicConnective(name=const.IMP, args=[a, b]), LogicConnective(name=const.IMP, args=[b1, a1]) if a == a1 and b == b1:
+            r1 = r_and(p, q) # a -> b and b -> a
+            r2 = tau.iff_tau(a, b)
+            return MOD(r2, r1)
+        case _:
+            raise RuntimeError("non imp imp iff")
+
+def r_imp_imp_imp(p: Ref, q: Ref):
+    """
+    a -> b, b -> c |- a -> c
+    """
+    match formula(p), formula(q):
+        case LogicConnective(name=const.IMP, args=[a, b]), \
+             LogicConnective(name=const.IMP, args=[b1, c]) if b == b1:
+            r1 = r_and(p, q)  # a -> b and b -> c
+            r2 = tau.imp_trans(a, b, c)
+            return MOD(r2, r1)
+        case _:
+            raise RuntimeError("non imp imp iff")
+
+def r_iff_revolve(p: Ref):
+    """
+    a <-> b |- b <-> a
+    """
+    match formula(p):
+        case LogicConnective(name=const.IFF, args=[a, b]):
+            r1 = IFO(a, b)
+            r2 = MOD(r1, p) # a -> b and b -> a
+            r3 = r_and_left(r2) # a -> b
+            r4 = r_and_right(r2) # b -> a
+            r5 = r_and(r4, r3) # b -> a and a -> b
+            r6 = tau.iff_tau(b, a)
+            return MOD(r6, r5)
+        case _:
+            raise RuntimeError("non iff")
+
+
+def r_iff_imp(p: Ref):
+    """
+    a <-> b |- a -> b
+    """
+    match formula(p):
+        case LogicConnective(name=const.IFF, args=[a, b]):
+            r1 = IFO(a, b)  # a <-> b -> (a -> b) and (c -> b)
+            r2 = MOD(r1, p)  # (a -> b) and (b -> a)
+            return r_and_left(r2)  # a -> b
+        case _:
+            raise RuntimeError("non equivalence")
+
+def r_iff_imp_not(p: Ref):
+    """
+    a <-> b |- ~a -> ~b
+    """
+    match formula(p):
+        case LogicConnective(name=const.IFF, args=[a, b]):
+            r1 = IFO(a, b)  # a <-> b -> (a -> b) and (b -> a)
+            r2 = MOD(r1, p)  # (a -> b) and (c -> b)
+            r3 = r_and_right(r2)  # b -> a
+            r4 = tau.imp_inv(a, b)  # (b -> a) -> (~a -> ~b)
+            return  MOD(r4, r3)  # ~a -> ~b
+        case _:
+            raise RuntimeError("non equivalence")
+
+def r_iff_mod(p: Ref, q: Ref):
+    """
+    a <-> c, a |- c
+    """
+    r1 = r_iff_imp(p) # a -> c
+    return MOD(r1, q)
+
+def r_iff_mod_not(p: Ref, q: Ref):
+    """
+    a <-> c, ~a |- ~c
+    """
+    r1 = r_iff_imp_not(p) # ~a -> ~c
+    return MOD(r1, q)
+
+def r_iff_or_left(p: Ref, q: Ref):
+    """
+    a <-> c, a or b |- c or b
+    """
+    match formula(p), formula(q):
+        case (LogicConnective(name=const.IFF, args=[a, c]), LogicConnective(name=const.OR, args=[a1, b])) if a1 == a:
+            with Context():
+                r3 = ASM(a)
+                r4 = r_iff_imp(p) # a -> c
+                r5 = MOD(r4, r3) # c
+                r6 = ORL(c, b) # c -> c or b
+                MOD(r6, r5) # c or b
+                r7 = ref() # a -> c or b
+
+            r8 = ORR(c, b) # b -> c or b
+            r9 = r_join_cases(r7, r8) # a or b -> c or b
+            return MOD(r9, q) # c or b
+
+        case _:
+            raise RuntimeError("non equivalence")
+
+def r_iff_or_right(p: Ref, q: Ref):
+    """
+    a <-> c, b or a |- b or c
+    """
+    match formula(p), formula(q):
+        case (LogicConnective(name=const.IFF, args=[a, c]),
+              LogicConnective(name=const.OR, args=[b, a1])) if a1 == a:
+            with Context():
+                r3 = ASM(a)
+                r4 = r_iff_imp(p)  # a -> c
+                r5 = MOD(r4, r3)  # c
+                r6 = ORR(b, c)  # c -> b or c
+                MOD(r6, r5)  # c or b
+                r7 = ref()  # a -> b or c
+
+            r8 = ORL(b, c)  # b -> b or c
+            r9 = r_join_cases(r8, r7)  # b or a -> b or c
+            return MOD(r9, q)  # b or c
+
+        case _:
+            raise RuntimeError("not equivalence")
