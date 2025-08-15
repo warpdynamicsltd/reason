@@ -391,8 +391,49 @@ class TestKernel(unittest.TestCase):
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
+            with Context():
+                r2 = ASM(L("B ∧ A"))
+                r = r_iff_and_right(r1, r2)
+                self.assertEqual(formula(r), L("B ∧ C"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            with Context():
+                r2 = ASM(L("A ∨ B"))
+                r = r_iff_or_left(r1, r2)
+                self.assertEqual(formula(r), L("C ∨ B"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            with Context():
+                r2 = ASM(L("B ∨ A"))
+                r = r_iff_or_right(r1, r2)
+                self.assertEqual(formula(r), L("B ∨ C"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
             r = t_iff_and_left(r1, L("B"))
             self.assertEqual(formula(r), L("A ∧ B ⟷ C ∧ B"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            r = t_iff_and_right(r1, L("B"))
+            self.assertEqual(formula(r), L("B ∧ A ⟷ B ∧ C"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            r = t_iff_or_left(r1, L("B"))
+            self.assertEqual(formula(r), L("A ∨ B ⟷ C ∨ B"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            r = t_iff_or_right(r1, L("B"))
+            self.assertEqual(formula(r), L("B ∨ A ⟷ B ∨ C"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ C"))
+            r = t_iff_neg(r1)
+            self.assertEqual(formula(r), L("~A ⟷ ~C"))
 
 
         f = RETURN()

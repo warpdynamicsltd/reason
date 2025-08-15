@@ -293,6 +293,21 @@ def r_iff_and_left(r1: Ref, r2: Ref):
     raise RuleError()
 
 @rule
+def r_iff_and_right(r1: Ref, r2: Ref):
+    """
+    a <-> c, b and a |- b and c
+    """
+    match formula(r1), formula(r2):
+        case (LogicConnective(name=const.IFF, args=[a, c]),
+              LogicConnective(name=const.AND, args=[b, a1])) if a1 == a:
+            r_a = r_and_right(r2) # a
+            r_b = r_and_left(r2) # b
+            r_c = r_iff_mod(r1, r_a) # c
+            return r_and(r_b, r_c)
+
+    raise RuleError()
+
+@rule
 def r_to_not_not(r1: Ref):
     """
     p |- ~~p
