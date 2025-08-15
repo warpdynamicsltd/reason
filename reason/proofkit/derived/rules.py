@@ -165,9 +165,6 @@ def r_iff_trans(r1: Ref, r2: Ref):
 
     raise RuleError()
 
-
-    return RuleError()
-
 @rule
 def r_iff_revolve(p: Ref):
     """
