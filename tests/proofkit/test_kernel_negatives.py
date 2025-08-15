@@ -2,7 +2,7 @@ import unittest
 
 from reason.core.language import Language
 from reason.proofkit.derived.rules import r_and_left, r_and_right, r_and
-from reason.proofkit.derived.tautologies import iff_tau, not_not_p_to_p, p_to_not_not_p, de_morgan_not_and_to_or, \
+from reason.proofkit.derived.tautologies import iff_tau, not_not_p_to_p, p_to_not_not_p, de_morgan_not_and_to_or_not, \
     p_to_p, imp_inv, imp_trans
 from reason.proofkit.kernel.proof import *
 from reason.proofkit.kernel import Kernel, KernelError
@@ -263,6 +263,46 @@ class TestKernelNegatives(unittest.TestCase):
                 )
             ],
             formula=L("P → P or ~P")
+        ),
+        Block(
+            ref=Ref([]),
+            statements=[
+                Block(
+                    ref=Ref([0]),
+                    statements=[
+                        Assumption(
+                            ref=Ref([0, 0]),
+                            formula=L("A")
+                        ),
+                        Rule(
+                            ref=Ref([0, 1]),
+                            label="IDN",
+                            refs=[Ref([0, 0])],
+                            terms=[],
+                            formula=L("A")
+                        )
+                    ],
+                    formula=L("A → A")
+                ),
+                Block(
+                    ref=Ref([1]),
+                    statements=[
+                        Assumption(
+                            ref=Ref([1, 0]),
+                            formula=L("Q")
+                        ),
+                        Rule(
+                            ref=Ref([1, 1]),
+                            label="IDN",
+                            refs=[Ref([0, 1])],
+                            terms=[],
+                            formula=L("A")
+                        )
+                    ],
+                    formula=L("Q → A")
+                )
+            ],
+            formula=L("Q → (Q → A)")
         )
 
     ]

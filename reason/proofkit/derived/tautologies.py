@@ -65,6 +65,9 @@ def p_to_not_not_p(p: FirstOrderFormula):
         return ref()
 
 def p_iff_not_not_p(p: FirstOrderFormula):
+    """
+    p <-> ~~p
+    """
     with Context():
         r1 = p_to_not_not_p(p) # p -> ~~p
         r2 = not_not_p_to_p(p) # ~~p -> p
@@ -74,7 +77,7 @@ def p_iff_not_not_p(p: FirstOrderFormula):
         return ref()
 
 
-def de_morgan_not_and_to_or(p: FirstOrderFormula, q: FirstOrderFormula):
+def de_morgan_not_and_to_or_not(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p and q) -> ~p or ~q
     """
@@ -109,32 +112,75 @@ def de_morgan_or_not_to_not_and(p: FirstOrderFormula, q: FirstOrderFormula):
         rules.r_join_cases(r5, r6) # ~p or ~q -> ~(p and q)
         return ref()
 
+def de_morgan_neg_con_iff_dis_neg(p: FirstOrderFormula, q: FirstOrderFormula):
+    """
+    ~(p and q) <-> ~p or ~q
+    """
+    with Context():
+        r1 = de_morgan_not_and_to_or_not(p, q)
+        r2 = de_morgan_or_not_to_not_and(p, q)
+        rules.r_imp_imp_iff(r1, r2)
+        return ref()
+
 def de_morgan_not_or_to_and_not(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p or q) -> ~p and ~q
     """
     with Context():
-        r = ASM(Not(Or(p, q)))
+        r1 = ASM(Not(Or(p, q)))
         with Context():
-            r0 = ASM(Not(And(Not(p), Not(q))))
-            r1 = de_morgan_not_and_to_or(Not(p), Not(q)) # ~(~p and ~q) -> ~~p or ~~q
-            #print(formula(r1))
-            r2 = MOD(r1, r0) # ~~p or ~~q
-            r3 = p_iff_not_not_p(p) # p <-> ~~p
-            r4 = rules.r_iff_revolve(r3) # ~~p <-> p
-            r5 = rules.r_iff_or_left(r4, r2) # p or ~~q
-            r6 = p_iff_not_not_p(q) # q <-> ~~q
-            r7 = rules.r_iff_revolve(r6) # ~~q <-> q
-            r8 = rules.r_iff_or_right(r7, r5) # p or q
-            r9 = ref() # ~(~p and ~q) -> p or q
-        r10 = imp_inv(Not(And(Not(p), Not(q))), Or(p, q))
-        r11 = MOD(r10, r9)
-        r12 = MOD(r11, r) # ~~(~p and ~q)
-        r13 = not_not_p_to_p(And(Not(p), Not(q)))
-        MOD(r13, r12)
+            r2 = ASM(Not(Not(p))) # ~~p
+            r3 = rules.r_not_not_to(r2) # p
+            r4 = rules.r_or_left(r3, q) # p or q
+            rules.r_contradiction(r4, r1, Not(p))
+            r5 = ref() # ~~p -> ~p
+
+        r6 = rules.r_proof_p_by_not_p(r5) # ~p
+
+        with Context():
+            r7 = ASM(Not(Not(q))) # ~~q
+            r8 = rules.r_not_not_to(r7) # q
+            r9 = rules.r_or_right(p, r8) # p or q
+            rules.r_contradiction(r9, r1, Not(q))
+            r10 = ref() # ~~q -> ~q
+
+        r10 = rules.r_proof_p_by_not_p(r10) # ~q
+
+        rules.r_and(r6, r10)
         return ref()
 
+def de_morgan_and_not_to_not_or(p: FirstOrderFormula, q: FirstOrderFormula):
+    """
+    ~p and ~q -> ~(p or q)
+    """
+    with Context():
+        r0 = ASM(And(Not(p), Not(q))) # ~p and ~q
+        r1 = rules.r_and_left(r0) # ~p
+        r2 = rules.r_and_right(r0) # ~q
+        with Context():
+            r3 = ASM(p) # p
+            rules.r_contradiction(r3, r1, Not(Or(p, q)))
+            r4 = ref() # p -> ~(p or q)
 
+        with Context():
+            r5 = ASM(q) # q
+            rules.r_contradiction(r5, r2, Not(Or(p, q)))
+            r6 = ref() # q -> ~(p or q)
+
+        r7 = rules.r_join_cases(r4, r6) # p or q -> ~(p or q)
+        r8 = rules.r_inv_imp(r7) # ~~(p or q) -> ~(p or q)
+        rules.r_proof_p_by_not_p(r8) # ~(p or q)
+        return ref()
+
+def de_morgan_neg_dis_iff_con_neg(p: FirstOrderFormula, q: FirstOrderFormula):
+    """
+    ~(p or q) <-> ~p and ~q
+    """
+    with Context():
+        r1 = de_morgan_not_or_to_and_not(p, q)
+        r2 = de_morgan_and_not_to_not_or(p, q)
+        rules.r_imp_imp_iff(r1, r2)
+        return ref()
 
 def p_to_p(p: FirstOrderFormula):
     """

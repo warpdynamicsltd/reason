@@ -1,8 +1,9 @@
 from typing import Self
 
 from reason.core.fof_ops import *
-from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
 from reason.parser.tree.consts import *
+
+from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
 from reason.core.transform.jsonize import jsonize
 import reason.proofkit.kernel
 
@@ -205,95 +206,141 @@ def ASM(a: FirstOrderFormula):
 
 @asm
 def LEM(a: FirstOrderFormula):
+    """
+    a or ~a
+    """
     return Axiom("LEM", [a], [], Or(a, Not(a)))
 
 @asm
 def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
-    return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
-
-@asm
-def LEM(a: FirstOrderFormula):
-    return Axiom("LEM", [a], [], Or(a, Not(a)))
-
-@asm
-def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> (b -> a)
+    """
     return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
 
 @asm
 def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
+    """
+    (a -> (b1 -> b2)) -> ( (a -> b1) -> (a -> b2) )
+    """
     return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
 
 @asm
 def ANL(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a and b -> a
+    """
     return Axiom("ANL", [a, b], [], Implies(And(a, b), a))
 
 @asm
 def ANR(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a and b -> b
+    """
     return Axiom("ANR", [a, b], [], Implies(And(a, b), b))
 
 @asm
-def AND(a: FirstOrderFormula, b: FirstOrderFormula):  # Named "and_AxiomStmt" to avoid conflicts with "and" keyword
+def AND(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> (b -> (a and b))
+    """
     return Axiom("AND", [a, b], [], Implies(a, Implies(b, And(a, b))))
 
 @asm
 def ORL(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> a or b
+    """
     return Axiom("ORL", [a, b], [], Implies(a, Or(a, b)))
 
 @asm
 def ORR(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    b -> a or b
+    """
     return Axiom("ORR", [a, b], [], Implies(b, Or(a, b)))
 
 @asm
 def DIS(a: FirstOrderFormula, b: FirstOrderFormula, c: FirstOrderFormula):
+    """
+    (a -> c) -> ((b -> c) -> (a or b -> c))
+    """
     return Axiom("DIS", [a, b, c], [], Implies(Implies(a, c), Implies(Implies(b, c), Implies(Or(a, b), c))))
 
 @asm
 def CON(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    ~a -> (a -> b)
+    """
     return Axiom("CON", [a, b], [], Implies(Not(a), Implies(a, b)))
 
 @asm
 def IFI(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    (a -> b) -> ((b -> a) -> (a <-> b))
+    """
     return Axiom("IFI", [a, b], [], Implies(Implies(a, b), Implies(Implies(b, a), Iff(a, b))))
 
 @asm
 def IFO(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    (a <-> b) -> (a -> b) and (b -> a)
+    """
     return Axiom("IFO", [a, b], [], Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))))
 
 @asm
 def ALL(a: FirstOrderFormula, t: Term, v: Variable):
+    """
+    ( ∀x. a(x) ) -> a(t)
+    """
     if not isinstance(v, Variable):
         raise RuntimeError("Error: Term must be a variable")
     return Axiom("ALL", [a], [t, v], Implies(Forall(v, a), a.replace(v, t)))
 
 @asm
 def EXT(a: FirstOrderFormula, t: Term, v: Variable):
+    """
+    a(t) -> ( ∃x. a(x) )
+    """
     if not isinstance(v, Variable):
         raise RuntimeError("Error: Term must be a variable")
     return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(v, a)))
 
 @asm
 def ALH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
+    """
+    ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
+    """
     if not isinstance(v, Variable):
         raise RuntimeError("Error: Term is not a variable")
     return Axiom("ALH", [a, b], [v], Implies(Forall(v, Implies(a, b)), Implies(a, Forall(v, b))))
 
 @asm
 def EXH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
+    """
+    ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
+    """
     if not isinstance(v, Variable):
         raise RuntimeError("Error: Term is not a variable")
     return Axiom("EXH", [a, b], [v], Implies(Forall(v, Implies(b, a)), Implies(Exists(v, b), a)))
 
 @asm
-def MOD(a: Ref, b: Ref):
-    formula_a = PROOF.value(a)
-    formula_b = PROOF.value(b)
+def MOD(r1: Ref, r2: Ref):
+    """
+    p -> q, p |- q
+    """
+    formula_a = PROOF.value(r1)
+    formula_b = PROOF.value(r2)
     match formula_a:
         case LogicConnective(name=const.IMP, args=[x, y]) if x == formula_b:
-            return Rule("MOD", [a, b], [], y)
+            return Rule("MOD", [r1, r2], [], y)
 
     raise RuntimeError("Invalid formulas")
 
 @asm
 def IDN(a: Ref):
+    """
+    p |- p
+    """
     formula_a = PROOF.value(a)
     return Rule("IDN", [a], [], formula_a)

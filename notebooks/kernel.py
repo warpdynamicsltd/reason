@@ -130,7 +130,7 @@ f = RETURN()
 print(L.printer(f))
 
 BEGIN()
-r = de_morgan_not_and_to_or(L("P"), L("Q"))
+r = de_morgan_not_and_to_or_not(L("P"), L("Q"))
 f = RETURN()
 print(L.printer(f))
 
