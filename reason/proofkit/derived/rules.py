@@ -1,7 +1,14 @@
 import inspect
 
+from reason.core.fof_ops import And, Or
+from reason.core.fof_types import FirstOrderFormula, LogicConnective
+from reason.parser.tree import const
+from reason.proofkit.kernel import Ref
+
 from reason.proofkit.kernel.proof import *
 import reason.proofkit.derived.tautologies as tau
+from reason.proofkit.kernel.proof import formula, Context, ASM, ref, IFO, MOD
+
 
 class RuleError(Exception):
     pass
@@ -183,7 +190,7 @@ def r_iff_revolve(p: Ref):
     raise RuleError()
 
 @rule
-def r_iff_imp(p: Ref):
+def r_iff_to_imp(p: Ref):
     """
     a <-> b |- a -> b
     """
@@ -211,14 +218,28 @@ def r_iff_imp_not(p: Ref):
     raise RuleError()
 
 @rule
-def r_iff_mod(r1: Ref, r2: Ref):
+def r_iff_mod_left(r1: Ref, r2: Ref):
     """
     a <-> c, a |- c
     """
     match formula(r1):
         case LogicConnective(name=const.IFF, args=[a, _]) if a == formula(r2):
-            r3 = r_iff_imp(r1) # a -> c
+            r3 = r_iff_to_imp(r1) # a -> c
             return MOD(r3, r2)
+
+    raise RuleError()
+
+@rule
+def r_iff_mod_right(r1: Ref, r2: Ref):
+    """
+    a <-> c, c |- a
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, c]) if c == formula(r2):
+            r3 = IFO(a, c)
+            r4 = MOD(r3, r1) # a -> c and c -> a
+            r5 = r_and_right(r4) # c -> a
+            return MOD(r5, r2)
 
     raise RuleError()
 
@@ -243,7 +264,7 @@ def r_iff_or_left(r1: Ref, r2: Ref):
         case (LogicConnective(name=const.IFF, args=[a, c]), LogicConnective(name=const.OR, args=[a1, b])) if a1 == a:
             with Context():
                 r3 = ASM(a)
-                r4 = r_iff_imp(r1) # a -> c
+                r4 = r_iff_to_imp(r1) # a -> c
                 r5 = MOD(r4, r3) # c
                 r6 = ORL(c, b) # c -> c or b
                 MOD(r6, r5) # c or b
@@ -265,7 +286,7 @@ def r_iff_or_right(r1: Ref, r2: Ref):
               LogicConnective(name=const.OR, args=[b, a1])) if a1 == a:
             with Context():
                 r3 = ASM(a)
-                r4 = r_iff_imp(r1)  # a -> c
+                r4 = r_iff_to_imp(r1)  # a -> c
                 r5 = MOD(r4, r3)  # c
                 r6 = ORR(b, c)  # c -> b or c
                 MOD(r6, r5)  # c or b
@@ -287,7 +308,7 @@ def r_iff_and_left(r1: Ref, r2: Ref):
               LogicConnective(name=const.AND, args=[a1, b])) if a1 == a:
             r_a = r_and_left(r2) # a
             r_b = r_and_right(r2) # b
-            r_c = r_iff_mod(r1, r_a) # c
+            r_c = r_iff_mod_left(r1, r_a) # c
             return r_and(r_c, r_b)
 
     raise RuleError()
@@ -302,7 +323,7 @@ def r_iff_and_right(r1: Ref, r2: Ref):
               LogicConnective(name=const.AND, args=[b, a1])) if a1 == a:
             r_a = r_and_right(r2) # a
             r_b = r_and_left(r2) # b
-            r_c = r_iff_mod(r1, r_a) # c
+            r_c = r_iff_mod_left(r1, r_a) # c
             return r_and(r_b, r_c)
 
     raise RuleError()
@@ -439,6 +460,20 @@ def r_imp_to_dis(r1: Ref):
     raise RuleError()
 
 @rule
+def r_dis_to_imp(r1: Ref):
+    """
+    ~p or q |- p -> q
+    """
+    match formula(r1):
+        case LogicConnective(name=const.OR, args=[LogicConnective(name=const.NEG, args=[p]), q]):
+            r2 = CON(p, q) # ~p -> (p -> q)
+            r3 = IMP(q, p) # q -> (p -> q)
+            r4 = r_join_cases(r2, r3) # ~p or q -> (p -> q)
+            return MOD(r4, r1)
+
+    raise RuleError()
+
+@rule
 def r_dis_com(r1: Ref):
     """
     p or q |- q or p
@@ -464,3 +499,190 @@ def r_con_com(r1: Ref):
             return  r_and(r3, r2) # q and p
 
     raise RuleError()
+
+
+@rule
+def r_iff_to_and_left(r1: Ref, b: FirstOrderFormula):
+    """
+    a <-> c |- a and b <-> c and b
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, c]):
+            with Context():
+                r2 = ASM(And(a, b))
+                r_iff_and_left(r1, r2) # c and b
+                r4 = ref() # a and b -> c and b
+            with Context():
+                r5 = ASM(And(c, b))
+                r6 = r_iff_revolve(r1) # c <-> a
+                r_iff_and_left(r6, r5) # a and b
+                r8 = ref()
+
+            return r_imp_imp_iff(r4, r8)
+
+    raise RuleError()
+
+
+@rule
+def r_iff_to_and_right(r1: Ref, b: FirstOrderFormula):
+    """
+    a <-> c |- b and a <-> b and c
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, c]):
+            with Context():
+                r2 = ASM(And(b, a))
+                r_iff_and_right(r1, r2) # b and c
+                r4 = ref() # b and a -> b and c
+            with Context():
+                r5 = ASM(And(b, c)) # b and c
+                r6 = r_iff_revolve(r1) # c <-> a
+                r_iff_and_right(r6, r5) # b and a
+                r8 = ref()
+
+            return r_imp_imp_iff(r4, r8)
+
+    raise RuleError()
+
+
+@rule
+def r_iff_to_or_left(r1: Ref, b: FirstOrderFormula):
+    """
+    a <-> c |- a or b <-> c or b
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, c]):
+            with Context():
+                r2 = ASM(Or(a, b))       # a or b
+                r_iff_or_left(r1, r2)    # c or b
+                r4 = ref()               # a or b -> c or b
+            with Context():
+                r5 = ASM(Or(c, b))       # c or b
+                r6 = r_iff_revolve(r1)   # c <-> a
+                r_iff_or_left(r6, r5)    # a or b
+                r8 = ref()               # c or b -> a or b
+            return r_imp_imp_iff(r4, r8)
+
+    raise RuleError()
+
+
+@rule
+def r_iff_to_or_right(r1: Ref, b: FirstOrderFormula):
+    """
+    a <-> c |- b or a <-> b or c
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, c]):
+            with Context():
+                r2 = ASM(Or(b, a))        # b or a
+                r_iff_or_right(r1, r2)    # b or c
+                r4 = ref()                # b or a -> b or c
+            with Context():
+                r5 = ASM(Or(b, c))        # b or c
+                r6 = r_iff_revolve(r1)    # c <-> a
+                r_iff_or_right(r6, r5)    # b or a
+                r8 = ref()                # b or c -> b or a
+            return r_imp_imp_iff(r4, r8)
+
+    raise RuleError()
+
+
+@rule
+def r_iff_neg(r1: Ref):
+    """
+    a <-> b |- ~a <-> ~b
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[a, b]):
+            r2 = IFO(a, b)
+            r3 = MOD(r2, r1) # a -> b and b -> a
+            r4 = r_and_left(r3) # a -> b
+            r5 = r_and_right(r3) # b -> a
+            r6 = r_inv_imp(r4) # ~b -> ~a
+            r7 = r_inv_imp(r5) # ~a -> ~b
+            return r_imp_imp_iff(r7, r6)
+
+    raise RuleError()
+
+@rule
+def r_iff_and(r1: Ref, r2: Ref):
+    """
+    a <-> b, c <-> d |- (a and c) <-> (b and d)
+    """
+    match formula(r1), formula(r2):
+        case LogicConnective(name=const.IFF, args=[a, b]), LogicConnective(name=const.IFF, args=[c, d]):
+            r3 = r_iff_to_and_left(r1, c) # a and c <-> b and c
+            r4 = r_iff_to_and_right(r2, b) # b and c <-> b and d
+            return r_iff_trans(r3, r4) # (a and c) <-> (b and d)
+
+    return RuleError()
+
+@rule
+def r_iff_or(r1: Ref, r2: Ref):
+    """
+    a <-> b, c <-> d |- (a or c) <-> (b or d)
+    """
+    match formula(r1), formula(r2):
+        case LogicConnective(name=const.IFF, args=[a, b]), LogicConnective(name=const.IFF, args=[c, d]):
+            r3 = r_iff_to_or_left(r1, c) # a or c <-> b or c
+            r4 = r_iff_to_or_right(r2, b) # b or c <-> b or d
+            return r_iff_trans(r3, r4) # (a or c) <-> (b or d)
+
+    return RuleError()
+
+@rule
+def r_iff_imp(r1: Ref, r2: Ref):
+    """
+    a <-> b, c <-> d |- (a -> c) <-> (b -> d)
+    """
+    match formula(r1), formula(r2):
+        case LogicConnective(name=const.IFF, args=[a, b]), LogicConnective(name=const.IFF, args=[c, d]):
+            with Context():
+                r3 = ASM(Implies(a, c))
+                with Context():
+                    r4 = ASM(b)
+                    r5 = r_iff_mod_right(r1, r4) # a
+                    r6 = MOD(r3, r5) # c
+                    r_iff_mod_left(r2, r6) # d
+                    r7 = ref() # b -> c
+                r8 = ref() # (a -> c) -> (b -> d)
+
+            with Context():
+                r9 = ASM(Implies(b, d))
+                with Context():
+                    r10 = ASM(a)
+                    r11 = r_iff_mod_left(r1, r10) # b
+                    r12 = MOD(r9, r11) # d
+                    r_iff_mod_right(r2, r12) # c
+                    r13 = ref() # a -> c
+
+                r14 = ref() # (b -> d) -> (a -> c)
+
+            return r_imp_imp_iff(r8, r14)
+
+    raise RuleError()
+
+@rule
+def r_iff_iff(r1: Ref, r2: Ref):
+    """
+    a <-> b, c <-> d |- (a <-> c) <-> (b <-> d)
+    """
+    match formula(r1), formula(r2):
+        case LogicConnective(name=const.IFF, args=[a, b]), LogicConnective(name=const.IFF, args=[c, d]):
+            with Context():
+                r3 = ASM(Iff(a, c))
+                r4 = r_iff_revolve(r1) # b <-> a
+                r5 = r_iff_trans(r4, r3) # b <-> c
+                r_iff_trans(r5, r2) # b <-> d
+                r6 = ref() # (a <-> c) -> (b <-> d)
+
+            with Context():
+                r7 = ASM(Iff(b, d))
+                r8 = r_iff_revolve(r2) # d <-> c
+                r9 = r_iff_trans(r1, r7) # a <-> d
+                r10 = r_iff_trans(r9, r8) # a <-> c
+                r11 = ref() # (b <-> d) -> (a <-> c)
+            return r_imp_imp_iff(r6, r11)
+
+    raise RuleError()
+

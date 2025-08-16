@@ -153,16 +153,12 @@ CURRENT : Block | None = None
 
 def BEGIN():
     global CURRENT, PROOF
-    CURRENT = None
-    PROOF = None
+    CURRENT = Block()
+    PROOF = CURRENT
 
 class Context():
     def __enter__(self):
         global CURRENT, PROOF
-        if CURRENT is None:
-            CURRENT = Block()
-            PROOF = CURRENT
-
 
         self.parent = CURRENT
         self.block = Block(ref=self.parent.get_next_ref())

@@ -1,7 +1,6 @@
 import unittest
 
 from reason.core.language import Language
-from reason.proofkit.derived.rules import *
 from reason.proofkit.derived.tautologies import *
 from reason.proofkit.derived.transform import *
 from reason.proofkit.kernel.proof import *
@@ -177,24 +176,36 @@ class TestKernel(unittest.TestCase):
         self.assertEqual(f, L("P → P"))
 
         BEGIN()
+        r = p_iff_p(L("P"))
+        f = RETURN()
+        self.assertEqual(f, L("P ⟷ P"))
+
+        BEGIN()
         r = imp_inv(L("P"), L("Q"))
         f = RETURN()
         self.assertEqual(f, L("P → Q → (~Q → ~P)"))
-
 
         BEGIN()
         r = p_iff_not_not_p(L("P"))
         f = RETURN()
         self.assertEqual(f, L("P ⟷ ~~P"))
 
+        BEGIN()
+        r = dis_imp(L("P"), L("Q"))
+        f = RETURN()
+        self.assertEqual(f, L("(~P ∨ Q) ⟷ (P → Q)"))
+
     def test_derived_rules(self):
-
-
         BEGIN()
         with Context():
             r0 = ASM(L("P → Q"))
             r1 = r_imp_to_dis(r0)
             self.assertEqual(formula(r1), L("~P ∨ Q"))
+
+        with Context():
+            r1 = ASM(L("~P ∨ Q"))
+            r = r_dis_to_imp(r1)
+            self.assertEqual(formula(r), L("P → Q"))
 
         with Context():
             r0 = ASM(L("A ⟷ B"))
@@ -293,7 +304,7 @@ class TestKernel(unittest.TestCase):
             r_ab = ASM(L("A ⟷ B"))
             with Context():
                 r_a = ASM(L("A"))
-                r_b = r_iff_imp(r_ab)
+                r_b = r_iff_to_imp(r_ab)
                 self.assertEqual(formula(r_b), L("A → B"))
 
         # r_iff_imp_not
@@ -302,13 +313,21 @@ class TestKernel(unittest.TestCase):
             r_not_b = r_iff_imp_not(r_ab)
             self.assertEqual(formula(r_not_b), L("~A → ~B"))
 
-        # r_iff_mod
+        # r_iff_mod_left
         with Context():
             r_ab = ASM(L("A ⟷ B"))
             with Context():
                 r_a = ASM(L("A"))
-                r_b = r_iff_mod(r_ab, r_a)
+                r_b = r_iff_mod_left(r_ab, r_a)
                 self.assertEqual(formula(r_b), L("B"))
+
+        # r_iff_mod_right
+        with Context():
+            r_ab = ASM(L("A ⟷ B"))
+            with Context():
+                r_a = ASM(L("B"))
+                r_b = r_iff_mod_right(r_ab, r_a)
+                self.assertEqual(formula(r_b), L("A"))
 
         # r_iff_mod_not
         with Context():
@@ -412,28 +431,87 @@ class TestKernel(unittest.TestCase):
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
-            r = t_iff_and_left(r1, L("B"))
+            r = r_iff_to_and_left(r1, L("B"))
             self.assertEqual(formula(r), L("A ∧ B ⟷ C ∧ B"))
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
-            r = t_iff_and_right(r1, L("B"))
+            r = r_iff_to_and_right(r1, L("B"))
             self.assertEqual(formula(r), L("B ∧ A ⟷ B ∧ C"))
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
-            r = t_iff_or_left(r1, L("B"))
+            r = r_iff_to_or_left(r1, L("B"))
             self.assertEqual(formula(r), L("A ∨ B ⟷ C ∨ B"))
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
-            r = t_iff_or_right(r1, L("B"))
+            r = r_iff_to_or_right(r1, L("B"))
             self.assertEqual(formula(r), L("B ∨ A ⟷ B ∨ C"))
 
         with Context():
             r1 = ASM(L("A ⟷ C"))
-            r = t_iff_neg(r1)
+            r = r_iff_neg(r1)
             self.assertEqual(formula(r), L("~A ⟷ ~C"))
 
+        with Context():
+            r1 = ASM(L("A ⟷ B"))
+            with Context():
+                r2 = ASM(L("C ⟷ D"))
+                r = r_iff_and(r1, r2)
+                self.assertEqual(formula(r), L("A ∧ C ⟷ B ∧ D"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ B"))
+            with Context():
+                r2 = ASM(L("C ⟷ D"))
+                r = r_iff_or(r1, r2)
+                self.assertEqual(formula(r), L("A ∨ C ⟷ B ∨ D"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ B"))
+            with Context():
+                r2 = ASM(L("C ⟷ D"))
+                r = r_iff_imp(r1, r2)
+                self.assertEqual(formula(r), L("(A → C) ⟷ (B → D)"))
+
+        with Context():
+            r1 = ASM(L("A ⟷ B"))
+            with Context():
+                r2 = ASM(L("C ⟷ D"))
+                r = r_iff_iff(r1, r2)
+                self.assertEqual(formula(r), L("(A ⟷ C) ⟷ (B ⟷ D)"))
 
         f = RETURN()
+
+    def test_transform(self):
+        cases = [
+            (L("P"), L("P")),
+            (L("P → Q"), L("~P ∨ Q")),
+            (L("A ∧ (P → Q)"), L("(A ∧ (~P ∨ Q))")),
+            (L("(P → Q) ∧ A"), L("((~P ∨ Q) ∧ A)")),
+            (L("A ∨ (P → Q)"), L("(A ∨ (~P ∨ Q))")),
+            (L("(P → Q) ∨ A"), L("((~P ∨ Q) ∨ A)")),
+            (L("~P → Q"), L("~~P ∨ Q")),
+            (L("P → ~Q"), L("~P ∨ ~Q")),
+            (L("~(P → Q)"), L("~(~P ∨ Q)")),
+            (L("Q → (P → Q)"), L("~Q ∨ (~P ∨ Q)")),
+        ]
+
+        for f_in, f_out in cases:
+            BEGIN()
+            r = t_imp_to_dis(f_in)
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))
+
+        for f_in, f_out in cases:
+            BEGIN()
+            r = ImpDisTransformer(f_in).result
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))
+
+
+        BEGIN()
+        r = TautologicalTransformer(L("A ∧ B → C")).result
+        f = RETURN()
+        self.assertEqual(f, L("(A ∧ B → C) ⟷ (A ∧ B → C)"))

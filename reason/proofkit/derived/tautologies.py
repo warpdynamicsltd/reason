@@ -68,13 +68,12 @@ def p_iff_not_not_p(p: FirstOrderFormula):
     """
     p <-> ~~p
     """
-    with Context():
-        r1 = p_to_not_not_p(p) # p -> ~~p
-        r2 = not_not_p_to_p(p) # ~~p -> p
-        r3 = rules.r_and(r1, r2)
-        r4 = iff_tau(p, Not(Not(p)))
-        MOD(r4, r3)
-        return ref()
+
+    r1 = p_to_not_not_p(p) # p -> ~~p
+    r2 = not_not_p_to_p(p) # ~~p -> p
+    r3 = rules.r_and(r1, r2)
+    r4 = iff_tau(p, Not(Not(p)))
+    return MOD(r4, r3)
 
 
 def de_morgan_not_and_to_or_not(p: FirstOrderFormula, q: FirstOrderFormula):
@@ -102,25 +101,23 @@ def de_morgan_or_not_to_not_and(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~p or ~q -> ~(p and q)
     """
-    with Context():
-        r1 = ANL(p, q) # p and q -> p
-        r2 = ANR(p, q) # p and q -> q
-        r3 = imp_inv(And(p, q), p) # (p and q -> p) -> (~p -> ~(p and q))
-        r4 = imp_inv(And(p, q), q) # (p and q -> q) -> (~q -> ~(p and q))
-        r5 = MOD(r3, r1) # ~p -> ~(p and q)
-        r6 = MOD(r4, r2) # ~q -> ~(p and q)
-        rules.r_join_cases(r5, r6) # ~p or ~q -> ~(p and q)
-        return ref()
+
+    r1 = ANL(p, q) # p and q -> p
+    r2 = ANR(p, q) # p and q -> q
+    r3 = imp_inv(And(p, q), p) # (p and q -> p) -> (~p -> ~(p and q))
+    r4 = imp_inv(And(p, q), q) # (p and q -> q) -> (~q -> ~(p and q))
+    r5 = MOD(r3, r1) # ~p -> ~(p and q)
+    r6 = MOD(r4, r2) # ~q -> ~(p and q)
+    return rules.r_join_cases(r5, r6) # ~p or ~q -> ~(p and q)
 
 def de_morgan_neg_con_iff_dis_neg(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p and q) <-> ~p or ~q
     """
-    with Context():
-        r1 = de_morgan_not_and_to_or_not(p, q)
-        r2 = de_morgan_or_not_to_not_and(p, q)
-        rules.r_imp_imp_iff(r1, r2)
-        return ref()
+
+    r1 = de_morgan_not_and_to_or_not(p, q)
+    r2 = de_morgan_or_not_to_not_and(p, q)
+    return rules.r_imp_imp_iff(r1, r2)
 
 def de_morgan_not_or_to_and_not(p: FirstOrderFormula, q: FirstOrderFormula):
     """
@@ -176,11 +173,10 @@ def de_morgan_neg_dis_iff_con_neg(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p or q) <-> ~p and ~q
     """
-    with Context():
-        r1 = de_morgan_not_or_to_and_not(p, q)
-        r2 = de_morgan_and_not_to_not_or(p, q)
-        rules.r_imp_imp_iff(r1, r2)
-        return ref()
+
+    r1 = de_morgan_not_or_to_and_not(p, q)
+    r2 = de_morgan_and_not_to_not_or(p, q)
+    return rules.r_imp_imp_iff(r1, r2)
 
 def p_to_p(p: FirstOrderFormula):
     """
@@ -190,6 +186,15 @@ def p_to_p(p: FirstOrderFormula):
         ASM(p)
         r2 = ref()
     return r2
+
+def p_iff_p(p : FirstOrderFormula):
+    """
+    p <-> p
+    """
+    with Context():
+        ASM(p)
+        r2 = ref()
+    return rules.r_imp_imp_iff(r2, r2)
 
 
 def imp_inv(a: FirstOrderFormula, b: FirstOrderFormula):
@@ -224,3 +229,19 @@ def imp_trans(a: FirstOrderFormula, b: FirstOrderFormula, c: FirstOrderFormula):
             r7 = MOD(r3, r6) # b
             MOD(r5, r7) # c
         return ref()
+
+def dis_imp(a:FirstOrderFormula, b:FirstOrderFormula):
+    """
+    (~a or b) <-> (a -> b)
+    """
+    with Context():
+        r1 = ASM(Or(Not(a), b))
+        r2 = rules.r_dis_to_imp(r1) # a -> b
+        r3 = ref()
+
+    with Context():
+        r4 = ASM(Implies(a, b))
+        r5 = rules.r_imp_to_dis(r4) # ~a or b
+        r6 = ref()
+
+    return rules.r_imp_imp_iff(r3, r6)
