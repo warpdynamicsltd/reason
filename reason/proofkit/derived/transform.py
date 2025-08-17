@@ -1,20 +1,11 @@
+from unittest import case
+
 from reason.core.transform.transformer import Transformer
 
 from reason.proofkit.derived.rules import *
 from reason.proofkit.derived.tautologies import *
 from reason.proofkit.kernel.proof import *
 
-
-def t_imp_to_dis_atom(r: Ref):
-    """
-    if r = (p -> q) |- ~p or q
-    else r
-    """
-    match formula(r):
-        case LogicConnective(name=const.IMP):
-            return r_imp_to_dis(r)
-        case _:
-            return r
 
 def iff_right(f: FirstOrderFormula) -> FirstOrderFormula:
     match f:
@@ -23,94 +14,185 @@ def iff_right(f: FirstOrderFormula) -> FirstOrderFormula:
 
     raise RuntimeError()
 
-class TautologicalTransformer(Transformer):
-    def neg(self, a, tau_a):
-        return r_iff_neg(tau_a)
 
-    def con(self, a, b, tau_a, tau_b):
-        return r_iff_and(tau_a, tau_b)
+class ProvedTransformer:
+    def __init__(self, f: FirstOrderFormula):
+        self.result = self._transform(f)
 
-    def dis(self, a, b, tau_a, tau_b):
-        return r_iff_or(tau_a, tau_b)
+    @classmethod
+    def outer(cls, method):
+        def wrapper(self, *args):
+            r1 = method(self, *args)  # method.__name__(*args) <-> X
+            X = iff_right(formula(r1))
+            r2 = self._transform(X)  # X <-> T(X)
+            return r_iff_trans(r1, r2) # method.__name__(*args) <-> T(X)
+        return wrapper
 
-    def imp(self, a, b, tau_a, tau_b):
-        return r_iff_imp(tau_a, tau_b)
+    @classmethod
+    def inner(cls, method):
+        def wrapper(self, *args):
+            return method(self, *map(self._transform, args))
+        return wrapper # method.__name__(*args) <-> method.__name__(*[T(a) for a in args])
 
-    def iff(self, a, b, tau_a, tau_b):
-        return r_iff_iff(tau_a, tau_b)
+    def neg(self, a: FirstOrderFormula):
+        """
+        @outer
+        Returns:
+            reference of ~a <-> T(X)
 
-    def predicate(self, obj, name, args, targs):
-        return p_iff_p(obj)
+        @inner
+        Return:
+            reference of ~a <-> ~T(a)
 
-    def logic_connective(self, obj, name, args, targs):
-        match name:
-            case const.NEG:
-                return self.neg(args[0], targs[0])
+        """
+        pass
 
-            case const.AND:
-                return self.con(args[0], args[1], targs[0], targs[1])
+    def con(self, a: FirstOrderFormula, b: FirstOrderFormula):
+        pass
 
-            case const.OR:
-                return self.dis(args[0], args[1], targs[0], targs[1])
+    def dis(self, a: FirstOrderFormula, b: FirstOrderFormula):
+        pass
 
-            case const.IMP:
-                return self.imp(args[0], args[1], targs[0], targs[1])
+    def imp(self, a: FirstOrderFormula, b: FirstOrderFormula):
+        pass
 
-            case const.IFF:
-                return self.iff(args[0], args[1], targs[0], targs[1])
+    def iff(self, a: FirstOrderFormula, b: FirstOrderFormula):
+        pass
+
+    def _transform(self, f: FirstOrderFormula):
+        """
+        Args:
+            f: FirstOrderFormula - formula to be transformed
+
+        Returns:
+            Reference of proved tautology f <-> T(f)
+
+        """
+        match f:
+            case Predicate():
+                return p_iff_p(f)
+
+            case LogicConnective(name=const.NEG, args=[a]):
+                return self.neg(a)
+
+            case LogicConnective(name=const.AND, args=[a, b]):
+                return self.con(a, b)
+
+            case LogicConnective(name=const.OR, args=[a, b]):
+                return self.dis(a, b)
+
+            case LogicConnective(name=const.IMP, args=[a, b]):
+                return self.imp(a, b)
+
+            case LogicConnective(name=const.IFF, args=[a, b]):
+                return self.iff(a, b)
 
         raise RuntimeError()
 
 
-    def logic_quantifier(self, obj, name, args, targs):
-        pass
+class IDNProvedTransformer(ProvedTransformer):
+    @ProvedTransformer.inner
+    def neg(self, a):
+        return r_iff_neg(a)
 
-class ImpDisTransformer(TautologicalTransformer):
-    def imp(self, a, b, tau_a, tau_b):
-        F_a = iff_right(formula(tau_a))
-        F_b = iff_right(formula(tau_b))
-        r = r_iff_imp(tau_a, tau_b)  # (a -> b) <-> (F(a) -> F(b))
-        r1 = dis_imp(F_a, F_b)  # (~F(a) or F(b)) <-> (F(a) -> F(b))
-        r2 = r_iff_revolve(r1)  # (F(a) -> F(b)) <-> (~F(a) or F(b))
-        return r_iff_trans(r, r2)  # (a -> b) <-> (~F(a) or F(b))
+    @ProvedTransformer.inner
+    def con(self, a, b):
+        return r_iff_and(a, b)
 
+    @ProvedTransformer.inner
+    def dis(self, a, b):
+        return r_iff_or(a, b)
 
+    @ProvedTransformer.inner
+    def imp(self, a, b):
+        return r_iff_imp(a, b)
 
-def t_imp_to_dis(f: FirstOrderFormula):
-    match f:
-        case Predicate():
-            return p_iff_p(f)
-
-        case LogicConnective(name=const.NEG, args=[a]):
-            tau_a = t_imp_to_dis(a) # a <-> F(a)
-            return r_iff_neg(tau_a) # ~a <-> ~F(a)
-
-        case LogicConnective(name=const.AND, args=[a, b]):
-            tau_a = t_imp_to_dis(a) # a <-> F(a)
-            tau_b = t_imp_to_dis(b) # b <-> F(b)
-            return r_iff_and(tau_a, tau_b) # a and b <-> F(a) and F(b)
-
-        case LogicConnective(name=const.OR, args=[a, b]):
-            tau_a = t_imp_to_dis(a)  # a <-> F(a)
-            tau_b = t_imp_to_dis(b)  # b <-> F(b)
-            return r_iff_or(tau_a, tau_b) # a or b <-> F(a) or F(b)
-
-        case LogicConnective(name=const.IMP, args=[a, b]):
-            tau_a = t_imp_to_dis(a)  # a <-> F(a)
-            tau_b = t_imp_to_dis(b)  # b <-> F(b)
-            F_a = iff_right(formula(tau_a))
-            F_b = iff_right(formula(tau_b))
-            r = r_iff_imp(tau_a, tau_b) # (a -> b) <-> (F(a) -> F(b))
-            r1 = dis_imp(F_a, F_b) # (~F(a) or F(b)) <-> (F(a) -> F(b))
-            r2 = r_iff_revolve(r1) # (F(a) -> F(b)) <-> (~F(a) or F(b))
-            return r_iff_trans(r, r2) # (a -> b) <-> (~F(a) or F(b))
-
-        case LogicConnective(name=const.IFF, args=[a, b]):
-            tau_a = t_imp_to_dis(a)  # a <-> F(a)
-            tau_b = t_imp_to_dis(b)  # b <-> F(b)
-            return r_iff_iff(tau_a, tau_b)
+    @ProvedTransformer.inner
+    def iff(self, a, b):
+        return r_iff_iff(a, b)
 
 
+class ImpDisProvedTransformer(IDNProvedTransformer):
+    @ProvedTransformer.outer
+    def imp(self, a, b):
+        r = dis_imp(a, b)  # (~a or b) <-> (a -> b)
+        return r_iff_revolve(r) # (a -> b) <-> (~a or b)
 
 
-    raise RuntimeError()
+class NnfProvedTransformer(IDNProvedTransformer):
+    @ProvedTransformer.inner
+    def neg_simple(self, a):
+        return r_iff_neg(a)
+
+    @ProvedTransformer.outer
+    def neg_neg(self, a):
+        match a:
+            case LogicConnective(name=const.NEG, args=[b]):
+                r1 = p_iff_not_not_p(b)  # b <-> ~~b
+                return r_iff_revolve(r1) # ~~b <-> b
+
+        raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_and(self, a):
+        match a:
+            case LogicConnective(name=const.AND, args=[p, q]):
+                return de_morgan_neg_con_iff_dis_neg(p, q) # ~(p and q) <-> ~p or ~q
+
+
+        raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_or(self, a):
+        match a:
+            case LogicConnective(name=const.OR, args=[p, q]):
+                return de_morgan_neg_dis_iff_con_neg(p, q) # ~(p or q) <-> ~p and ~q
+
+        raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_imp(self, a):
+        match a:
+            case LogicConnective(name=const.IMP, args=[p, q]):
+                r1 = dis_imp(p, q) # ~p or q <-> (p ->q)
+                r2 = r_iff_revolve(r1) # (p -> q) <-> ~p or q
+                return r_iff_neg(r2) # ~(p -> q) <-> ~(~p or q)
+
+        raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_iff(self, a):
+        match a:
+            case LogicConnective(name=const.IFF, args=[p, q]):
+                r1 = iff_iff(p, q)  # (p -> q and p -> q) <-> (p <-> q)
+                r2 = r_iff_revolve(r1) # (p <-> q) <-> (p -> q and p -> q)
+                return r_iff_neg(r2)  # ~(p -> q) <-> ~(p -> q and p -> q)
+
+        raise RuntimeError()
+
+    def neg(self, a):
+        match a:
+            case LogicConnective(name=const.NEG):
+                return self.neg_neg(a)
+            case LogicConnective(name=const.AND):
+                return self.neg_and(a)
+            case LogicConnective(name=const.OR):
+                return self.neg_or(a)
+            case LogicConnective(name=const.IMP):
+                return self.neg_imp(a)
+            case LogicConnective(name=const.IFF):
+                return self.neg_iff(a)
+
+        return self.neg_simple(a)
+
+    @ProvedTransformer.outer
+    def imp(self, a, b):
+        r = dis_imp(a, b)  # (~a or b) <-> (a -> b)
+        return r_iff_revolve(r)  # (a -> b) <-> (~a or b)
+
+    @ProvedTransformer.outer
+    def iff(self, a, b):
+        r = iff_iff(a, b) # (a -> b and b -> a) <-> (a <-> b)
+        return r_iff_revolve(r)
+
+

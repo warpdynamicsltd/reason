@@ -126,6 +126,11 @@ class TestKernel(unittest.TestCase):
         self.assertEqual(f, L("(A → B) ∧ (B → A) → (A ⟷ B)"))
 
         BEGIN()
+        iff_iff(L("A"), L("B"))
+        f = RETURN()
+        self.assertEqual(f, L("(A → B) ∧ (B → A) ⟷ (A ⟷ B)"))
+
+        BEGIN()
         r = not_not_p_to_p(L("P"))
         f = RETURN()
         self.assertEqual(f, L("~~P → P"))
@@ -500,18 +505,34 @@ class TestKernel(unittest.TestCase):
 
         for f_in, f_out in cases:
             BEGIN()
-            r = t_imp_to_dis(f_in)
-            f = RETURN()
-            self.assertEqual(f, Iff(f_in, f_out))
-
-        for f_in, f_out in cases:
-            BEGIN()
-            r = ImpDisTransformer(f_in).result
+            r = ImpDisProvedTransformer(f_in).result
             f = RETURN()
             self.assertEqual(f, Iff(f_in, f_out))
 
 
         BEGIN()
-        r = TautologicalTransformer(L("A ∧ B → C")).result
+        r = IDNProvedTransformer(L("A ∧ B → C")).result
         f = RETURN()
         self.assertEqual(f, L("(A ∧ B → C) ⟷ (A ∧ B → C)"))
+
+    def test_nnf(self):
+        cases = [
+            (L("P"), L("P")),
+            (L("~P"), L("~P")),
+            (L("P ⟷ Q"), L("(~P ∨ Q) ∧ (~Q ∨ P)")),
+            (L("~P ⟷ ~Q"), L("(P ∨ ~Q) ∧ (Q ∨ ~P)")),
+            (L("~~P"), L("P")),
+            (L("~P → Q"), L("P ∨ Q")),
+            (L("~(A ∧ B)"), L("~A ∨ ~B")),
+            (L("~(~A ∧ ~B)"), L("A ∨ B")),
+            (L("~(A ∨ B)"), L("~A ∧ ~B")),
+            (L("~(~A ∨ ~B)"), L("A ∧ B")),
+            (L("~(P → Q)"), L("P ∧ ~Q")),
+            (L("~(P ⟷ Q)"), L("(P ∧ ~Q) ∨ (Q ∧ ~P)"))
+        ]
+
+        for f_in, f_out in cases:
+            BEGIN()
+            r = NnfProvedTransformer(f_in).result
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))
