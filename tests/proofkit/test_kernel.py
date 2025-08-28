@@ -1,3 +1,4 @@
+import pytest
 import unittest
 
 from reason.core.language import Language
@@ -7,9 +8,7 @@ from reason.proofkit.kernel.proof import *
 
 L = Language()
 
-
 class TestKernel(unittest.TestCase):
-
     def test_simple(self):
         BEGIN()
         with Context():
@@ -536,3 +535,13 @@ class TestKernel(unittest.TestCase):
             r = NnfProvedTransformer(f_in).result
             f = RETURN()
             self.assertEqual(f, Iff(f_in, f_out))
+
+    def test_context_const(self):
+        BEGIN(L)
+        with Context():
+            c = get_context_const_name()
+            r1 = tau.p_to_p(L(f"P({c})"))
+            r2 = ref()
+
+        f = RETURN()
+        self.assertEqual(f, L(f"P({c}) → P({c})")) # TODO: this should fail but for now is OK

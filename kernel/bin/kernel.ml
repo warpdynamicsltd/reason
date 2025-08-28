@@ -3,6 +3,7 @@ open Formula
 let rec var_occurs_in_term var = function
   | Var v -> v = var
   | Const _ -> false
+  | ContextConst _ -> false
   | Func (_, terms) -> List.exists (var_occurs_in_term var) terms
 
 let rec var_occurs_free_in_formula var = function
@@ -21,6 +22,7 @@ let rec substitute_in_term var replacement t =
   match t with
     | Var v -> if v = var then replacement else Var v
     | Const _ -> t
+    | ContextConst _ -> t
     | Func (f, args) -> Func (f, List.map (substitute_in_term var replacement) args)
 
 
@@ -78,7 +80,7 @@ let rule = function
   | _ -> failwith "unknown rule"
 
 
-type step = 
+(*type step = 
   | Axiom of string * first_order_formula list * term list
   | Rule of string * int list * term list
 
@@ -102,7 +104,7 @@ let tautology proof =
   nth_tautology
     
 
-let final_tautology proof = tautology proof (List.length proof - 1)
+let final_tautology proof = tautology proof (List.length proof - 1)*)
 
 
 type reference =

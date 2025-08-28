@@ -2,6 +2,7 @@
 type term =
   | Var of string                      (* Variables *)
   | Const of string                    (* Constants *)
+  | ContextConst of int
   | Func of string * term list         (* Function symbols with arguments *)
 
 (* Type for first-order logic formulas *)

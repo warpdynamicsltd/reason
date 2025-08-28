@@ -1,11 +1,13 @@
 open Formula
 open Kernel
-open Yojson.Safe.Util
+
+(*open Yojson.Safe.Util*)
 
 let rec string_of_term t =
   match t with
   | Var v -> v
   | Const c -> c
+  | ContextConst c -> Int.to_string c
   | Func (f, args) ->
       f ^ "(" ^ (String.concat ", " (List.map string_of_term args)) ^ ")"
 
@@ -30,6 +32,7 @@ let rec term_of_json (json : Yojson.Safe.t) =
   match json with
   | `Assoc [("type", `String "Variable"); ("name", `String v)] -> Var v
   | `Assoc [("type", `String "Const"); ("name", `String c)] -> Const c
+  | `Assoc [("type", `String "ContextConst"); ("name", `Int c)] -> ContextConst c
   | `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List args)] ->
       Func (f, List.map term_of_json args)
   | _ -> failwith "Invalid term JSON"
@@ -71,6 +74,8 @@ let rec json_of_term (t : term) : Yojson.Safe.t =
       `Assoc [("type", `String "Variable"); ("name", `String v)]
   | Const c -> 
       `Assoc [("type", `String "Const"); ("name", `String c)]
+  | ContextConst c ->
+      `Assoc [("type", `String "ContextConst"); ("name", `Int c)]
   | Func (f, args) -> 
       `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List (List.map json_of_term args))]
 
@@ -110,7 +115,7 @@ let formula_from_json_string (json_str : string) : first_order_formula =
 
 let json_of_bool (b : bool) : Yojson.Safe.t = `Assoc [("type", `String "Bool"); ("name", `String "return"); ("args", `List [`Bool b])]
 
-let step_of_json (json : Yojson.Safe.t) =
+(*let step_of_json (json : Yojson.Safe.t) =
   match json with 
     | `Assoc [("type", `String "Axiom"); ("name", `String label); ("args", `List [`List formulas; `List terms])] ->
       Axiom(label, List.map formula_of_json formulas, List.map term_of_json terms)
@@ -121,7 +126,7 @@ let step_of_json (json : Yojson.Safe.t) =
 let proof_of_json (json : Yojson.Safe.t) =
   match json with 
     | `Assoc [("type", `String "Proof"); ("name", _); ("args", `List steps)] -> List.map step_of_json steps
-    | _ -> failwith "Invalid Proof JSON"
+    | _ -> failwith "Invalid Proof JSON"*)
 
 (* Convert JSON to a 'statement' type *)
 let rec statement_of_json (json : Yojson.Safe.t) : statement =

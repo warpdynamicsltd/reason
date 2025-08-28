@@ -4,7 +4,8 @@ from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
 
 from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
-from reason.core.transform.jsonize import jsonize
+from reason.proofkit.kernel.jsonize import jsonize
+from reason.core.language import Language
 import reason.proofkit.kernel
 
 class Ref:
@@ -150,15 +151,19 @@ class Block:
 
 PROOF : Block | None = None
 CURRENT : Block | None = None
+DEPTH: int = 0
+LANGUAGE: Language | None = None
 
-def BEGIN():
-    global CURRENT, PROOF
+def BEGIN(language: Language = None):
+    global CURRENT, PROOF, DEPTH, LANGUAGE
     CURRENT = Block()
     PROOF = CURRENT
+    DEPTH = 0
+    LANGUAGE = language
 
 class Context():
     def __enter__(self):
-        global CURRENT, PROOF
+        global CURRENT, PROOF, DEPTH
 
         self.parent = CURRENT
         self.block = Block(ref=self.parent.get_next_ref())
@@ -166,18 +171,25 @@ class Context():
 
         self.parent.add(self.block)
         CURRENT = self.block
+        DEPTH += 1
         return self.block
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        global CURRENT
+        global CURRENT, DEPTH
         self.block.formula = self.block.get_formula()
         self.parent.formula = self.parent.get_formula()
         self.ref = self.block.ref
         CURRENT = self.parent
+        DEPTH -= 1
         return False
 
 def ref():
     return reason.proofkit.kernel.proof.CURRENT.ref
+
+def get_context_const_name():
+    const_name = f"context_{DEPTH}"
+    LANGUAGE.add_const(const_name)
+    return const_name
 
 def asm(func):
     def wrapper(*args, **kwargs):
