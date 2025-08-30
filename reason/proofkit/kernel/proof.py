@@ -305,40 +305,38 @@ def IFO(a: FirstOrderFormula, b: FirstOrderFormula):
     return Axiom("IFO", [a, b], [], Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))))
 
 @asm
-def ALL(a: FirstOrderFormula, t: Term, v: Variable):
+def ALL(a: FirstOrderFormula, t: Term, x: str):
     """
     ( ∀x. a(x) ) -> a(t)
     """
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term must be a variable")
-    return Axiom("ALL", [a], [t, v], Implies(Forall(v, a), a.replace(v, t)))
+    v = Variable(x)
+    return Axiom("ALL", [a], [t, v], Implies(Forall(x, a), a.replace(v, t)))
 
 @asm
-def EXT(a: FirstOrderFormula, t: Term, v: Variable):
+def EXT(a: FirstOrderFormula, t: Term, x: str):
     """
     a(t) -> ( ∃x. a(x) )
     """
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term must be a variable")
-    return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(v, a)))
+    v = Variable(x)
+    return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(x, a)))
 
 @asm
-def ALH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
+def ALH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
     """
     ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
     """
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term is not a variable")
-    return Axiom("ALH", [a, b], [v], Implies(Forall(v, Implies(a, b)), Implies(a, Forall(v, b))))
+    v = Variable(x)
+    return Axiom("ALH", [a, b], [v], Implies(Forall(x, Implies(a, b)), Implies(a, Forall(x, b))))
 
 @asm
-def EXH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
+def EXH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
     """
     ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
     """
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term is not a variable")
-    return Axiom("EXH", [a, b], [v], Implies(Forall(v, Implies(b, a)), Implies(Exists(v, b), a)))
+    v = Variable(x)
+    return Axiom("EXH", [a, b], [v], Implies(Forall(x, Implies(b, a)), Implies(Exists(x, b), a)))
+
+### RULES ###
 
 @asm
 def MOD(r1: Ref, r2: Ref):
@@ -352,6 +350,22 @@ def MOD(r1: Ref, r2: Ref):
             return Rule("MOD", [r1, r2], [], y)
 
     raise RuntimeError("Invalid formulas")
+
+@asm
+def GEN(r: Ref, x: str):
+    """
+    p |- ∀x. p
+    """
+    return Rule("GEN", [r], [Variable(x)], Forall(x, PROOF.value(r)))
+
+# | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
+@asm
+def CTV(a: Ref, context_const_name: str, x: str):
+    """
+    p(context_i) |- p(x)
+    """
+    c = Const(context_const_name)
+    return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
 
 @asm
 def IDN(a: Ref):

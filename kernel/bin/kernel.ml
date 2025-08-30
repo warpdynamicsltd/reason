@@ -106,6 +106,7 @@ let rule = function
   | "IDN" -> (function [a], [] -> a | _ -> failwith "illformed rule")
   | "MOD" -> (function [Implies(a, b); c], [] when c=a -> b | _ -> failwith "illformed rule")
   | "GEN" -> (function [a], [Var(v)] -> Forall(v, a) | _ -> failwith "illformed rule")
+  | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
   | _ -> failwith "unknown rule"
 
 

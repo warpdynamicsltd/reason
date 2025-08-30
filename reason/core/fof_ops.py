@@ -15,8 +15,8 @@ def Iff(a, b):
 def Not(a):
     return LogicConnective("NEG", a)
 
-def Forall(v, f):
-    return LogicQuantifier("FORALL", v, f)
+def Forall(x, f):
+    return LogicQuantifier("FORALL", Variable(x), f)
 
-def Exists(v, f):
-    return LogicQuantifier("EXISTS", v, f)
+def Exists(x, f):
+    return LogicQuantifier("EXISTS", Variable(x), f)

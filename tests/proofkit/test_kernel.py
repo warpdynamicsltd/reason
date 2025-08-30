@@ -537,32 +537,7 @@ class TestKernel(unittest.TestCase):
             self.assertEqual(f, Iff(f_in, f_out))
 
     def test_context_const(self):
-        # BEGIN(L)
-        #
-        # c = get_context_const_name()
-        # r1 = tau.p_to_p(L(f"P({c})"))
-        #
-        # f = RETURN()
-        # self.assertEqual(f, L(f"P(context_0) → P(context_0)"))  # TODO: this should fail but for now is OK
-        #
-        # BEGIN(L)
-        # with Context():
-        #     c = get_context_const_name()
-        #     r1 = tau.p_to_p(L(f"P({c})"))
-        #
-        # f = RETURN()
-        # self.assertEqual(f, L(f"P(context_1) → P(context_1)")) # TODO: this should fail but for now is OK
-        #
-        # BEGIN(L)
-        # with Context():
-        #     with Context():
-        #         c = get_context_const_name()
-        #         r1 = tau.p_to_p(L(f"P({c})"))
-        #         # r2 = ref()
-        #
-        # f = RETURN()
-        # self.assertEqual(f, L(f"P(context_2) → P(context_2)"))  # TODO: this should fail but for now is OK
-
+        L = Language()
         BEGIN(L)
         with Context():
             s = get_next_skolem_name()
