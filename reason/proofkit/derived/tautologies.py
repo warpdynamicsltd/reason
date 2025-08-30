@@ -1,7 +1,6 @@
 from reason.core.fof_ops import And, Implies, Not, Or
 from reason.core.fof_types import FirstOrderFormula
 import reason.proofkit.derived.rules as rules
-from reason.proofkit.derived.rules import r_imp_imp_iff
 from reason.proofkit.kernel import Ref
 from reason.proofkit.kernel.proof import *
 
@@ -25,7 +24,7 @@ def iff_iff(a: FirstOrderFormula, b: FirstOrderFormula) -> Ref:
     """
     r1 = iff_tau(a, b) # (a → b) ∧ (b → a) → (a ⟷ b)
     r2 = IFO(a, b) # (a ⟷ b) → (a → b) ∧ (b → a)
-    return r_imp_imp_iff(r1, r2)
+    return rules.r_imp_imp_iff(r1, r2)
 
 
 def not_not_p_to_p(p: FirstOrderFormula):

@@ -228,7 +228,10 @@ let rec is_valid_conclusion proof r =
           && List.for_all (reference_allowed ref) refs
           && List.for_all (is_valid_conclusion proof) refs
           && formula_match_ref r formula
-        -> formula = (rule label (List.map (get_formula proof) refs, terms))
+        -> (match label with 
+            | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
+            | _ -> formula = (rule label (List.map (get_formula proof) refs, terms)))
+
     | BlockStmt{ref; statements; formula} 
         when ref = r 
         && (List.length statements) > 0

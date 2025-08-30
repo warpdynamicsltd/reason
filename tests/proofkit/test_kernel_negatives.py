@@ -1,7 +1,8 @@
+import pytest
 import unittest
 
 from reason.core.language import Language
-from reason.proofkit.derived.rules import r_and_left, r_and_right, r_and
+import reason.proofkit.derived.rules as rules
 import reason.proofkit.derived.tautologies as tau
 from reason.proofkit.derived.qty_tau import *
 from reason.proofkit.kernel.proof import *
@@ -307,68 +308,95 @@ class TestKernelNegatives(unittest.TestCase):
 
     ]
 
+
     def test_kernel_negatives(self):
         for i, proof_block in enumerate(TestKernelNegatives.invalid_blocks):
-            try:
-                f = Kernel.prove_tautology(proof_block)
-            except Exception as e:
-                self.assertIs(type(e), KernelError)
-                continue
+            with pytest.raises(KernelError):
+                Kernel.prove_tautology(proof_block)
 
-            raise RuntimeError(f"Kernel is expected to fail in {i}={proof_block.to_json()}")
-
-    def test_fail_on_RETURN(self, error_type: type=KernelError):
-        try:
-            f = RETURN()
-        except Exception as e:
-            self.assertIs(type(e), error_type)
-            return
-
-    def test_kernel_programs_negatives(self):
+    def test_negatives_programs(self):
         L = Language()
         BEGIN(L)
-        tau.p_to_p(L("P(context_1)"))
+        L.add_const("context_1")
+        r = tau.p_to_p(L("P(context_1)"))
+        with pytest.raises(KernelError):
+            RETURN()
 
-        self.test_fail_on_RETURN()
 
         L = Language()
         BEGIN(L)
         with Context():
+            L.add_const("context_2")
             tau.p_to_p(L("P(context_2)"))
-
-        self.test_fail_on_RETURN()
+        with pytest.raises(KernelError):
+            RETURN()
 
         L = Language()
         BEGIN(L)
         with Context():
             c = get_context_const_name()
             r1 = tau.p_to_p(L(f"P({c})"))
-
-        self.test_fail_on_RETURN()
+        with pytest.raises(KernelError):
+            RETURN()
 
         L = Language()
         BEGIN(L)
         with Context():
             c = get_context_const_name()
             ASM(L(f"P({c})"))
-
-        self.test_fail_on_RETURN()
+        with pytest.raises(KernelError):
+            RETURN()
 
         L = Language()
         BEGIN(L)
         c = get_context_const_name()
         r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
         r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
-
-        self.test_fail_on_RETURN()
+        with pytest.raises(KernelError):
+            RETURN()
 
         L = Language()
         BEGIN(L)
-        try:
+
+        with pytest.raises(RuntimeError):
             all_over_imp(L("A(x)"), L("B(x)"), "x")
-        except Exception as e:
-            self.assertIs(type(e), RuntimeError)
-            return
+
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            c = get_context_const_name()
+            with Context():
+                r1 = ASM(L(f"P({c})")) # P(c)
+                CTV(r1, c, "x") # ∀x. P(x)
+                r2 = ref() # P(c) -> (∀x. P(x))
+            CTV(r2, c, "z") # P(z) -> (∀x. P(x))
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        c = get_context_const_name()
+        with Context():
+            r1 = ASM(L(f"P({c})"))  # P(c)
+            CTV(r1, c, "x")  # ∀x. P(x)
+            r2 = ref()  # P(c) -> (∀x. P(x))
+        CTV(r2, c, "z")  # P(z) -> (∀x. P(x))
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        c = get_context_const_name()
+        with Context():
+            with Context():
+                r1 = ASM(L(f"P({c})"))  # P(c)
+                CTV(r1, c, "x")  # ∀x. P(x)
+                r2 = ref()  # P(c) -> (∀x. P(x))
+            r3 = ref()
+        CTV(r3, c, "z")  # P(z) -> (∀x. P(x))
+        with pytest.raises(KernelError):
+            RETURN()
 
 
 
