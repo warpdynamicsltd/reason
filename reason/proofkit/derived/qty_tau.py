@@ -7,7 +7,7 @@ from reason.proofkit.kernel.proof import *
 
 def all_to_exist(p: FirstOrderFormula, x: str):
     """
-    ∀x. P(x) -> ∃x. P(x)
+    ( ∀x. p(x) ) -> ( ∃x. p(x) )
     """
     with Context():
         c = get_context_const_name()
@@ -17,3 +17,20 @@ def all_to_exist(p: FirstOrderFormula, x: str):
         r4 = EXT(p, Const(c), x) # P(c1) -> ∃x. P(x)
         MOD(r4, r3) # ∃x. P(x)
         return ref() # ∀x. P(x) -> ∃x. P(x)
+
+def all_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
+    """
+    ( ∀x. a -> b(x) ) -> ( a -> ( ∀x. b(x) ) )
+    """
+    with Context():
+        r0 = ASM(Forall(x, Implies(a, b)))
+        with Context():
+            c = get_context_const_name()
+            r1 = ASM(a)
+            r2 = ALL(Implies(a, b), Const(c), x) # ( ∀x. a -> b(x) ) -> ( a -> b(c) )
+            r3 = MOD(r2, r0) # a -> b(c)
+            r4 = MOD(r3, r1) # b(c)
+            r5 = CTV(r4, c, x) # b(x)
+            GEN(r5, x) # ∀x. b(x)
+            r6 = ref() # a -> ( ∀x. b(x) )
+        return ref()

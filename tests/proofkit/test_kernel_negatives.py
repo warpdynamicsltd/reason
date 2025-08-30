@@ -3,6 +3,7 @@ import unittest
 from reason.core.language import Language
 from reason.proofkit.derived.rules import r_and_left, r_and_right, r_and
 import reason.proofkit.derived.tautologies as tau
+from reason.proofkit.derived.qty_tau import *
 from reason.proofkit.kernel.proof import *
 from reason.proofkit.kernel import Kernel, KernelError
 
@@ -316,14 +317,27 @@ class TestKernelNegatives(unittest.TestCase):
 
             raise RuntimeError(f"Kernel is expected to fail in {i}={proof_block.to_json()}")
 
-    def test_fail_on_RETURN(self):
+    def test_fail_on_RETURN(self, error_type: type=KernelError):
         try:
             f = RETURN()
         except Exception as e:
-            self.assertIs(type(e), KernelError)
+            self.assertIs(type(e), error_type)
             return
 
     def test_kernel_programs_negatives(self):
+        L = Language()
+        BEGIN(L)
+        tau.p_to_p(L("P(context_1)"))
+
+        self.test_fail_on_RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            tau.p_to_p(L("P(context_2)"))
+
+        self.test_fail_on_RETURN()
+
         L = Language()
         BEGIN(L)
         with Context():
@@ -342,11 +356,19 @@ class TestKernelNegatives(unittest.TestCase):
 
         L = Language()
         BEGIN(L)
-
         c = get_context_const_name()
         r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
         r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
 
         self.test_fail_on_RETURN()
+
+        L = Language()
+        BEGIN(L)
+        try:
+            all_over_imp(L("A(x)"), L("B(x)"), "x")
+        except Exception as e:
+            self.assertIs(type(e), RuntimeError)
+            return
+
 
 

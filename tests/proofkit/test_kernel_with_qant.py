@@ -47,10 +47,9 @@ class TestKernelWithQuant(unittest.TestCase):
             self.assertEqual(c, "context_1")
             with Context():
                 r0 = ASM(L(f"P({c})"))
+                r1 = ref()  # P(c1) -> P(c1)
 
-            r1 = ref()  # P(c1) -> P(c1)
-
-        r2 = CTV(r1, c, "z")
+            r2 = CTV(r1, c, "z")
         f = RETURN()
         self.assertEqual(f, L(f"P(z) → P(z)"))
 
@@ -63,8 +62,8 @@ class TestKernelWithQuant(unittest.TestCase):
                 with Context():
                     r0 = ASM(L(f"P({c})"))
 
-                r1 = ref()  # P(c1) -> P(c1)
-            r2 = CTV(r1, c, "z")
+                    r1 = ref()  # P(c1) -> P(c1)
+                r2 = CTV(r1, c, "z")
 
         f = RETURN()
         self.assertEqual(f, L(f"P(z) → P(z)"))
@@ -75,3 +74,9 @@ class TestKernelWithQuant(unittest.TestCase):
         all_to_exist(L("P(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L("( ∀x. P(x) ) → ( ∃x. P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        all_over_imp(L("A"), L("B(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. A → B(x) ) → ( A → ( ∀x. B(x) ) )"))
