@@ -1,5 +1,5 @@
-open Formula
-open Kernel
+open Types
+(*open Kernel*)
 
 (*open Yojson.Safe.Util*)
 
@@ -7,7 +7,8 @@ let rec string_of_term t =
   match t with
   | Var v -> v
   | Const c -> c
-  | ContextConst c -> Int.to_string c
+  | ContextConst c -> "context_" ^ Int.to_string c
+  | SkolemConst lst -> "skolem _" ^ String.concat "_" (List.map Int.to_string lst) 
   | Func (f, args) ->
       f ^ "(" ^ (String.concat ", " (List.map string_of_term args)) ^ ")"
 
@@ -26,6 +27,14 @@ let rec string_of_formula f =
   | Exists (v, f1) -> "∃" ^ v ^ ".(" ^ string_of_formula f1 ^ ")"
 ;;
 
+(* Helper function to parse a reference from JSON *)
+let reference_of_json (json : Yojson.Safe.t) : reference =
+  match json with
+  | `Assoc [("type", `String "Ref"); ("name", _); ("args", `List indices_json)] ->
+      let indices = List.map Yojson.Safe.Util.to_int indices_json in
+      Ref indices
+  | _ -> failwith "Invalid Reference JSON"
+
 
 (* Recursive function to handle JSON -> term conversion *)
 let rec term_of_json (json : Yojson.Safe.t) =
@@ -33,6 +42,9 @@ let rec term_of_json (json : Yojson.Safe.t) =
   | `Assoc [("type", `String "Variable"); ("name", `String v)] -> Var v
   | `Assoc [("type", `String "Const"); ("name", `String c)] -> Const c
   | `Assoc [("type", `String "ContextConst"); ("name", `Int c)] -> ContextConst c
+  | `Assoc [("type", `String "SkolemConst"); ("name", _); ("args", `List indices_json)] ->
+      let indices = List.map Yojson.Safe.Util.to_int indices_json in
+      SkolemConst indices
   | `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List args)] ->
       Func (f, List.map term_of_json args)
   | _ -> failwith "Invalid term JSON"
@@ -65,8 +77,6 @@ let rec formula_of_json (json : Yojson.Safe.t) =
     | _ -> failwith "Invalid formula JSON"
 
 
-    open Formula
-
 (* Convert term to JSON *)
 let rec json_of_term (t : term) : Yojson.Safe.t =
   match t with
@@ -76,6 +86,8 @@ let rec json_of_term (t : term) : Yojson.Safe.t =
       `Assoc [("type", `String "Const"); ("name", `String c)]
   | ContextConst c ->
       `Assoc [("type", `String "ContextConst"); ("name", `Int c)]
+  | SkolemConst lst ->
+      `Assoc [("type", `String "SkolemConst"); ("name", `String ""); ("args", `List (List.map (fun i -> `Int i) lst))]
   | Func (f, args) -> 
       `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List (List.map json_of_term args))]
 
@@ -158,14 +170,6 @@ let rec statement_of_json (json : Yojson.Safe.t) : statement =
       BlockStmt {ref; statements; formula}
 
   | _ -> failwith "Invalid Statement JSON"
-
-(* Helper function to parse a reference from JSON *)
-and reference_of_json (json : Yojson.Safe.t) : reference =
-  match json with
-  | `Assoc [("type", `String "Ref"); ("name", _); ("args", `List indices_json)] ->
-      let indices = List.map Yojson.Safe.Util.to_int indices_json in
-      Ref indices
-  | _ -> failwith "Invalid Reference JSON"
 
 
 

@@ -1,4 +1,4 @@
-open Formula
+open Types
 
 let rec to_nnf (formula : first_order_formula) : first_order_formula =
   match formula with

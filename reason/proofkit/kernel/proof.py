@@ -118,6 +118,9 @@ class Block:
             return None
 
     def value(self, ref : Ref):
+        """
+        get formula at given ref
+        """
         index = ref.indices[0]
         statement = self.statements[index]
         if type(statement) is Block:
@@ -131,6 +134,12 @@ class Block:
 
     def get_next_ref(self):
         return Ref(list(self.ref.indices) + [len(self.statements)])
+
+    def get_next_skolem_name(self):
+        return f"skolem_{'_'.join(map(str, self.get_next_ref().indices))}"
+
+    def get_depth(self):
+        return len(self.ref.indices)
 
     def add(self, statement: Axiom | Rule | Self):
         statement.ref = self.get_next_ref()
@@ -151,19 +160,17 @@ class Block:
 
 PROOF : Block | None = None
 CURRENT : Block | None = None
-DEPTH: int = 0
 LANGUAGE: Language | None = None
 
 def BEGIN(language: Language = None):
-    global CURRENT, PROOF, DEPTH, LANGUAGE
+    global CURRENT, PROOF, LANGUAGE
     CURRENT = Block()
     PROOF = CURRENT
-    DEPTH = 0
     LANGUAGE = language
 
 class Context():
     def __enter__(self):
-        global CURRENT, PROOF, DEPTH
+        global CURRENT, PROOF
 
         self.parent = CURRENT
         self.block = Block(ref=self.parent.get_next_ref())
@@ -171,25 +178,26 @@ class Context():
 
         self.parent.add(self.block)
         CURRENT = self.block
-        DEPTH += 1
         return self.block
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        global CURRENT, DEPTH
+        global CURRENT
         self.block.formula = self.block.get_formula()
         self.parent.formula = self.parent.get_formula()
         self.ref = self.block.ref
         CURRENT = self.parent
-        DEPTH -= 1
         return False
 
 def ref():
     return reason.proofkit.kernel.proof.CURRENT.ref
 
 def get_context_const_name():
-    const_name = f"context_{DEPTH}"
+    const_name = f"context_{CURRENT.get_depth()}"
     LANGUAGE.add_const(const_name)
     return const_name
+
+def get_next_skolem_name():
+    return CURRENT.get_next_skolem_name()
 
 def asm(func):
     def wrapper(*args, **kwargs):
@@ -226,12 +234,12 @@ def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
     """
     return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
 
-@asm
-def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
-    """
-    (a -> (b1 -> b2)) -> ( (a -> b1) -> (a -> b2) )
-    """
-    return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
+# @asm
+# def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
+#     """
+#     (a -> (b1 -> b2)) -> ( (a -> b1) -> (a -> b2) )
+#     """
+#     return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
 
 @asm
 def ANL(a: FirstOrderFormula, b: FirstOrderFormula):

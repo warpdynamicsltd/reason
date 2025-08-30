@@ -13,6 +13,9 @@ def from_json(json_obj: dict):
         case {"type": "ContextConst", "name": name}:
             return Const(f"context_{name}")
 
+        case {"type": "SkolemConst", "args": args}:
+            return Const(f"skolem_{"_".join(map(str, args))}")
+
         # Handling Functions
         case {"type": "Function", "name": name, "args": args}:
             arguments = [from_json(arg) for arg in args]

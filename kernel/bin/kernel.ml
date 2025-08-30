@@ -1,9 +1,10 @@
-open Formula
+open Types
 
 let rec var_occurs_in_term var = function
   | Var v -> v = var
   | Const _ -> false
   | ContextConst _ -> false
+  | SkolemConst _ -> false
   | Func (_, terms) -> List.exists (var_occurs_in_term var) terms
 
 let rec var_occurs_free_in_formula var = function
@@ -23,6 +24,7 @@ let rec substitute_in_term var replacement t =
     | Var v -> if v = var then replacement else Var v
     | Const _ -> t
     | ContextConst _ -> t
+    | SkolemConst _ -> t
     | Func (f, args) -> Func (f, List.map (substitute_in_term var replacement) args)
 
 
@@ -42,12 +44,39 @@ let rec substitute_in_formula var replacement = function
     | Forall(v, f) when not (var_occurs_in_term v replacement) && v != var -> Forall(v, substitute_in_formula var replacement f)
     | Forall(_, _) -> failwith "substitution not admissible"
 
+let rec substitute_context_const_in_term index replacement t = 
+  match t with
+    | Var _ -> t
+    | Const _ -> t
+    | ContextConst i -> if i = index then replacement else ContextConst i
+    | SkolemConst _ -> t
+    | Func (f, args) -> Func (f, List.map (substitute_context_const_in_term index replacement) args)
+
+
+let rec substitute_context_const_in_formula index replacement = function
+    | True -> True
+    | False -> False
+    | Pred (p, args) -> Pred (p, List.map (substitute_context_const_in_term index replacement) args)
+    | Not f -> Not (substitute_context_const_in_formula index replacement f)
+    | And(a, b) -> And (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
+    | Or(a, b) -> Or (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
+    | Implies(a, b) -> Implies (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
+    | Iff(a, b) -> Iff (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
+    | Exists(_, f) -> substitute_context_const_in_formula index replacement f
+    | Forall(_, f) -> substitute_context_const_in_formula index replacement f
+
+let substitute_context_const_in_formula_by_var index var formula =
+  if not (var_occurs_free_in_formula var formula) 
+    then substitute_context_const_in_formula index (Var var) formula
+  else
+    failwith "substitution not admissible"
+
 let axiom_error = function () -> failwith "illformed axiom"
 
 let axiom = function
   | "LEM" -> (function [a], [] -> Or(a, Not a) | _, _ -> axiom_error())
   | "IMP" -> (function [a; b], [] -> Implies(a, (Implies(b, a))) | _ -> axiom_error())
-  | "TRN" -> (function [a; b1; b2], [] -> Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))) | _ -> axiom_error())
+  (*| "TRN" -> (function [a; b1; b2], [] -> Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))) | _ -> axiom_error()) *)
   | "ANL" -> (function [a; b], [] -> Implies(And(a, b), a) | _ -> axiom_error())
   | "ANR" -> (function [a; b], [] -> Implies(And(a, b), b) | _ -> axiom_error())
   | "AND" -> (function [a; b], [] -> Implies(a, Implies(b, And(a, b))) | _ -> axiom_error())
@@ -106,38 +135,34 @@ let tautology proof =
 
 let final_tautology proof = tautology proof (List.length proof - 1)*)
 
+let max_list lst =
+  match lst with
+  | [] -> -1
+  | hd :: tl -> List.fold_left max hd tl
 
-type reference =
-  | Ref of int list
 
-type statement = 
-  | AssumptionStmt of 
-    {
-      ref: reference;
-      formula: first_order_formula;
-    }
-  | AxiomStmt of 
-    {
-      ref: reference;
-      label: string;
-      fofs: first_order_formula list;
-      terms: term list;
-      formula: first_order_formula;
-    }
-  | RuleStmt of 
-    {
-      ref: reference;
-      label: string;
-      refs: reference list;
-      terms: term list;
-      formula: first_order_formula
-    }
-  | BlockStmt of 
-    {
-      ref: reference;
-      statements: statement list;
-      formula: first_order_formula
-    }
+let rec max_context_const_index_of_term t = 
+  match t with
+    | Var _ -> -1
+    | Const _ -> -1
+    | ContextConst c -> c
+    | SkolemConst _ -> -1
+    | Func (_, terms) -> max_list (List.map max_context_const_index_of_term terms)
+
+
+let rec max_context_const_index_of_formula f =
+  match f with
+    | True -> -1
+    | False -> -1
+    | Pred (_, args) -> max_list (List.map max_context_const_index_of_term args)
+    | Not f1 -> max_context_const_index_of_formula f1
+    | And (f1, f2)
+    | Or (f1, f2)
+    | Implies (f1, f2)
+    | Iff (f1, f2) -> max (max_context_const_index_of_formula f1) (max_context_const_index_of_formula f2)
+    | Exists (_, f1)
+    | Forall (_, f1) -> max_context_const_index_of_formula f1
+
 
 let formula_of_statement s = 
   match s with
@@ -172,6 +197,11 @@ let last_elem lst = List.nth lst (List.length lst - 1)
 
 let last_of_ref ref = match ref with Ref lst -> last_elem lst
 
+let depth_of_ref ref = match ref with Ref lst -> List.length lst
+
+let formula_match_ref ref formula = max_context_const_index_of_formula formula <= depth_of_ref ref
+let asm_formula_match_ref ref formula = max_context_const_index_of_formula formula < depth_of_ref ref
+
 let is_assumption_statement s = 
   match s with
     | AssumptionStmt _ -> true
@@ -179,27 +209,37 @@ let is_assumption_statement s =
 
 let rec is_valid_conclusion proof r = 
   match get_statement proof r with
-    | AssumptionStmt {ref; _} when ref = r && last_of_ref ref = 0 -> true
-    | AxiomStmt {ref; label; fofs; terms; formula} when ref = r && formula = (axiom label (fofs, terms)) -> true
-    | RuleStmt {ref; label; refs; terms; formula} when ref = r 
-       && List.for_all (reference_allowed ref) refs
-       && List.for_all (is_valid_conclusion proof) refs
+    | AssumptionStmt {ref; formula} 
+        when ref = r && last_of_ref ref = 0 && asm_formula_match_ref r formula 
+        -> true
+    | AxiomStmt {ref; label; fofs; terms; formula} 
+        when ref = r 
+          && formula = (axiom label (fofs, terms))
+          && formula_match_ref r formula 
+        -> true
+    | RuleStmt {ref; label; refs; terms; formula} 
+        when ref = r 
+          && List.for_all (reference_allowed ref) refs
+          && List.for_all (is_valid_conclusion proof) refs
+          && formula_match_ref r formula
         -> formula = (rule label (List.map (get_formula proof) refs, terms))
-    | BlockStmt{ref; statements; formula} when ref = r && (List.length statements) > 0
-      && 
-        let statement0 = (List.hd statements) in
-        let last_ref = append r (List.length statements - 1) in
-        let f = last_elem statements |> formula_of_statement in
-        (
-          is_valid_conclusion proof (last_ref) && 
-          formula = 
-            if is_assumption_statement statement0 
-            then 
-              let assumption = statement0 |> formula_of_statement in
-              Implies(assumption, f) 
-            else f)
-
-          -> true
+    | BlockStmt{ref; statements; formula} 
+        when ref = r 
+        && (List.length statements) > 0
+        && formula_match_ref r formula
+        && 
+          let statement0 = (List.hd statements) in
+          let last_ref = append r (List.length statements - 1) in
+          let f = last_elem statements |> formula_of_statement in
+          (
+            is_valid_conclusion proof (last_ref) && 
+            formula = 
+              if is_assumption_statement statement0 
+              then 
+                let assumption = statement0 |> formula_of_statement in
+                Implies(assumption, f) 
+              else f)
+        -> true
     | _ -> false
 
 
