@@ -319,6 +319,15 @@ class TestKernelNegatives(unittest.TestCase):
         BEGIN(L)
         L.add_const("context_1")
         r = tau.p_to_p(L("P(context_1)"))
+        # print(r)
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        L.add_const("context_2")
+        r = tau.p_to_p(L("P(context_2)"))
+        # print(r)
         with pytest.raises(KernelError):
             RETURN()
 
