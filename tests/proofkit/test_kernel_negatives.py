@@ -314,11 +314,39 @@ class TestKernelNegatives(unittest.TestCase):
             with pytest.raises(KernelError):
                 Kernel.prove_tautology(proof_block)
 
+    def test_context_negatives(self):
+        L = Language()
+        L.add_const("context_1")
+        block = Block(
+            ref=Ref([]),
+            statements=[
+                Axiom(
+                    ref=Ref([0]),
+                    label="LEM",
+                    fofs=[L("P(context_1)")],
+                    terms=[],
+                    formula=L("P(context_1) or ~P(context_1)")
+                ),
+                # even if we do not check if context_1 is valid for Axiom with Ref([0])
+                # check for CTV rule will cause KernelError
+                Rule(
+                    ref=Ref([1]),
+                    label="CTV",
+                    refs=[Ref([0])],
+                    terms=[Const("context_1"), Variable("x")],
+                    formula=L("P(x) or ~P(x)")
+                )
+            ],
+            formula=L("P(x) or ~P(x)")
+        )
+        with pytest.raises(KernelError):
+            Kernel.prove_tautology(block)
+
     def test_negatives_programs(self):
         L = Language()
         BEGIN(L)
         L.add_const("context_1")
-        r = tau.p_to_p(L("P(context_1)"))
+        r = LEM(L("P(context_1)"))
         # print(r)
         with pytest.raises(KernelError):
             RETURN()
@@ -326,7 +354,7 @@ class TestKernelNegatives(unittest.TestCase):
         L = Language()
         BEGIN(L)
         L.add_const("context_2")
-        r = tau.p_to_p(L("P(context_2)"))
+        r = LEM(L("P(context_2)"))
         # print(r)
         with pytest.raises(KernelError):
             RETURN()
@@ -336,7 +364,7 @@ class TestKernelNegatives(unittest.TestCase):
         BEGIN(L)
         with Context():
             L.add_const("context_2")
-            tau.p_to_p(L("P(context_2)"))
+            LEM(L("P(context_2)"))
         with pytest.raises(KernelError):
             RETURN()
 
@@ -344,7 +372,7 @@ class TestKernelNegatives(unittest.TestCase):
         BEGIN(L)
         with Context():
             c = get_context_const_name()
-            r1 = tau.p_to_p(L(f"P({c})"))
+            LEM(L(f"P({c})"))
         with pytest.raises(KernelError):
             RETURN()
 

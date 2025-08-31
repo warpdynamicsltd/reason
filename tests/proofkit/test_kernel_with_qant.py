@@ -6,6 +6,7 @@ from reason.proofkit.derived.tautologies import *
 from reason.proofkit.derived.qty_tau import *
 from reason.proofkit.derived.transform import *
 from reason.proofkit.kernel.proof import *
+from reason.proofkit.kernel import Kernel
 
 L = Language()
 
@@ -18,6 +19,31 @@ class TestKernelWithQuant(unittest.TestCase):
         self.assertEqual(f, L("∀x. P(x) → P(x)"))
 
     def test_context_const(self):
+        L = Language()
+        L.add_const("context_0")
+        block = Block(
+            ref=Ref([]),
+            statements=[
+                Axiom(
+                    ref=Ref([0]),
+                    label="LEM",
+                    fofs=[L("P(context_0)")],
+                    terms=[],
+                    formula=L("P(context_0) or ~P(context_0)")
+                ),
+                Rule(
+                    ref=Ref([1]),
+                    label="CTV",
+                    refs=[Ref([0])],
+                    terms=[Const("context_0"), Variable("x")],
+                    formula=L("P(x) or ~P(x)")
+                )
+            ],
+            formula=L("P(x) or ~P(x)")
+        )
+
+        Kernel.prove_tautology(block)
+
         L = Language()
         BEGIN(L)
 

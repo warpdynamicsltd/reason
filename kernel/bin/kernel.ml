@@ -198,14 +198,14 @@ let last_elem lst = List.nth lst (List.length lst - 1)
 
 let last_of_ref ref = match ref with Ref lst -> last_elem lst
 
-let depth_of_ref ref = match ref with Ref lst -> List.length lst
+let context_depth_of_ref ref = match ref with Ref lst -> List.length lst - 1
 
-let formula_match_ref ref formula = max_context_const_index_of_formula formula <= (depth_of_ref ref) - 1
-let asm_formula_match_ref ref formula = max_context_const_index_of_formula formula < (depth_of_ref ref) - 1
+let formula_match_ref ref formula = max_context_const_index_of_formula formula <= context_depth_of_ref ref
+let asm_formula_match_ref ref formula = max_context_const_index_of_formula formula < context_depth_of_ref ref
 
 let is_ctv_alinged ref terms = 
   match List.nth terms 0 with
-    | ContextConst index -> depth_of_ref ref - 1 = index
+    | ContextConst index -> context_depth_of_ref ref = index
     | _ -> false
 
 let is_assumption_statement s = 
