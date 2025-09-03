@@ -6,7 +6,7 @@ class ProofKitJSONizer(JSONizer):
         if name[:8] == "context_":
             return dict(type="ContextConst", name=int(name[8:]))
         if name[:7] == "skolem_":
-            lst = name[7:].split("_")
+            lst = list(map(int, name[7:].split("_")))
             return dict(type="SkolemConst", name="", args=lst)
         return dict(type="Const", name=name)
 

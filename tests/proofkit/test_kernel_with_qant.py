@@ -94,6 +94,29 @@ class TestKernelWithQuant(unittest.TestCase):
         f = RETURN()
         self.assertEqual(f, L(f"P(z) → P(z)"))
 
+        L = Language()
+        BEGIN(L)
+        c = get_context_const_name()
+        r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
+        r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
+        f = RETURN()
+        self.assertEqual(f, L("P(x, x) → P(x, x)"))
+
+    def test_skolem_const(self):
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r0 = ASM(L("∃x. P(x)"))
+            sk = get_next_skolem_const_name()
+            r1 = SKO(r0, sk) # P(sk)
+            g = formula(r1)
+            r2 = EXT(L("P(z)"), Const(sk), "z") # P(sk) -> ∃z. P(z)
+            r3 = MOD(r2, r1)
+            r4 = ref()
+
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. P(x) ) → ( ∃z. P(z) )"))
+
     def test_statements(self):
         L = Language()
         BEGIN(L)
@@ -106,3 +129,21 @@ class TestKernelWithQuant(unittest.TestCase):
         all_over_imp(L("A"), L("B(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L(" ( ∀x. A → B(x) ) → ( A → ( ∀x. B(x) ) )"))
+
+        L = Language()
+        BEGIN(L)
+        exists_over_imp(L("A"), L("B(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. B(x) → A ) → ( ( ∃x. B(x) ) → A )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_not_exists_to_all_not(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("~ ( ∃x. P(x) ) → ( ∀x. ~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_exists_not_to_not_all(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. ~P(x) ) → ~( ∀x. P(x) )"))

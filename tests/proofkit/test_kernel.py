@@ -535,14 +535,3 @@ class TestKernel(unittest.TestCase):
             r = NnfProvedTransformer(f_in).result
             f = RETURN()
             self.assertEqual(f, Iff(f_in, f_out))
-
-    def test_context_const(self):
-        L = Language()
-        BEGIN(L)
-        with Context():
-            s = get_next_skolem_name()
-            r1 = tau.p_to_p(L(f"P({s})"))
-            # r2 = ref()
-
-        f = RETURN()
-        self.assertEqual(f, L(f"P(skolem_0_0) → P(skolem_0_0)"))  # TODO: this should fail but for now is OK

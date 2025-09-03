@@ -345,6 +345,15 @@ class TestKernelNegatives(unittest.TestCase):
     def test_negatives_programs(self):
         L = Language()
         BEGIN(L)
+        with Context():
+            with Context():
+                r1 = LEM(L("P"))
+            r2 = IDN(r1)
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
         L.add_const("context_1")
         r = LEM(L("P(context_1)"))
         # print(r)
@@ -381,14 +390,6 @@ class TestKernelNegatives(unittest.TestCase):
         with Context():
             c = get_context_const_name()
             ASM(L(f"P({c})"))
-        with pytest.raises(KernelError):
-            RETURN()
-
-        L = Language()
-        BEGIN(L)
-        c = get_context_const_name()
-        r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
-        r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
         with pytest.raises(KernelError):
             RETURN()
 
@@ -436,4 +437,13 @@ class TestKernelNegatives(unittest.TestCase):
             RETURN()
 
 
+    def test_skolem_const(self):
+        L = Language()
+        BEGIN(L)
+        with Context():
+            s = get_next_skolem_const_name()
+            r1 = LEM(L(f"P({s})"))
+            r2 = ref()
 
+        with pytest.raises(KernelError):
+            RETURN()

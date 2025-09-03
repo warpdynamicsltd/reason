@@ -7,7 +7,7 @@ let rec var_occurs_in_term var = function
   | SkolemConst _ -> false
   | Func (_, terms) -> List.exists (var_occurs_in_term var) terms
 
-let rec var_occurs_free_in_formula var = function
+(*let rec var_occurs_free_in_formula var = function
   | True -> false
   | False -> false
   | Pred(_, args) -> List.exists (var_occurs_in_term var) args
@@ -17,7 +17,7 @@ let rec var_occurs_free_in_formula var = function
   | Implies(a, b) -> (var_occurs_free_in_formula var a) || (var_occurs_free_in_formula var b)
   | Iff(a, b) -> (var_occurs_free_in_formula var a) || (var_occurs_free_in_formula var b)
   | Exists(v, f) -> not (v = var) && var_occurs_free_in_formula var f
-  | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f 
+  | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f *)
 
 let rec substitute_in_term var replacement t = 
   match t with
@@ -62,14 +62,12 @@ let rec substitute_context_const_in_formula index replacement = function
     | Or(a, b) -> Or (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
     | Implies(a, b) -> Implies (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
     | Iff(a, b) -> Iff (substitute_context_const_in_formula index replacement a, substitute_context_const_in_formula index replacement b)
-    | Exists(_, f) -> substitute_context_const_in_formula index replacement f
-    | Forall(_, f) -> substitute_context_const_in_formula index replacement f
+    | Exists(v, f) when not (var_occurs_in_term v replacement) -> substitute_context_const_in_formula index replacement f
+    | Exists(_, _) -> failwith "substitution not admissible"
+    | Forall(v, f) when not (var_occurs_in_term v replacement) -> substitute_context_const_in_formula index replacement f
+    | Forall(_, _) -> failwith "substitution not admissible"
 
-let substitute_context_const_in_formula_by_var index var formula =
-  if not (var_occurs_free_in_formula var formula) 
-    then substitute_context_const_in_formula index (Var var) formula
-  else
-    failwith "substitution not admissible"
+let substitute_context_const_in_formula_by_var index var formula = substitute_context_const_in_formula index (Var var) formula
 
 let axiom_error = function () -> failwith "illformed axiom"
 
@@ -88,7 +86,7 @@ let axiom = function
   | "IFO" -> (function [a; b], [] -> Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))) | _ -> axiom_error())
   | "ALL" -> (function [a], [t; Var(v)] -> Implies(Forall(v, a), substitute_in_formula v t a) | _ -> axiom_error())
   | "EXT" -> (function [a], [t; Var(v)] -> Implies(substitute_in_formula v t a, Exists(v, a)) | _ -> axiom_error())
-  | "ALH" -> (
+  (*| "ALH" -> (
                 function 
                   | [a; b], [Var(v)] when not (var_occurs_free_in_formula v a) -> 
                     Implies(Forall(v, Implies(a, b)), Implies(a, Forall(v, b)))  
@@ -99,7 +97,7 @@ let axiom = function
                   | [a; b], [Var(v)] when not (var_occurs_free_in_formula v a) -> 
                     Implies(Forall(v, Implies(b, a)), Implies(Exists(v, b), a))  
                   | _ -> axiom_error()
-              )
+              )*)
   | _ -> failwith "unknown schema"
 
 let rule = function
@@ -107,6 +105,7 @@ let rule = function
   | "MOD" -> (function [Implies(a, b); c], [] when c=a -> b | _ -> failwith "illformed rule")
   | "GEN" -> (function [a], [Var(v)] -> Forall(v, a) | _ -> failwith "illformed rule")
   | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
+  | "SKO" -> (function [Exists(v, a)], [SkolemConst(ref_seq); Var v1] when v=v1 -> substitute_in_formula v (SkolemConst ref_seq) a | _ -> failwith "illformed rule")
   | _ -> failwith "unknown rule"
 
 
@@ -200,12 +199,43 @@ let last_of_ref ref = match ref with Ref lst -> last_elem lst
 
 let context_depth_of_ref ref = match ref with Ref lst -> List.length lst - 1
 
-let formula_match_ref ref formula = max_context_const_index_of_formula formula <= context_depth_of_ref ref
-let asm_formula_match_ref ref formula = max_context_const_index_of_formula formula < context_depth_of_ref ref
+let rec skolem_const_compatible_with_ref_in_term ref t =
+    match t with
+      | Var _ -> true
+      | Const _ -> true
+      | ContextConst _ -> true
+      | SkolemConst seq -> (Ref seq = ref) || (reference_allowed ref (Ref seq))
+      | Func (_, terms) -> List.for_all (skolem_const_compatible_with_ref_in_term ref) terms
+
+let rec skolem_const_compatible_with_ref_in_formula ref f =
+    match f with
+      | True -> true
+      | False -> true
+      | Pred (_, args) -> List.for_all (skolem_const_compatible_with_ref_in_term ref) args
+      | Not f1 -> skolem_const_compatible_with_ref_in_formula ref f1
+      | And (f1, f2)
+      | Or (f1, f2)
+      | Implies (f1, f2)
+      | Iff (f1, f2) -> skolem_const_compatible_with_ref_in_formula ref f1 && skolem_const_compatible_with_ref_in_formula ref f2
+      | Exists (_, f1)
+      | Forall (_, f1) -> skolem_const_compatible_with_ref_in_formula ref f1
+
+let formula_match_ref ref formula = 
+  max_context_const_index_of_formula formula <= context_depth_of_ref ref
+  && skolem_const_compatible_with_ref_in_formula ref formula
+
+  let asm_formula_match_ref ref formula = 
+  skolem_const_compatible_with_ref_in_formula ref formula 
+  && max_context_const_index_of_formula formula < context_depth_of_ref ref
 
 let is_ctv_alinged ref terms = 
   match List.nth terms 0 with
     | ContextConst index -> context_depth_of_ref ref = index
+    | _ -> false
+
+let is_sko_aligned ref terms =
+  match ref, List.nth terms 0 with 
+    | Ref seq, SkolemConst seq1 -> seq = seq1
     | _ -> false
 
 let is_assumption_statement s = 
@@ -230,6 +260,7 @@ let rec is_valid_conclusion proof r =
           && formula_match_ref r formula
         -> (match label with 
             | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
+            | "SKO" -> is_sko_aligned r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
             | _ -> formula = (rule label (List.map (get_formula proof) refs, terms)))
 
     | BlockStmt{ref; statements; formula} 

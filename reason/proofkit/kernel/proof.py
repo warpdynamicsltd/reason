@@ -196,8 +196,10 @@ def get_context_const_name():
     LANGUAGE.add_const(const_name)
     return const_name
 
-def get_next_skolem_name():
-    return CURRENT.get_next_skolem_name()
+def get_next_skolem_const_name():
+    skolem_name = CURRENT.get_next_skolem_name()
+    LANGUAGE.add_const(skolem_name)
+    return skolem_name
 
 def asm(func):
     def wrapper(*args, **kwargs):
@@ -320,21 +322,21 @@ def EXT(a: FirstOrderFormula, t: Term, x: str):
     v = Variable(x)
     return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(x, a)))
 
-@asm
-def ALH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
-    """
-    ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
-    """
-    v = Variable(x)
-    return Axiom("ALH", [a, b], [v], Implies(Forall(x, Implies(a, b)), Implies(a, Forall(x, b))))
-
-@asm
-def EXH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
-    """
-    ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
-    """
-    v = Variable(x)
-    return Axiom("EXH", [a, b], [v], Implies(Forall(x, Implies(b, a)), Implies(Exists(x, b), a)))
+# @asm
+# def ALH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
+#     """
+#     ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
+#     """
+#     v = Variable(x)
+#     return Axiom("ALH", [a, b], [v], Implies(Forall(x, Implies(a, b)), Implies(a, Forall(x, b))))
+#
+# @asm
+# def EXH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
+#     """
+#     ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
+#     """
+#     v = Variable(x)
+#     return Axiom("EXH", [a, b], [v], Implies(Forall(x, Implies(b, a)), Implies(Exists(x, b), a)))
 
 ### RULES ###
 
@@ -366,6 +368,19 @@ def CTV(a: Ref, context_const_name: str, x: str):
     """
     c = Const(context_const_name)
     return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
+
+@asm
+def SKO(a: Ref, skolem_const_name: str):
+    """
+    ∃x. p(x) |- p(skolem_ref)
+    """
+    f = PROOF.value(a)
+    match f:
+        case LogicQuantifier(name=const.EXISTS, args=[var, p]):
+            c = Const(skolem_const_name)
+            return Rule("SKO", [a], [c, var], p.replace(var, c))
+
+    raise RuntimeError("Invalid formula")
 
 @asm
 def IDN(a: Ref):
