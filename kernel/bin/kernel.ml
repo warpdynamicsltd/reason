@@ -262,7 +262,6 @@ let rec is_valid_conclusion proof r =
             | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
             | "SKO" -> is_sko_aligned r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
             | _ -> formula = (rule label (List.map (get_formula proof) refs, terms)))
-
     | BlockStmt{ref; statements; formula} 
         when ref = r 
         && (List.length statements) > 0

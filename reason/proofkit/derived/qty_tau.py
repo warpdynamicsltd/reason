@@ -86,9 +86,3 @@ def de_morgan_exists_not_to_not_all(p: FirstOrderFormula, x: str):
             r8 = ref() # ( ~~ ∀x. p(x) ) -> (~ ∀x. p(x))
         rules.r_proof_p_by_not_p(r8) # ~∀x. p(x)
         return ref()
-
-
-
-
-
-

@@ -3,6 +3,7 @@ import unittest
 
 from reason.core.language import Language
 from reason.proofkit.derived.tautologies import *
+from reason.proofkit.derived.qty_rules import *
 from reason.proofkit.derived.qty_tau import *
 from reason.proofkit.derived.transform import *
 from reason.proofkit.kernel.proof import *
@@ -147,3 +148,17 @@ class TestKernelWithQuant(unittest.TestCase):
         de_morgan_exists_not_to_not_all(L("P(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L("( ∃x. ~P(x) ) → ~( ∀x. P(x) )"))
+
+
+    def test_rules(self):
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L("P(x) ⟷ Q(x)"))
+            with Context():
+                r2 = ASM(L("∀x. P(x)"))
+                r3 = r_iff_all(r1, r2, "x")
+                self.assertEqual(formula(r3), L("∀x. Q(x)"))
+
+        f = RETURN()
+        self.assertEqual(f, L("(P(x) ⟷ Q(x)) → ( (∀x. P(x)) → (∀x. Q(x)))"))
