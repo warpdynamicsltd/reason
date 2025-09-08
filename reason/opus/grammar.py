@@ -1,3 +1,5 @@
+from functools import cache
+
 class GrammarNode:
     @staticmethod
     def factory(func):
@@ -10,11 +12,18 @@ class GrammarNode:
 
         return wrapper
 
+    def __hash__(self):
+        return hash(id(self))
+
+    def __eq__(self, other):
+        id(self) == id(other)
+
     def call(self, s, index):
         yield index
 
+    @cache
     def __call__(self, s, index=0):
-        yield from self.call(s, index)
+        return tuple(self.call(s, index))
 
     def __add__(self, other):
         def f(s, index):
