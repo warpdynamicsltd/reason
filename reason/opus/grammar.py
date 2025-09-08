@@ -1,12 +1,6 @@
-from reason.core.transform.transformer import Transformer
-
-
-class GrammarError(Exception):
-    pass
-
-class Symbol:
-    def __init__(self):
-        self.call = None
+class GrammarNode:
+    def call(self, s, index):
+        yield index
 
     def __call__(self, s, index):
         yield from self.call(s, index)
@@ -42,7 +36,7 @@ def digit():
         if index < len(s) and s[index].isdigit():
             yield index + 1
 
-    t = Symbol()
+    t = GrammarNode()
     t.call = f
     return t
 
@@ -51,7 +45,7 @@ def char(c: str):
         if index < len(s) and s[index] == c:
             yield index + 1
 
-    t = Symbol()
+    t = GrammarNode()
     t.call = f
     return t
 
@@ -60,17 +54,17 @@ def end():
         if index >= len(s):
             yield index
 
-    t = Symbol()
+    t = GrammarNode()
     t.call = f
     return t
 
 
 def satisfy(s):
     d = digit()
-    number = Symbol()
-    start = Symbol()
-    sum = Symbol()
-    exp = Symbol()
+    number = GrammarNode()
+    start = GrammarNode()
+    sum = GrammarNode()
+    exp = GrammarNode()
     e = end()
 
     number <= d | d + number
