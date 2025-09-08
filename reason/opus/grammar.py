@@ -1,8 +1,19 @@
 class GrammarNode:
+    @staticmethod
+    def factory(func):
+        def wrapper(*args, **kwargs):
+            def f(s, index):
+                yield from func(s, index, *args, **kwargs)
+            t = GrammarNode()
+            t.call = f
+            return t
+
+        return wrapper
+
     def call(self, s, index):
         yield index
 
-    def __call__(self, s, index):
+    def __call__(self, s, index=0):
         yield from self.call(s, index)
 
     def __add__(self, other):
@@ -27,36 +38,22 @@ class GrammarNode:
         return t
 
     def __le__(self, other):
-
         self.call = other.call
 
+@GrammarNode.factory
+def digit(s, index):
+    if index < len(s) and s[index].isdigit():
+        yield index + 1
 
-def digit():
-    def f(s, index):
-        if index < len(s) and s[index].isdigit():
-            yield index + 1
+@GrammarNode.factory
+def char(s, index, c: str):
+    if index < len(s) and s[index] == c:
+        yield index + 1
 
-    t = GrammarNode()
-    t.call = f
-    return t
-
-def char(c: str):
-    def f(s, index):
-        if index < len(s) and s[index] == c:
-            yield index + 1
-
-    t = GrammarNode()
-    t.call = f
-    return t
-
-def end():
-    def f(s, index):
-        if index >= len(s):
-            yield index
-
-    t = GrammarNode()
-    t.call = f
-    return t
+@GrammarNode.factory
+def end(s, index):
+    if index >= len(s):
+        yield index
 
 
 def satisfy(s):
@@ -72,7 +69,7 @@ def satisfy(s):
     sum <= exp | exp + char("+") + sum
     start <= sum + e
 
-    return start(s, 0)
+    return start(s)
 
 
 
