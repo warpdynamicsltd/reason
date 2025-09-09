@@ -106,7 +106,7 @@ class TestGrammarAddition(unittest.TestCase):
         start == sum + e
 
         for s in TestGrammarAddition.pass_list:
-            self.assertEqual(list(start(s)), [len(s)])
+            self.assertEqual(list(start(s))[0][0], len(s))
 
         for s in TestGrammarAddition.fail_list:
             self.assertEqual(list(start(s)), [])

@@ -76,7 +76,7 @@ class TestLongAssignmentGrammar(unittest.TestCase):
         start = seq + e
 
         for s in TestLongAssignmentGrammar.pass_list:
-            self.assertEqual(list(start(s)), [len(s)], msg=s)
+            self.assertEqual(list(start(s))[0][0], len(s), msg=s)
 
         for s in TestLongAssignmentGrammar.fail_list:
             self.assertEqual(list(start(s)), [], msg=s)

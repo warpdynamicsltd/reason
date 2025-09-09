@@ -103,7 +103,7 @@ class TestGrammarAddMul(unittest.TestCase):
         start == expr + e
 
         for s in TestGrammarAddMul.pass_list:
-            self.assertEqual(list(start(s)), [len(s)])
+            self.assertEqual(list(start(s))[0][0], len(s))
 
         for s in TestGrammarAddMul.fail_list:
             self.assertEqual(list(start(s)), [])
