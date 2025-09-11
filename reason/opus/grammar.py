@@ -1,8 +1,7 @@
 from functools import cache
-from reason.core import AbstractTerm
+from reason.parser import AbstractSyntaxTree
+from reason.opus.transformer import GrammarTerm, Transformer
 
-class GrammarTerm(AbstractTerm):
-    pass
 
 class GrammarNode:
     @staticmethod
@@ -29,7 +28,7 @@ class GrammarNode:
     def call(self, s, index):
         yield index
 
-    # @cache
+    @cache
     def __call__(self, s, index=0):
         return tuple(self.call(s, index))
 
@@ -67,6 +66,29 @@ class GrammarNode:
                     yield i, GrammarTerm(self.name, n)
         self.call = f
 
+    def __rshift__(self, name: str):
+        res = type(self)(name=name)
+        res == self
+        return res
+
+def repeat(gn: GrammarNode):
+    def f(s, index):
+        first_res = list(gn(s, index))
+        if not first_res:
+            yield index, []
+        for i, n in first_res:
+            for j, m in f(s, i):
+                if type(m) is not list:
+                    m = [m]
+                yield j, [n] + m
+
+    return f
+
+    res_gn = GrammarNode()
+    res_gn.call = f
+    return res_gn
+
+
 @GrammarNode.factory
 def digit(s, index):
     if index < len(s) and s[index].isdigit():
@@ -83,6 +105,40 @@ def end(s, index):
         yield index
 
 
+class AddingTransformer(Transformer):
+    def digit(self, n):
+        return n
+
+    def end(self, e):
+        return e
+
+    def st(self, c):
+        return c
+
+    def composed_number(self, d, n):
+        return d + n
+
+    def number(self, n):
+        return n
+
+    def bracket(self, lb, value, rb):
+        return value
+
+    def direct_sum(self, value, op, sum):
+        return AbstractSyntaxTree(op, value, sum)
+
+    def exp(self, value):
+        return value
+
+    def sum(self, value):
+        return value
+
+    def start(self, value, e):
+        return value
+
+
+
+
 def main():
     d = digit()
     e = end()
@@ -92,14 +148,35 @@ def main():
     sum = GrammarNode("sum")
     exp = GrammarNode("exp")
 
-    number == d | d + number
-    exp == number | st("(") + sum + st(")")
-    sum == exp | exp + st("+") + sum
+    number == d | d + number >> "composed_number"
+    exp == number | st("(") + sum + st(")") >> "bracket"
+    sum == exp | exp + st("+") + sum >> "direct_sum"
     start == sum + e
 
-    print(list(start("1223")))
+    [(i, node)] = start("(1+2)+(3+41)")
+    print(i)
+    print(node)
+    print(AddingTransformer().transform(node))
+
+def main2():
+    d = digit()
+    e = end()
+
+    number = GrammarNode("number")
+    start = GrammarNode("start")
+    sum = GrammarNode("sum")
+    exp = GrammarNode("exp")
+
+    number == repeat(d)
+    exp == number | st("(") + sum + st(")") >> "bracket"
+    sum == exp + repeat(st("+") + exp >> "direct_sum")
+    start == sum + e
+
+    [(i, node)] = start("1+2+3+4")
+    print(i)
+    print(node)
 
 if __name__ == "__main__":
-    main()
+    main2()
 
 
