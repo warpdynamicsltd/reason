@@ -1,3 +1,5 @@
+import traceback
+
 from reason.core import AbstractTerm
 
 class GrammarTerm(AbstractTerm):
@@ -11,6 +13,12 @@ class Transformer:
                 return self.transform(x)
             else:
                 return x
-        return f(*map(mapper, grammar_term.args))
+        try:
+            return f(*map(mapper, grammar_term.args))
+        except Exception as e:
+            print("Stopped on:")
+            print(grammar_term)
+            traceback.print_exc()
+            # raise e
 
 

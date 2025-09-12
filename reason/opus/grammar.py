@@ -35,12 +35,13 @@ class GrammarNode:
     def __add__(self, other):
         def f(s, index):
             for i, n in self(s, index):
-                if type(n) is not list:
-                    n = [n]
+                if n.name != "_list":
+                    n = GrammarTerm("_list", n)
+
                 for j, m in other(s, i):
-                    if type(m) is not list:
-                        m = [m]
-                    yield j, n + m
+                    if m.name != "_list":
+                        m = GrammarTerm("_list", m)
+                    yield j, GrammarTerm("_list", *n.args, *m.args)
 
         t = type(self)()
         t.call = f
@@ -60,29 +61,31 @@ class GrammarNode:
     def __eq__(self, other):
         def f(s, index):
             for i, n in other(s, index):
-                if type(n) is list:
-                    yield i, GrammarTerm(self.name, *n)
-                else:
-                    yield i, GrammarTerm(self.name, n)
+                yield i, GrammarTerm(self.name, n)
         self.call = f
 
     def __rshift__(self, name: str):
         res = type(self)(name=name)
-        res == self
-        return res
+        if self.name is None:
+            res == self
+            return res
+        else:
+            def f(s, index):
+                for i, n in self(s, index):
+                    yield i, GrammarTerm(name, n)
+            res.call = f
+            return res
 
 def repeat(gn: GrammarNode):
     def f(s, index):
         first_res = list(gn(s, index))
         if not first_res:
-            yield index, []
+            yield index, GrammarTerm("_list")
         for i, n in first_res:
+            if n.name != "_list":
+                n = GrammarTerm("_list", n)
             for j, m in f(s, i):
-                if type(m) is not list:
-                    m = [m]
-                yield j, [n] + m
-
-    return f
+                yield j, GrammarTerm("_list", *n.args, *m.args)
 
     res_gn = GrammarNode()
     res_gn.call = f
@@ -106,6 +109,9 @@ def end(s, index):
 
 
 class AddingTransformer(Transformer):
+    def _list(self, *args):
+        return args
+
     def digit(self, n):
         return n
 
@@ -115,25 +121,45 @@ class AddingTransformer(Transformer):
     def st(self, c):
         return c
 
-    def composed_number(self, d, n):
-        return d + n
+    def number(self, digits):
+        return int("".join(digits))
 
-    def number(self, n):
-        return n
-
-    def bracket(self, lb, value, rb):
+    def bracket(self, value):
+        lb, value, rb = value
         return value
 
-    def direct_sum(self, value, op, sum):
-        return AbstractSyntaxTree(op, value, sum)
+    def direct_sum(self, value):
+        return value
+
+    def repeat_direct_sum(self, args):
+        if args:
+            ast = AbstractSyntaxTree("ADD", *[n for n, op in args])
+            return ast.flat_to_tree("ADD")
+
 
     def exp(self, value):
         return value
 
-    def sum(self, value):
-        return value
+    # def sum(self, arg):
+    #     s = arg[:-1]
+    #     n = arg[-1]
+    #     if s:
+    #         s = self.repeat_direct_sum(s)
+    #         return AbstractSyntaxTree("ADD", s, n)
+    #
+    #     return n
 
-    def start(self, value, e):
+    def sum(self, arg):
+        s, n = arg
+        if s:
+            return AbstractSyntaxTree("ADD", s, n)
+        else:
+            return n
+
+
+
+    def start(self, value):
+        (value, e) = value
         return value
 
 
@@ -169,12 +195,13 @@ def main2():
 
     number == repeat(d)
     exp == number | st("(") + sum + st(")") >> "bracket"
-    sum == exp + repeat(st("+") + exp >> "direct_sum")
+    sum == (repeat(exp + st("+") >> "direct_sum") >> "repeat_direct_sum") + exp
     start == sum + e
 
-    [(i, node)] = start("1+2+3+4")
+    [(i, node)] = start("1")
     print(i)
     print(node)
+    print(AddingTransformer().transform(node))
 
 if __name__ == "__main__":
     main2()
