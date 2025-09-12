@@ -6,8 +6,15 @@ class GrammarTerm(AbstractTerm):
     pass
 
 class Transformer:
+    def _list(self, *args):
+        return args
+
     def transform(self, grammar_term: GrammarTerm):
-        f = getattr(self, grammar_term.name)
+        if hasattr(self, grammar_term.name):
+            f = getattr(self, grammar_term.name)
+        else:
+            f = lambda x: x
+
         def mapper(x):
             if isinstance(x, GrammarTerm):
                 return self.transform(x)

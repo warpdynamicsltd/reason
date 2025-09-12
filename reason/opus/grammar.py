@@ -10,7 +10,7 @@ class GrammarNode:
             def f(s, index):
                 for i in func(s, index, *args, **kwargs):
                     yield i, GrammarTerm(func.__name__, s[index:i])
-            t = GrammarNode()
+            t = GrammarNode(func.__name__)
             t.call = f
             return t
 
@@ -43,7 +43,7 @@ class GrammarNode:
                         m = GrammarTerm("_list", m)
                     yield j, GrammarTerm("_list", *n.args, *m.args)
 
-        t = type(self)()
+        t = type(self)("_list")
         t.call = f
         return t
 
@@ -66,15 +66,17 @@ class GrammarNode:
 
     def __rshift__(self, name: str):
         res = type(self)(name=name)
-        if self.name is None:
-            res == self
-            return res
-        else:
-            def f(s, index):
-                for i, n in self(s, index):
-                    yield i, GrammarTerm(name, n)
-            res.call = f
-            return res
+        res == self
+        return res
+        # if self.name is None:
+        #     res == self
+        #     return res
+        # else:
+        #     def f(s, index):
+        #         for i, n in self(s, index):
+        #             yield i, GrammarTerm(name, n)
+        #     res.call = f
+        #     return res
 
 def repeat(gn: GrammarNode):
     def f(s, index):
@@ -87,9 +89,10 @@ def repeat(gn: GrammarNode):
             for j, m in f(s, i):
                 yield j, GrammarTerm("_list", *n.args, *m.args)
 
-    res_gn = GrammarNode()
+    res_gn = GrammarNode("_list")
     res_gn.call = f
-    return res_gn
+    return res_gn >> f"repeat_{gn.name}"
+    # return res_gn
 
 
 @GrammarNode.factory
@@ -109,18 +112,6 @@ def end(s, index):
 
 
 class AddingTransformer(Transformer):
-    def _list(self, *args):
-        return args
-
-    def digit(self, n):
-        return n
-
-    def end(self, e):
-        return e
-
-    def st(self, c):
-        return c
-
     def number(self, digits):
         return int("".join(digits))
 
@@ -128,26 +119,10 @@ class AddingTransformer(Transformer):
         lb, value, rb = value
         return value
 
-    def direct_sum(self, value):
-        return value
-
     def repeat_direct_sum(self, args):
         if args:
             ast = AbstractSyntaxTree("ADD", *[n for n, op in args])
             return ast.flat_to_tree("ADD")
-
-
-    def exp(self, value):
-        return value
-
-    # def sum(self, arg):
-    #     s = arg[:-1]
-    #     n = arg[-1]
-    #     if s:
-    #         s = self.repeat_direct_sum(s)
-    #         return AbstractSyntaxTree("ADD", s, n)
-    #
-    #     return n
 
     def sum(self, arg):
         s, n = arg
@@ -156,13 +131,9 @@ class AddingTransformer(Transformer):
         else:
             return n
 
-
-
     def start(self, value):
         (value, e) = value
         return value
-
-
 
 
 def main():
@@ -195,10 +166,11 @@ def main2():
 
     number == repeat(d)
     exp == number | st("(") + sum + st(")") >> "bracket"
-    sum == (repeat(exp + st("+") >> "direct_sum") >> "repeat_direct_sum") + exp
+    # sum == (repeat(exp + st("+") >> "direct_sum") >> "repeat_direct_sum") + exp
+    sum == repeat(exp + st("+") >> "direct_sum") + exp
     start == sum + e
 
-    [(i, node)] = start("1")
+    [(i, node)] = start("1+1+23")
     print(i)
     print(node)
     print(AddingTransformer().transform(node))
