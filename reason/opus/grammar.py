@@ -68,15 +68,6 @@ class GrammarNode:
         res = type(self)(name=name)
         res == self
         return res
-        # if self.name is None:
-        #     res == self
-        #     return res
-        # else:
-        #     def f(s, index):
-        #         for i, n in self(s, index):
-        #             yield i, GrammarTerm(name, n)
-        #     res.call = f
-        #     return res
 
 def repeat(gn: GrammarNode):
     def f(s, index):
@@ -92,8 +83,6 @@ def repeat(gn: GrammarNode):
     res_gn = GrammarNode("_list")
     res_gn.call = f
     return res_gn >> f"repeat_{gn.name}"
-    # return res_gn
-
 
 @GrammarNode.factory
 def digit(s, index):
@@ -112,27 +101,30 @@ def end(s, index):
 
 
 class AddingTransformer(Transformer):
-    def number(self, digits):
+    @Transformer.vargs
+    def number(self, *digits):
         return int("".join(digits))
 
-    def bracket(self, value):
-        lb, value, rb = value
+    @Transformer.vargs
+    def bracket(self, lb, value, rb):
         return value
 
-    def repeat_direct_sum(self, args):
+    @Transformer.vargs
+    def repeat_direct_sum(self, *args):
         if args:
             ast = AbstractSyntaxTree("ADD", *[n for n, op in args])
             return ast.flat_to_tree("ADD")
 
-    def sum(self, arg):
+    @Transformer.vargs
+    def sum(self, *arg):
         s, n = arg
         if s:
             return AbstractSyntaxTree("ADD", s, n)
         else:
             return n
 
-    def start(self, value):
-        (value, e) = value
+    @Transformer.vargs
+    def start(self, value, e):
         return value
 
 

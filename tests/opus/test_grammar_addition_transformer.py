@@ -6,29 +6,31 @@ from reason.opus.transformer import Transformer
 from reason.opus.grammar import GrammarNode, digit, st, end, repeat
 
 class AddingTransformer(Transformer):
-    def number(self, digits):
+    @Transformer.vargs
+    def number(self, *digits):
         return int("".join(digits))
 
-    def bracket(self, value):
-        lb, value, rb = value
+    @Transformer.vargs
+    def bracket(self, lb, value, rb):
         return value
 
-    def repeat_direct_sum(self, args):
+    @Transformer.vargs
+    def repeat_direct_sum(self, *args):
         if args:
             ast = AbstractSyntaxTree("ADD", *[n for n, op in args])
             return ast.flat_to_tree("ADD")
 
-    def sum(self, arg):
+    @Transformer.vargs
+    def sum(self, *arg):
         s, n = arg
         if s:
             return AbstractSyntaxTree("ADD", s, n)
         else:
             return n
 
-    def start(self, value):
-        (value, e) = value
+    @Transformer.vargs
+    def start(self, value, e):
         return value
-
 
 class TestGrammarAdditionTransformer(unittest.TestCase):
     pass_list = [
