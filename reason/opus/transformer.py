@@ -8,6 +8,7 @@ class GrammarTerm(AbstractTerm):
 class Transformer:
     def _list(self, *args):
         return args
+
     @staticmethod
     def vargs(func):
         def wrapper(self, args):
@@ -17,7 +18,10 @@ class Transformer:
 
     def transform(self, grammar_term: GrammarTerm):
         if hasattr(self, grammar_term.name):
-            f = getattr(self, grammar_term.name)
+            if hasattr(grammar_term, "transform"):
+                f = getattr(grammar_term, "transform")
+            else:
+                f = getattr(self, grammar_term.name)
         else:
             f = lambda x: x
 

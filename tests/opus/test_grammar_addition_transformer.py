@@ -11,13 +11,13 @@ class AddingTransformer(Transformer):
         return int("".join(digits))
 
     @Transformer.vargs
-    def bracket(self, lb, value, rb):
-        return value
+    def bracket(self, n):
+        return n
 
     @Transformer.vargs
     def repeat_direct_sum(self, *args):
         if args:
-            ast = AbstractSyntaxTree("ADD", *[n for n, op in args])
+            ast = AbstractSyntaxTree("ADD", *[n for (n,) in args])
             return ast.flat_to_tree("ADD")
 
     @Transformer.vargs
@@ -31,6 +31,9 @@ class AddingTransformer(Transformer):
     @Transformer.vargs
     def start(self, value, e):
         return value
+
+def bracket(n):
+    return n
 
 class TestGrammarAdditionTransformer(unittest.TestCase):
     pass_list = [
@@ -73,8 +76,26 @@ class TestGrammarAdditionTransformer(unittest.TestCase):
         exp = GrammarNode("exp")
 
         number == repeat(d)
-        exp == number | st("(") + sum + st(")") >> "bracket"
-        sum == repeat(exp + st("+") >> "direct_sum") + exp
+        exp == number | "(" + sum + ")" >> "bracket"
+        sum == repeat(exp + "+" >> "direct_sum") + exp
+        start == sum + e
+
+        for s, t in TestGrammarAdditionTransformer.pass_list:
+            [(i, node)] = start(s)
+            self.assertEqual(AddingTransformer().transform(node), t, msg=s)
+
+    def test_simple_addition_with_func(self):
+        d = digit()
+        e = end()
+
+        number = GrammarNode("number")
+        start = GrammarNode("start")
+        sum = GrammarNode("sum")
+        exp = GrammarNode("exp")
+
+        number == repeat(d)
+        exp == number | "(" + sum + ")" >> bracket
+        sum == repeat(exp + "+" >> "direct_sum") + exp
         start == sum + e
 
         for s, t in TestGrammarAdditionTransformer.pass_list:
