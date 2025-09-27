@@ -24,6 +24,7 @@ dev = [
     "taskipy",
     "jupyter",
     "ipykernel",
+    "pytest"
 ]
 
 [build-system]

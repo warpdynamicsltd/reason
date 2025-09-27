@@ -1,8 +1,7 @@
 #%%
 from reason.core.language import Language
 from reason.proofkit.derived.rules import r_and_left, r_and_right, r_and
-from reason.proofkit.derived.tautologies import iff_tau, not_not_p_to_p, p_to_not_not_p, de_morgan_not_and_to_or, \
-    p_to_p, imp_inv, imp_trans
+from reason.proofkit.derived.tautologies import *
 from reason.proofkit.kernel.proof import *
 
 L = Language()
@@ -131,7 +130,7 @@ f = RETURN()
 print(L.printer(f))
 
 BEGIN()
-r = de_morgan_not_and_to_or(L("P"), L("Q"))
+r = de_morgan_not_and_to_or_not(L("P"), L("Q"))
 f = RETURN()
 print(L.printer(f))
 
@@ -142,6 +141,16 @@ print(L.printer(f))
 
 BEGIN()
 r = imp_inv(L("P"), L("Q"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = p_iff_not_not_p(L("P"))
+f = RETURN()
+print(L.printer(f))
+
+BEGIN()
+r = de_morgan_not_or_to_and_not(L("P"), L("Q"))
 f = RETURN()
 print(L.printer(f))
 

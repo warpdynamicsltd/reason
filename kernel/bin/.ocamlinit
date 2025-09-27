@@ -1,9 +1,8 @@
-#mod_use "./formula.ml";;
+#mod_use "./types.ml";;
 #mod_use "./kernel.ml";;
 #mod_use "./printer_module.ml";;
-#mod_use "./transform.ml";;
 
 
-open Formula;;
+open Types;;
 open Printer_module;;
 open Kernel;;

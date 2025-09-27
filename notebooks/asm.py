@@ -1,21 +1,28 @@
 #%%
 from reason.core.language import Language
-from reason.core.fof_logic import *
-from reason.proofkit.kernel.proof import Assumption
+from reason.proofkit.kernel.proof import *
+from reason.proofkit.kernel import Kernel
 
 L = Language()
-
+L.add_const("context_2")
 proof = Block(
     ref=Ref([]),
     statements=[
-        Assumption(
+        Axiom(
             ref=Ref([0]),
+            label="LEM",
+            fofs=[L("P(context_2)")],
+            terms=[],
+            formula=L("P(context_2) or ~P(context_2)")
+        ),
+        Assumption(
+            ref=Ref([1]),
             formula=L("P")
         ),
         Rule(
-            ref=Ref([1]),
+            ref=Ref([2]),
             label="IDN",
-            refs=[Ref([0])],
+            refs=[Ref([1])],
             terms=[],
             formula=L("P")
         )

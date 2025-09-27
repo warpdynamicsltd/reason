@@ -1,9 +1,11 @@
 from typing import Self
 
 from reason.core.fof_ops import *
-from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
 from reason.parser.tree.consts import *
-from reason.core.transform.jsonize import jsonize
+
+from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
+from reason.proofkit.kernel.jsonize import jsonize
+from reason.core.language import Language
 import reason.proofkit.kernel
 
 class Ref:
@@ -116,6 +118,9 @@ class Block:
             return None
 
     def value(self, ref : Ref):
+        """
+        get formula at given ref
+        """
         index = ref.indices[0]
         statement = self.statements[index]
         if type(statement) is Block:
@@ -129,6 +134,12 @@ class Block:
 
     def get_next_ref(self):
         return Ref(list(self.ref.indices) + [len(self.statements)])
+
+    def get_next_skolem_name(self):
+        return f"skolem_{'_'.join(map(str, self.get_next_ref().indices))}"
+
+    def get_depth(self):
+        return len(self.ref.indices)
 
     def add(self, statement: Axiom | Rule | Self):
         statement.ref = self.get_next_ref()
@@ -149,19 +160,17 @@ class Block:
 
 PROOF : Block | None = None
 CURRENT : Block | None = None
+LANGUAGE: Language | None = None
 
-def BEGIN():
-    global CURRENT, PROOF
-    CURRENT = None
-    PROOF = None
+def BEGIN(language: Language = None):
+    global CURRENT, PROOF, LANGUAGE
+    CURRENT = Block()
+    PROOF = CURRENT
+    LANGUAGE = language
 
 class Context():
     def __enter__(self):
         global CURRENT, PROOF
-        if CURRENT is None:
-            CURRENT = Block()
-            PROOF = CURRENT
-
 
         self.parent = CURRENT
         self.block = Block(ref=self.parent.get_next_ref())
@@ -181,6 +190,16 @@ class Context():
 
 def ref():
     return reason.proofkit.kernel.proof.CURRENT.ref
+
+def get_context_const_name():
+    const_name = f"context_{CURRENT.get_depth()}"
+    LANGUAGE.add_const(const_name)
+    return const_name
+
+def get_next_skolem_const_name():
+    skolem_name = CURRENT.get_next_skolem_name()
+    LANGUAGE.add_const(skolem_name)
+    return skolem_name
 
 def asm(func):
     def wrapper(*args, **kwargs):
@@ -205,95 +224,168 @@ def ASM(a: FirstOrderFormula):
 
 @asm
 def LEM(a: FirstOrderFormula):
+    """
+    a or ~a
+    """
     return Axiom("LEM", [a], [], Or(a, Not(a)))
 
 @asm
 def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> (b -> a)
+    """
     return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
 
-@asm
-def LEM(a: FirstOrderFormula):
-    return Axiom("LEM", [a], [], Or(a, Not(a)))
-
-@asm
-def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
-    return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
-
-@asm
-def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
-    return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
+# @asm
+# def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
+#     """
+#     (a -> (b1 -> b2)) -> ( (a -> b1) -> (a -> b2) )
+#     """
+#     return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
 
 @asm
 def ANL(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a and b -> a
+    """
     return Axiom("ANL", [a, b], [], Implies(And(a, b), a))
 
 @asm
 def ANR(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a and b -> b
+    """
     return Axiom("ANR", [a, b], [], Implies(And(a, b), b))
 
 @asm
-def AND(a: FirstOrderFormula, b: FirstOrderFormula):  # Named "and_AxiomStmt" to avoid conflicts with "and" keyword
+def AND(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> (b -> (a and b))
+    """
     return Axiom("AND", [a, b], [], Implies(a, Implies(b, And(a, b))))
 
 @asm
 def ORL(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    a -> a or b
+    """
     return Axiom("ORL", [a, b], [], Implies(a, Or(a, b)))
 
 @asm
 def ORR(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    b -> a or b
+    """
     return Axiom("ORR", [a, b], [], Implies(b, Or(a, b)))
 
 @asm
 def DIS(a: FirstOrderFormula, b: FirstOrderFormula, c: FirstOrderFormula):
+    """
+    (a -> c) -> ((b -> c) -> (a or b -> c))
+    """
     return Axiom("DIS", [a, b, c], [], Implies(Implies(a, c), Implies(Implies(b, c), Implies(Or(a, b), c))))
 
 @asm
 def CON(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    ~a -> (a -> b)
+    """
     return Axiom("CON", [a, b], [], Implies(Not(a), Implies(a, b)))
 
 @asm
 def IFI(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    (a -> b) -> ((b -> a) -> (a <-> b))
+    """
     return Axiom("IFI", [a, b], [], Implies(Implies(a, b), Implies(Implies(b, a), Iff(a, b))))
 
 @asm
 def IFO(a: FirstOrderFormula, b: FirstOrderFormula):
+    """
+    (a <-> b) -> (a -> b) and (b -> a)
+    """
     return Axiom("IFO", [a, b], [], Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))))
 
 @asm
-def ALL(a: FirstOrderFormula, t: Term, v: Variable):
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term must be a variable")
-    return Axiom("ALL", [a], [t, v], Implies(Forall(v, a), a.replace(v, t)))
+def ALL(a: FirstOrderFormula, t: Term, x: str):
+    """
+    ( ∀x. a(x) ) -> a(t)
+    """
+    v = Variable(x)
+    return Axiom("ALL", [a], [t, v], Implies(Forall(x, a), a.replace(v, t)))
 
 @asm
-def EXT(a: FirstOrderFormula, t: Term, v: Variable):
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term must be a variable")
-    return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(v, a)))
+def EXT(a: FirstOrderFormula, t: Term, x: str):
+    """
+    a(t) -> ( ∃x. a(x) )
+    """
+    v = Variable(x)
+    return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(x, a)))
+
+# @asm
+# def ALH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
+#     """
+#     ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
+#     """
+#     v = Variable(x)
+#     return Axiom("ALH", [a, b], [v], Implies(Forall(x, Implies(a, b)), Implies(a, Forall(x, b))))
+#
+# @asm
+# def EXH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
+#     """
+#     ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
+#     """
+#     v = Variable(x)
+#     return Axiom("EXH", [a, b], [v], Implies(Forall(x, Implies(b, a)), Implies(Exists(x, b), a)))
+
+### RULES ###
 
 @asm
-def ALH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term is not a variable")
-    return Axiom("ALH", [a, b], [v], Implies(Forall(v, Implies(a, b)), Implies(a, Forall(v, b))))
-
-@asm
-def EXH(a: FirstOrderFormula, b: FirstOrderFormula, v: Variable):
-    if not isinstance(v, Variable):
-        raise RuntimeError("Error: Term is not a variable")
-    return Axiom("EXH", [a, b], [v], Implies(Forall(v, Implies(b, a)), Implies(Exists(v, b), a)))
-
-@asm
-def MOD(a: Ref, b: Ref):
-    formula_a = PROOF.value(a)
-    formula_b = PROOF.value(b)
+def MOD(r1: Ref, r2: Ref):
+    """
+    p -> q, p |- q
+    """
+    formula_a = PROOF.value(r1)
+    formula_b = PROOF.value(r2)
     match formula_a:
         case LogicConnective(name=const.IMP, args=[x, y]) if x == formula_b:
-            return Rule("MOD", [a, b], [], y)
+            return Rule("MOD", [r1, r2], [], y)
 
     raise RuntimeError("Invalid formulas")
 
 @asm
+def GEN(r: Ref, x: str):
+    """
+    p |- ∀x. p
+    """
+    return Rule("GEN", [r], [Variable(x)], Forall(x, PROOF.value(r)))
+
+# | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
+@asm
+def CTV(a: Ref, context_const_name: str, x: str):
+    """
+    p(context_i) |- p(x)
+    """
+    c = Const(context_const_name)
+    return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
+
+@asm
+def SKO(a: Ref, skolem_const_name: str):
+    """
+    ∃x. p(x) |- p(skolem_ref)
+    """
+    f = PROOF.value(a)
+    match f:
+        case LogicQuantifier(name=const.EXISTS, args=[var, p]):
+            c = Const(skolem_const_name)
+            return Rule("SKO", [a], [c, var], p.replace(var, c))
+
+    raise RuntimeError("Invalid formula")
+
+@asm
 def IDN(a: Ref):
+    """
+    p |- p
+    """
     formula_a = PROOF.value(a)
     return Rule("IDN", [a], [], formula_a)

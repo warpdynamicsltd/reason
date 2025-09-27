@@ -5,11 +5,12 @@ from typing import get_type_hints
 from importlib.resources import files
 
 from reason.tools.binary import run_binary
-from reason.core.transform.jsonize import jsonize
-from reason.core.transform.from_json import from_json
+from reason.proofkit.kernel.jsonize import jsonize
+from reason.proofkit.kernel.from_json import from_json
 from reason.core.fof_types import FirstOrderFormula, Term
 from reason.proofkit.kernel.proof import Ref, Axiom, Rule, Block
 
+DEBUG = False
 
 class KernelError(Exception):
     pass
@@ -69,7 +70,11 @@ def kernel_command(command_name):
             input_json = json.dumps(payload)
 
             try:
+                if DEBUG:
+                    print(input_json)
                 res = run(input_json)
+                if DEBUG:
+                    print(res)
             except CalledProcessError as e:
                 raise KernelError(e.stderr.strip())
 
