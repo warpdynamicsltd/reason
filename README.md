@@ -33,7 +33,8 @@ with the most up to date versions of dependencies, you should follow the steps b
 3. One possible way to install `reason` package in your local Python environment:
    1. Install `uv` package manager by e.g. `curl -LsSf https://astral.sh/uv/install.sh | sh`.
    2. Run `uv sync` on the level of the project root directory.
-   3. Run `uv run task test` to run tests to verify if your installation is successful.
+   3. Run `uv pip install -e .`
+   4. Run `uv run task test` to run tests to verify if your installation is successful.
 
 If you know what you are doing you may skip some steps from 1 - 3 and e.g. install lark by `pip install lark` 
 and/or get vampire binary compiled somewhere else and copy it manually to `reason/assets/bin`.
