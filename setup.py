@@ -12,6 +12,7 @@ setup(
                 "reason.cpp",
                 ["reason/cpp/demo.cpp"],
                 language="c++",
+                extra_compile_args=["-std=c++20"]
             ),
     ]
 )
