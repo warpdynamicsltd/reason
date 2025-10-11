@@ -161,6 +161,18 @@ class TestKernelWithQuant(unittest.TestCase):
         f = RETURN()
         self.assertEqual(f, L("~( ∀x. P(x) ) → ( ∃x. ~P(x) )"))
 
+        L = Language()
+        BEGIN(L)
+        de_morgan_not_exists_iff_all_not(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("~( ∃x. P(x) ) ⟷ ( ∀x. ~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_exists_not_iff_not_all(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. ~P(x) ) ⟷ ~( ∀x. P(x) )"))
+
 
     def test_rules(self):
         L = Language()

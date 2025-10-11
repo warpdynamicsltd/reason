@@ -124,3 +124,21 @@ def de_morgan_not_all_to_exists_not(p: FirstOrderFormula, x: str):
             r8 = ref() # ~( ∃x. ~p(x) ) -> ∃x. ~p(x)
         rules.r_proof_p_by_not_p(r8) # ∃x. ~p(x)
         return ref()
+
+
+def de_morgan_not_exists_iff_all_not(p: FirstOrderFormula, x: str):
+    """
+    ~ ( ∃x. p(x) ) <-> ∀x. ~p(x)
+    """
+    r1 = de_morgan_not_exists_to_all_not(p, x)
+    r2 = de_morgan_all_not_to_not_exist(p, x)
+    return rules.r_imp_imp_iff(r1, r2)
+
+
+def de_morgan_exists_not_iff_not_all(p: FirstOrderFormula, x: str):
+    """
+    ∃x. ~p(x) <-> ~( ∀x. p(x) )
+    """
+    r1 = de_morgan_exists_not_to_not_all(p, x)
+    r2 = de_morgan_not_all_to_exists_not(p, x)
+    return rules.r_imp_imp_iff(r1, r2)
