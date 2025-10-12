@@ -11,25 +11,27 @@ So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$.
 1. For any sequence of natural numbers $r$, we define $d(r) = |r| - 1$.
 
 <h3 id="axiom-schema">Axioms Schema</h3>
-1. LEM: $\alpha \vee \neg\alpha$
-2. IMP: $\alpha \to (\beta\to\alpha)$
-3. ANL: $\alpha \wedge \beta \to \alpha$
-4. ANR: $\alpha \wedge \beta \to \beta$
-5. AND: $\alpha \to (\beta \to (\alpha \wedge \beta))$
-6. ORL: $\alpha \to \alpha \vee \beta$
-7. ORR: $\beta \to \alpha \vee \beta$
-8. DIS: $(\alpha \to \gamma) \to ((\beta \to \gamma) \to (\alpha \vee \beta \to \gamma))$
-9. CON: $\neg \alpha \to (\alpha \to \beta)$
-10. IFI: $(\alpha \to \beta)\to((\beta\to\alpha)\to(\alpha\leftrightarrow\beta))$
-11. IFO: $(\alpha\leftrightarrow\beta) \to (\alpha\to\beta) \wedge (\beta\to\alpha)$
-12. ALL: $(\forall x. p) \to p(x/\tau)$ where $\tau$ is an arbitrary term and $p(x/\tau)$ is admissible.
-13. EXT: $p(x/\tau) \to \exists x.p$ where $\tau$ is an arbitrary term and $p(x/\tau)$ is admissible.
+
+1. LEM. $\alpha \vee \neg\alpha$
+2. IMP. $\alpha \to (\beta\to\alpha)$
+3. ANL. $\alpha \wedge \beta \to \alpha$
+4. ANR. $\alpha \wedge \beta \to \beta$
+5. AND. $\alpha \to (\beta \to (\alpha \wedge \beta))$
+6. ORL. $\alpha \to \alpha \vee \beta$
+7. ORR. $\beta \to \alpha \vee \beta$
+8. DIS. $(\alpha \to \gamma) \to ((\beta \to \gamma) \to (\alpha \vee \beta \to \gamma))$
+9. CON. $\neg \alpha \to (\alpha \to \beta)$
+10. IFI. $(\alpha \to \beta)\to((\beta\to\alpha)\to(\alpha\leftrightarrow\beta))$
+11. IFO. $(\alpha\leftrightarrow\beta) \to (\alpha\to\beta) \wedge (\beta\to\alpha)$
+12. ALL. $(\forall x. p) \to p(x/\tau)$ where $\tau$ is an arbitrary term and $p(x/\tau)$ is admissible.
+13. EXT. $p(x/\tau) \to \exists x.p$ where $\tau$ is an arbitrary term and $p(x/\tau)$ is admissible.
 
 <h3 id="rules-schema">Rules Schema</h3>
-1. MOD: $p \to q,\; p \vdash q$
-2. GEN: $p \vdash \forall x.p$
-3. CTV: $p(x/c_d)\vdash \forall x.p$
-4. SKO: $\exists x.p \vdash p(x/sk_\sigma)$
+
+1. MOD. $p \to q,\; p \vdash q$
+2. GEN. $p \vdash \forall x.p$
+3. CTV. $p(x/c_d)\vdash \forall x.p$
+4. SKO. $\exists x.p \vdash p(x/sk_\sigma)$
 
 <h3 id="proof-definition">Recursive definition of correct proof</h3>
 
