@@ -31,32 +31,31 @@ So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$.
 3. CTV: $p(x/c_d)\vdash \forall x.p$
 4. SKO: $\exists x.p \vdash p(x/sk_\sigma)$
 
-<h3 id="proof-definition">Definition of correct proof</h3>
+<h3 id="proof-definition">Recursive definition of correct proof</h3>
 
-If $(r, B, s, f)$ is a correct proof of $f$ iff
+If $(r', B, s, f)$ is a correct proof of $f$ iff
 
-$s$ is a sequence of $(r_i, m_i, s_i, f_{r_i})$ for $i=0, \cdots, k$ such that
-$r_i = [*r, i]$, $m_i\in \{A, B, R, T\}$ and 
+$s$ is a sequence of $(r, m_r, s_r, f_r)$ such that
+$r = [*r', i]$ for $i=0, \cdots, k$ with $m_r\in \{A, B, R, T\}$ and: 
 
-1. For any $sk_\rho$ in formula $f_{r_i}$, we have $\rho \leq r_i$.
-2. For any $c_d$ in formula $f_{r_i}$, we have $d \leq d(r_i)$.  
-1. For any $i$ such that $m_i = T$, we have $s_i=[]$ and $f_{r_i}$ 
+1. For any $sk_\rho$ in formula $f_r$, we have $\rho \leq r$.
+2. For any $c_d$ in formula $f_r$, we have $d \leq d(r)$.  
+1. For any $r$ such that $m_r = T$, we have $s_r=[]$ and $f_r$ 
 belongs to <i>Axioms Schema</i>.
-   1. For Axiom ALL, we have additional constrain that $x$ is not a free variable 
-   in any formula from a set 
-   $\{f_\rho: \rho < r_i \text{ and } r_i[-1]=0\}$.
    
-1. For any $i$ such that $m_i = R$, we have $s_i=[]$ 
-and $f_{r_i}$ can be obtained by some rule from <i>Rules Schema</i> 
-applied on some formulas from  $\{f_{\rho}:\rho < r_i\}$.
-   1. For rule CTV, we have additional constrain $d = d(r_i)$
-   1. For rule SKO, we have additional constrain $\sigma = r_i$. 
-1. For any $i$ such that $m_i = A$, we have $i=0$, $s_i=[]$ 
-and $f_{r_i}$ is an arbitrary formula, 
-such that for any $c_d$ in $f_{r_i}$, we have $d < d(r_i)$.
-1. For $m_0 = A$, we have $f = \ulcorner f_{r_0} \to f_{r_k} \urcorner$. 
-1. For $m_0 \not= A$, we have $f=f_{r_k}$.
-1. For $m_i = B$, we have $(r_i, m_i, s_i, f_{r_i})$ is a correct proof of $f_{r_i}$.
+1. For any $r$ such that $m_r = R$, we have $s_r=[]$ 
+and $f_r$ can be obtained by some rule from <i>Rules Schema</i> 
+applied on some formulas from  $\{f_{\rho}:\rho < r\}$.
+   1. For rule CTV, we have additional constrain $d = d(r)$
+   1. For rule SKO, we have additional constrain $\sigma = r$.
+   1. For rule GEN, we have additional constrain that
+   $x \not\in\cup\{free(f_\rho): \rho < r \text{ and } m_\rho=A\}$.
+1. For any $r$ such that $m_r = A$, we have $i=0$, $s_r=[]$ 
+and $f_r$ is an arbitrary formula, 
+such that for any $c_d$ in $f_r$, we have $d < d(r)$.
+1. For $m_{[*r',0]} = A$, we have $f = \ulcorner f_{[*r',0]} \to f_{[*r', k]} \urcorner$. 
+1. For $m_{[*r',0]} \not= A$, we have $f=f_{[*r', k]}$.
+1. For $m_r = B$, we have $(r, m_r, s_r, f_r)$ is a correct proof of $f_r$.
 
 <h3 id="consequence"> Consequence</h3>
 
