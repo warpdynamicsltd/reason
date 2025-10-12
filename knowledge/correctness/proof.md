@@ -51,7 +51,7 @@ applied on some formulas from  $\{f_{\rho}:\rho < r\}$.
    1. For rule CTV, we have additional constrain $d = d(r)$
    1. For rule SKO, we have additional constrain $\sigma = r$.
    1. For rule GEN, we have additional constrain that
-   $x \not\in\cup\{free(f_\rho): \rho < r \text{ and } m_\rho=A\}$.
+   $x \not\in\cup\left\{free(f_\rho): \rho < r \text{ and } m_\rho=A\right\}$.
 1. For any $r$ such that $m_r = A$, we have $i=0$, $s_r=[]$ 
 and $f_r$ is an arbitrary formula, 
 such that for any $c_d$ in $f_r$, we have $d < d(r)$.
