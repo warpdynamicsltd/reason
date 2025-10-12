@@ -29,7 +29,7 @@ So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$.
 1. MOD: $p \to q,\; p \vdash q$
 2. GEN: $p \vdash \forall x.p$
 3. CTV: $p(x/c_d)\vdash \forall x.p$
-4. SKO: $\exists x.p \vdash p(x/sk_r)$
+4. SKO: $\exists x.p \vdash p(x/sk_\sigma)$
 
 <h3 id="proof-definition">Definition of correct proof</h3>
 
@@ -42,10 +42,15 @@ $r_i = [*r, i]$, $m_i\in \{A, B, R, T\}$ and
 2. For any $c_d$ in formula $f_{r_i}$, we have $d \leq d(r_i)$.  
 1. For any $i$ such that $m_i = T$, we have $s_i=[]$ and $f_{r_i}$ 
 belongs to <i>Axioms Schema</i>.
+   1. For Axiom ALL, we have additional constrain that $x$ is not a free variable 
+   in any formula from a set 
+   $\{f_\rho: \rho < r_i \text{ and } r_i[-1]=0\}$.
+   
 1. For any $i$ such that $m_i = R$, we have $s_i=[]$ 
 and $f_{r_i}$ can be obtained by some rule from <i>Rules Schema</i> 
 applied on some formulas from  $\{f_{\rho}:\rho < r_i\}$.
-   1. For CTV, we have $d = d(r_i)$
+   1. For rule CTV, we have additional constrain $d = d(r_i)$
+   1. For rule SKO, we have additional constrain $\sigma = r_i$. 
 1. For any $i$ such that $m_i = A$, we have $i=0$, $s_i=[]$ 
 and $f_{r_i}$ is an arbitrary formula, 
 such that for any $c_d$ in $f_{r_i}$, we have $d < d(r_i)$.
