@@ -301,7 +301,7 @@ let rec is_valid_conclusion proof r =
               if is_assumption_statement statement0 
               then 
                 let assumption = statement0 |> formula_of_statement in
-                Implies(closure assumption, f) 
+                Implies(assumption, f) 
               else f)
         -> true
     | _ -> false
