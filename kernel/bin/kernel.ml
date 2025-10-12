@@ -19,6 +19,31 @@ let rec var_occurs_in_term var = function
   | Exists(v, f) -> not (v = var) && var_occurs_free_in_formula var f
   | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f *)
 
+(* Collect all variables in a term *)
+let rec vars_in_term = function
+  | Var v -> [v]
+  | Const _ -> []
+  | ContextConst _ -> []
+  | SkolemConst _ -> []
+  | Func (_, args) -> List.flatten (List.map vars_in_term args)
+
+(* Collect all free variables in a formula *)
+let rec free_vars formula bound =
+  match formula with
+  | True | False -> []
+  | Pred(_, args) -> List.filter (fun v -> not (List.mem v bound)) (List.flatten (List.map vars_in_term args))
+  | Not f -> free_vars f bound
+  | And(a, b) | Or(a, b) | Implies(a, b) | Iff(a, b) ->
+      let va = free_vars a bound in
+      let vb = free_vars b bound in
+      va @ List.filter (fun x -> not (List.mem x va)) vb
+  | Exists(v, f) | Forall(v, f) -> free_vars f (v :: bound)
+
+(** Compute the universal closure of a formula *)
+let closure formula =
+  let vars = free_vars formula [] in
+  List.fold_right (fun v f -> Forall(v, f)) vars formula
+
 let rec substitute_in_term var replacement t = 
   match t with
     | Var v -> if v = var then replacement else Var v
@@ -276,7 +301,7 @@ let rec is_valid_conclusion proof r =
               if is_assumption_statement statement0 
               then 
                 let assumption = statement0 |> formula_of_statement in
-                Implies(assumption, f) 
+                Implies(closure assumption, f) 
               else f)
         -> true
     | _ -> false

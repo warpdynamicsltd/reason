@@ -119,7 +119,7 @@ def de_morgan_not_all_to_exists_not(p: FirstOrderFormula, x: str):
             r4 = MOD(r3, r2) # ( ∀x. ~~p(x) )
             r5 = tau.p_iff_not_not_p(p) # p(x) <-> ~~p(x)
             r6 = rules.r_iff_revolve(r5) # ~~p(x) <-> p(x)
-            r7 = qty_rules.r_iff_all(r6, r4, x) # ∀x. p(x)
+            r7 = qty_rules.r_iff_to_all(r6, r4, x) # ∀x. p(x)
             rules.r_contradiction(r7, r1, Exists(x, Not(p))) # ∃x. ~p(x)
             r8 = ref() # ~( ∃x. ~p(x) ) -> ∃x. ~p(x)
         rules.r_proof_p_by_not_p(r8) # ∃x. ~p(x)
