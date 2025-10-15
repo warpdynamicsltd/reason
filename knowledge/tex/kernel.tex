@@ -65,11 +65,21 @@ $sk_r$ where $r$ is an arbitrary sequence of nonnegative integers.
 \item $\alpha(x/\tau)$ is admissible iff no free
 occurrence of $x$ in $\alpha$ is in the range of a quantifier that binds any variable which
 appears in $\tau$.
-\item For any sequences of natural numbers $r_1, r_2$, inequalities $r_1 < r_2$ and $r_1 \leq r_2$ are considered in lexicographical order.
+
 \item We use a convention known from Python to denote sequences as e.g. $[0, 2, 3]$, if $r$ is a sequence of natural numbers, then by $*r$ we denote all numbers from this sequence comma separated.
 So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$. To express that $a$ is in a sequence $r$, we will often use notation $a\in r$. 
 \item For any sequence of natural numbers $r$, we define $d(r) = |r| - 1$.
 \end{enumerate}
+
+\begin{definition}
+For any two sequences of non-negative integers $r_1, r_2$ we define $r_1 < r_2$ iff
+there exists a sequence $r$, a non-empty sequence $s$ and an non-negative integer $k$ such that $r_1 = [*r, k]$ and $r_2 = [*r, *s]$ and $s[0] > k$.
+\end{definition}
+
+\begin{definition}
+For any two sequences of nonnegative integers $r_1, r_2$ we define $r_1 \leq r_2$ iff
+$r_1 < r_2$ or $r_1 = r_2$.
+\end{definition}
 
 \begin{definition}[Axiom Schemas]
 \label{axioms_schemas} 
