@@ -60,7 +60,7 @@ Notes
 \begin{enumerate}
 \item If not stated otherwise, we will use terminology compatible with e.g. \cite{jech2013}
 \item Language is enriched by additional set of special consts $c_d$ for $d=0, 1, \dots$ and by additional set of special consts 
-$sk_r$ where $r$ is an arbitrary sequence of nonnegative integers.
+$sk_r$ where $r$ is an arbitrary sequence of non-negative integers.
 
 \item $\alpha(x/\tau)$ is admissible iff no free
 occurrence of $x$ in $\alpha$ is in the range of a quantifier that binds any variable which
@@ -148,11 +148,11 @@ then we use an indexing convention under which for any refenece $\rho\in\mathcal
 
 \subsection{Kernel}
 
-Reason kernel is a short program written in Ocaml which checks if a block of proof steps is a proof of a formula according to the following definition. 
+Reason kernel is a short program written in OCaml which checks if a block of proof steps is a proof of a formula according to the following definition. 
 
 \begin{definition}[Recursive definition of proof]
 \label{proof}
-A proof step $p=(r^\prime, B, s, \phi)$ is a proof of $\phi$ iff
+A proof step $p=(r^\prime, B, s, \phi)$ is a proof of a formula $\phi$ iff
 $s$ = $[(r, m_r, s_r, \phi_r)]_{i=0}^k$ such that
 for $i=0, \cdots, k$ we have $r = [*r^\prime, i]$ with $m_r\in \{A, B, R, T\}$ and 
 \begin{enumerate}
