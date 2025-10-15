@@ -146,7 +146,9 @@ Let $p = (r, m, s, \phi)$ be a proof step, then
 When for a given proof step $p$ each sub proof steps in $\mathcal{S}(p)$ have unique references,
 then we use an indexing convention under which for any refenece $\rho\in\mathcal{P}(p)$, a quadruple $(\rho, m_\rho, s_\rho, \phi_\rho)$ is a corresponding sub proof step.
 
-\subsection{Kernel} 
+\subsection{Kernel}
+
+Reason kernel is a short program written in Ocaml which checks if a block of proof steps is a proof of a formula according to the following definition. 
 
 \begin{definition}[Recursive definition of proof]
 \label{proof}
@@ -195,6 +197,7 @@ For formulas $\alpha, \beta, \gamma$, we have
 \ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner \in \text{Cn}_R.
 \end{equation}
 \begin{proof}
+\indent
 \begin{lstlisting}[texcl, escapechar=\%]
 ([], B, [
 	([0], A, %$\alpha \to (\beta\to\gamma)$%),
@@ -219,7 +222,7 @@ If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$ and $\psi$ is an a
 \end{equation} 
 \end{fact}
 \begin{proof}
-
+\indent
 \begin{lstlisting}[texcl, escapechar=\%]
 ([], B, [
 	([0], A, [], %$\forall x. (\phi\to\psi(x))\big)$%),
