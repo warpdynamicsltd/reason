@@ -99,6 +99,8 @@ For any formulas $\alpha, \beta, \gamma$ the following are logical axioms:
 \item (ALL) $(\forall x. \alpha) \to \alpha(x/\tau)$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
 \item (EXT) $\alpha(x/\tau) \to \exists x.\alpha$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
 \end{enumerate}
+
+Let $\mathfrak{A}$ denotes a set of all formulas which can be obtained by the above schemas.
 \end{definition}
 
 \begin{definition}[Rules]
@@ -163,8 +165,7 @@ and $\phi_r$ is an arbitrary formula,
 such that for any $c_d$ in $\phi_r$, we have $d < d(r)$.
 \item if $m_{[*r',0]} = A$, we have $\phi = \ulcorner \phi_{[*r^\prime,0]} \to \phi_{[*r^\prime, k]} \urcorner$, 
 \item if $m_{[*r',0]} \not= A$, we have $\phi=\phi_{[*r^\prime, k]}$, 
-\item for any $r$ such that $m_r = T$, we have $s_r=[]$ and $\phi_r$ 
-belongs to axioms schemas from Definition \ref{axioms_schemas}.
+\item for any $r$ such that $m_r = T$, we have $s_r=[]$ and $\phi_r\in\mathfrak{A}$.
 \item for any $r$ such that $m_r = R$, we have $s_r=[]$ 
 and $\phi_r$ can be obtained by one of the rules from Definition \ref{rules}  
 applied to chosen formulas from  
