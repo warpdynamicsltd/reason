@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{natbib}
+\usepackage{listings}
+\usepackage{color}
+
+
+\title{Description of Reason Kernel}
+\author{Michał Stanisław Wójcik}
+\date{\today}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Definitions}
+
+Notes
+
+\begin{enumerate}
+\item If not stated otherwise, we will use terminology compatible with e.g. \cite{jech2013}
+\item Language is enriched by additional set of consts $c_d$ for $d=0, 1, \dots$ and by additional set of consts 
+$sk_r$ where $r$ is an arbitrary sequence of nonnegative integers.
+
+\item $\alpha(x/\tau)$ is admissible iff no free
+occurrence of $x$ in $\alpha$ is in the range of a quantifier that binds any variable which
+appears in $\tau$.
+\item For any sequences of natural numbers $r_1, r_2$, inequalities $r_1 < r_2$ and $r_1 \leq r_2$ are considered in lexicographical order.
+\item We use a convention known from Python to denote sequences as e.g. $[0, 2, 3]$, if $r$ is a sequence of natural numbers, then by $*r$ we denote all numbers from this sequence comma separated.
+So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$. To express that $a$ is in a sequence $r$, we will often use notation $a\in r$. 
+\item For any sequence of natural numbers $r$, we define $d(r) = |r| - 1$.
+\end{enumerate}
+
+\begin{definition}[Axiom Schemas]
+\label{axioms_schemas} 
+For any formulas $\alpha, \beta, \gamma$ the following are logical axioms:
+\begin{enumerate}
+\item (LEM) $\alpha \vee \neg\alpha$
+\item (IMP) $\alpha \to (\beta\to\alpha)$
+\item (ANL) $\alpha \wedge \beta \to \alpha$
+\item (ANR) $\alpha \wedge \beta \to \beta$
+\item (AND) $\alpha \to (\beta \to (\alpha \wedge \beta))$
+\item (ORL) $\alpha \to \alpha \vee \beta$
+\item (ORR) $\beta \to \alpha \vee \beta$
+\item (DIS) $(\alpha \to \gamma) \to ((\beta \to \gamma) \to (\alpha \vee \beta \to \gamma))$
+\item (CON) $\neg \alpha \to (\alpha \to \beta)$
+\item (IFI) $(\alpha \to \beta)\to((\beta\to\alpha)\to(\alpha\leftrightarrow\beta))$
+\item (IFO) $(\alpha\leftrightarrow\beta) \to (\alpha\to\beta) \wedge (\beta\to\alpha)$
+\item (ALL) $(\forall x. \alpha) \to \alpha(x/\tau)$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
+\item (EXT) $\alpha(x/\tau) \to \exists x.\alpha$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Rules]
+\label{rules}
+We introduce the following inference rules
+\begin{enumerate}
+\item (MOD) $\alpha \to \beta,\; \alpha \vdash \beta$
+\item (GEN) $\alpha \vdash \forall x.\alpha$
+\item (CTV) $\alpha(x/c_d)\vdash \forall x.\alpha$
+\item (SKO) $\exists x.\alpha \vdash \alpha(x/sk_\sigma)$
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Recursive definition of a proof step]
+For any
+\begin{enumerate}
+\item (Reference) squence of nonnegative integers $r$,
+\item (Mode) $m\in \{A, B, R, T\}$,
+\item (Formula) formula $\phi$.
+\end{enumerate}
+
+we have:
+\begin{enumerate}
+\item An ordered quadruple $(r, m, [], \phi)$ is a \textbf{proof step}.
+\item If $s$ is a sequence of proof steps, then $(r, m, s, \phi)$ is a \textbf{proof step}.
+\end{enumerate}
+\end{definition}
+
+The letters $A, B, R, T$ stands for $Assumption, Block, Rule, Tautology$.
+
+\begin{definition}[Recursive definition of sub proof steps]
+Let $p = (r, m, s, \phi)$ be a proof step, then 
+\begin{equation}
+\mathcal{S}(p) = \{p\} \cup \bigcup\{\mathcal{S}(q): q\in s\}.  
+\end{equation}  
+\end{definition}
+
+\begin{definition}[Recursive definition of set of references]
+Let $p = (r, m, s, \phi)$ be a proof step, then 
+\begin{equation}
+\mathcal{R}(p) = \{r\} \cup \bigcup\{\mathcal{R}(q): q\in s\}  
+\end{equation}  
+\end{definition}
+
+When for a given proof step $p$ each sub proof steps in $\mathcal{S}(p)$ have unique references,
+then we use an indexing convetion under which for any refenece $\rho\in\mathcal{P}(p)$, a quadruple $(\rho, m_\rho, s_\rho, \phi_\rho)$ is a corresponding sub proof step.
+
+\section{Kernel} 
+
+\begin{definition}[Recursive definition of proof]
+
+A proof step $p=(r^\prime, B, s, \phi)$ is a proof of $\phi$ iff
+$s$ = $[(r, m_r, s_r, \phi_r)]_{i=1}^k$ such that
+for $i=0, \cdots, k$ we have $r = [*r^\prime, i]$ with $m_r\in \{A, B, R, T\}$ and 
+\begin{enumerate}
+\item for any $sk_\rho$ in formula $\phi_r$, we have $\rho \leq r$,
+\item for any $c_d$ in formula $\phi_r$, we have $d \leq d(r)$,
+\item for $r$ such that $m_r = A$, we must have $i=0$, $s_r=[]$ 
+and $\phi_r$ is an arbitrary formula, 
+such that for any $c_d$ in $\phi_r$, we have $d < d(r)$.
+\item if $m_{[*r',0]} = A$, we have $\phi = \ulcorner \phi_{[*r^\prime,0]} \to \phi_{[*r^\prime, k]} \urcorner$, 
+\item if $m_{[*r',0]} \not= A$, we have $\phi=\phi_{[*r^\prime, k]}$, 
+\item for any $r$ such that $m_r = T$, we have $s_r=[]$ and $\phi_r$ 
+belongs to axioms schemas from Definition \ref{axioms_schemas}.
+\item for any $r$ such that $m_r = R$, we have $s_r=[]$ 
+and $\phi_r$ can be obtained by one of the rules from Definition \ref{rules}  
+applied to chosen formulas from  
+$\{f_{\rho}:\rho\in\mathcal{R}(p) \text{ and } \rho < r\}$ where
+\begin{itemize}
+\item for rule CTV, we have additional constrain that $d = d(r)$,
+\item for rule SKO, we have additional constrain that $\sigma = r$,
+\item for rule GEN, we have additional constrain that 
+
+$x\not\in\bigcup \lbrace free(\phi_{[*\rho, 0]}): m_{[*\rho,0]}=A 
+\text{ and $\rho$ is a prefix of $r$} \rbrace$,
+\end{itemize}
+
+\item for $m_r = B$, $(r, m_r, s_r, \phi_r)$ is a proof of $\phi_r$.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}
+$\phi \in \text{Cn}_R$ iff there exists a proof step $([], B, s, \phi)$ which is a proof of $\phi$.
+\end{definition}
+\newpage
+\begin{theorem}
+For formulas $\alpha, \beta, \gamma$, we have
+\begin{equation}
+\ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner \in \text{Cn}_R.
+\end{equation}
+\begin{proof}
+\begin{lstlisting}[texcl, escapechar=\%]
+([], B, [
+	([0], A, %$\alpha \to (\beta\to\gamma)$%),
+	([1], B, [
+		([1, 0], A, %$(\alpha\to\beta)$%),
+	  	([1, 1], B, [
+	  		([1, 1, 0], A, [], %$\alpha$%),
+	  		([1, 1, 1], R, [], %$\beta\to\gamma$%), # MOD $\phi_{[0]}$, $\phi_{[1, 1, 0]}$
+	  		([1, 1, 2], R, [], %$\beta$%), # MOD $\phi_{[1, 0]}$, $\phi_{[1, 1, 0]}$
+	  		([1, 1, 3], R, [], %$\gamma$%) # MOD $\phi_{[1, 1, 1]}$, $\phi_{[1, 1, 2]}$
+	  	],%$\alpha\to\gamma$%) 
+	],%$((\alpha\to\beta)\to(\alpha\to\gamma)$%)
+],%$(\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)$%)
+\end{lstlisting}
+\end{proof}
+\end{theorem}
+
+\bibliographystyle{alpha}
+\bibliography{references}
+
+\end{document}
