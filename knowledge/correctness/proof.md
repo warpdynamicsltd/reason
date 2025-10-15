@@ -35,10 +35,10 @@ So if $r=[0,1,2]$, then $[*r, 3] = [0, 1, 2, 3]$.
 
 <h3 id="proof-definition">Recursive definition of correct proof</h3>
 
-If $(r', B, s, f)$ is a correct proof of $f$ iff
+If $(r^\prime, B, s, f)$ is a correct proof of $f$ iff
 
 $s$ is a sequence of $(r, m_r, s_r, f_r)$ such that
-$r = [*r', i]$ for $i=0, \cdots, k$ with $m_r\in \{A, B, R, T\}$ and: 
+$r = [*r^\prime, i]$ for $i=0, \cdots, k$ with $m_r\in \{A, B, R, T\}$ and: 
 
 1. For any $sk_\rho$ in formula $f_r$, we have $\rho \leq r$.
 2. For any $c_d$ in formula $f_r$, we have $d \leq d(r)$.  
@@ -55,8 +55,8 @@ applied on some formulas from  $\{f_{\rho}:\rho < r\}$.
 1. For any $r$ such that $m_r = A$, we have $i=0$, $s_r=[]$ 
 and $f_r$ is an arbitrary formula, 
 such that for any $c_d$ in $f_r$, we have $d < d(r)$.
-1. For $m_{[*r',0]} = A$, we have $f = \ulcorner f_{[*r',0]} \to f_{[*r', k]} \urcorner$. 
-1. For $m_{[*r',0]} \not= A$, we have $f=f_{[*r', k]}$.
+1. For $m_{[*r',0]} = A$, we have $f = \ulcorner f_{[*r^\prime,0]} \to f_{[*r^\prime, k]} \urcorner$. 
+1. For $m_{[*r',0]} \not= A$, we have $f=f_{[*r^\prime, k]}$.
 1. For $m_r = B$, we have $(r, m_r, s_r, f_r)$ is a correct proof of $f_r$.
 
 <h3 id="consequence"> Consequence</h3>
