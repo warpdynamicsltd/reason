@@ -134,7 +134,7 @@ Let $p = (r, m, s, \phi)$ be a proof step, then
 \end{definition}
 
 When for a given proof step $p$ each sub proof steps in $\mathcal{S}(p)$ have unique references,
-then we use an indexing convetion under which for any refenece $\rho\in\mathcal{P}(p)$, a quadruple $(\rho, m_\rho, s_\rho, \phi_\rho)$ is a corresponding sub proof step.
+then we use an indexing convention under which for any refenece $\rho\in\mathcal{P}(p)$, a quadruple $(\rho, m_\rho, s_\rho, \phi_\rho)$ is a corresponding sub proof step.
 
 \subsection{Kernel} 
 
@@ -227,7 +227,7 @@ $\ulcorner \phi\to\psi(x) \urcorner(x/c_1)$ to become $\phi\to\psi(c_1)$.
 \end{proof}
 
 With the above proof, it becomes more clear what is a role of a special constant $c_d$. 
-It is a local universal constant of a given block of proof steps, where the index $d$ of $c_d$ is the nesting depth of the block (it is equal to the length of the reference of a given proof step $B$). Each $c_d$ can be transformed into universal quantifier according to rule CTV only in its own block due to constrain $d = d(r)$ from Definition \ref{proof}.
+It is a local universal constant of a given block of proof steps, where the index $d$ of $c_d$ is the nesting depth of the block (it is equal to the length of the reference of a given block of proof steps). Each $c_d$ can be transformed into universal quantifier according to rule CTV only in its own block due to constrain $d = d(r)$ from Definition \ref{proof}.
 
 \bibliographystyle{alpha}
 \bibliography{references}
