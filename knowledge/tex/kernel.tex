@@ -5,7 +5,7 @@
 \usepackage{color}
 
 
-\title{Description of Reason Kernel}
+\title{Reason Kernel Documentation with Proofs}
 \author{Michał Stanisław Wójcik}
 \date{\today}
 
@@ -27,6 +27,8 @@
 \newtheorem{law}{Law}
 
 \newcommand{\defeq}{\stackrel{\mathrm{def}}{=}}
+\newcommand{\elev}{\text{elev}}
+\newcommand{\free}{\text{free}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -60,7 +62,7 @@
 Notes
 
 \begin{enumerate}
-\item If not stated otherwise, we will use terminology compatible with e.g. \cite{jech2013}
+\item If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}
 \item Language is enriched by additional set of special consts $c_d$ for $d=0, 1, \dots$ and by additional set of special consts 
 $sk_r$ where $r$ is an arbitrary sequence of non-negative integers.
 
@@ -111,8 +113,9 @@ We introduce the following inference rules
 \begin{enumerate}
 \item (MOD) $\alpha \to \beta,\; \alpha \vdash \beta$
 \item (GEN) $\alpha \vdash \forall x.\alpha$
-\item (CTV) $\alpha(x/c_d)\vdash \forall x.\alpha$
+\item (CTV) $\alpha(x/c_d)\vdash \alpha$
 \item (SKO) $\exists x.\alpha \vdash \alpha(x/sk_\sigma)$
+\item (IDN) $\alpha \vdash \alpha$
 \end{enumerate}
 \end{definition}
 
@@ -156,7 +159,7 @@ Reason kernel is a short program written in OCaml which checks if a block of pro
 
 \begin{definition}[Recursive definition of proof]
 \label{proof}
-A proof step $p=(r^\prime, B, s, \phi)$ is a proof of a formula $\phi$ iff
+A proof step $p=(r^\prime, B, s, \phi)$ is a proof of a formula $\phi$ with respect to axioms $\mathcal{A}$ iff
 $s$ = $[(r, m_r, s_r, \phi_r)]_{i=0}^k$ such that
 for $i=0, \cdots, k$ we have $r = [*r^\prime, i]$ with $m_r\in \{A, B, R, T\}$ and 
 \begin{enumerate}
@@ -167,7 +170,7 @@ and $\phi_r$ is an arbitrary formula,
 such that for any $c_d$ in $\phi_r$, we have $d < d(r)$.
 \item if $m_{[*r',0]} = A$, we have $\phi = \ulcorner \phi_{[*r^\prime,0]} \to \phi_{[*r^\prime, k]} \urcorner$, 
 \item if $m_{[*r',0]} \not= A$, we have $\phi=\phi_{[*r^\prime, k]}$, 
-\item for any $r$ such that $m_r = T$, we have $s_r=[]$ and $\phi_r\in\mathfrak{A}$.
+\item for any $r$ such that $m_r = T$, we have $s_r=[]$ and $\phi_r\in\mathcal{A}$.
 \item for any $r$ such that $m_r = R$, we have $s_r=[]$ 
 and $\phi_r$ can be obtained by one of the rules from Definition \ref{rules}  
 applied to chosen formulas from  
@@ -188,18 +191,19 @@ $x\not\in\bigcup \lbrace free(\phi_{\rho}): \rho\in\mathcal{R}(p)
 \end{definition}
 
 \begin{definition}
-$\phi \in \text{Cn}_R$ iff there exists a proof step $([], B, s, \phi)$ which is a proof of $\phi$.
+$\phi \in \text{Cn}_R(\mathcal{A})$ iff there exists a proof step $([], B, s, \phi)$ which is a proof of $\phi$ with respect to axioms $\mathcal{A}$.
 \end{definition}
 
 \subsection{Completness}
 
-We will aim to prove that for any $\models\phi$, we have $\phi \in \text{Cn}_R$.
+We will aim to prove that for any $\models\phi$, we have $\phi \in \text{Cn}_R(\mathfrak{A})$.
 
 \newpage
-\begin{fact}
+\begin{fact}[TRN]
+\label{TRN}
 For formulas $\alpha, \beta, \gamma$, we have
 \begin{equation}
-\ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner \in \text{Cn}_R.
+\ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner \in \text{Cn}_R(\mathfrak{A}).
 \end{equation}
 \begin{proof}
 \indent
@@ -220,10 +224,11 @@ For formulas $\alpha, \beta, \gamma$, we have
 \end{proof}
 \end{fact}
 
-\begin{fact}
+\begin{fact}[ALH]
+\label{ALH}
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$ and $\psi$ is an arbitrary formula, then 
 \begin{equation}
-\ulcorner \big(\forall x. (\phi\to\psi(x))\big)\to\big(\phi\to\forall x.\psi(x)\big) \urcorner \in \text{Cn}_R.
+\ulcorner \big(\forall x. (\phi\to\psi(x))\big)\to\big(\phi\to\forall x.\psi(x)\big) \urcorner \in \text{Cn}_R(\mathfrak{A}).
 \end{equation} 
 \end{fact}
 \begin{proof}
@@ -236,21 +241,23 @@ If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$ and $\psi$ is an a
 		([1, 1], T, [], %$\big(\forall x. (\phi\to\psi(x))\big)\to(\phi\to\psi(c_1))$%), # ALL
 		([1, 2], R, [], %$\phi\to\psi(c_1)$%), # MOD $\phi_{[1, 1]}$, $\phi_{[0]}$
 	  	([1, 3], R, [], %$\psi(c_1)$%), # MOD $\phi_{[1, 2]}$, $\phi_{[1,0]}$
-	  	([1, 4], R, [], %$\forall x.\psi(x)$%) # CTV $\phi_{[1,3]}$.
+	  	([1, 4], R, [], %$\psi(x)$%) # CTV $\phi_{[1,3]}$
+	  	([1, 5], R, [], %$\forall x.\psi(x)$%) # GEN $\phi_{[1,4]}$
 	],%$\phi\to\forall x.\psi(x)$%)
 ],%$\big(\forall x. (\phi\to\psi(x))\big)\to\big(\phi\to\forall x.\psi(x)\big)$%)
 \end{lstlisting}
 Note that the assumption that $x\not\in \text{free}(\phi)$ is needed for 
-$\ulcorner \phi\to\psi(x) \urcorner(x/c_1)$ to become $\phi\to\psi(c_1)$.
+$\ulcorner \phi\to\psi(x) \urcorner(x/c_1)$ to become $\phi\to\psi(c_1)$ and also to apply rule GEN $\phi_{[1, 4]}$.
 \end{proof}
 
 With the above proof, it becomes more clear what is a role of a special constant $c_d$. 
 It is a local universal constant of a given block of proof steps, where the index $d$ of $c_d$ is the nesting depth of the block (it is equal to the length of the reference of a given block of proof steps). Each $c_d$ can be transformed into universal quantifier according to rule CTV only in its own block due to constrain $d = d(r)$ from Definition \ref{proof}.
 
-\begin{fact}
+\begin{fact}[EXH]
+\label{EXH}
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$ and $\psi$ is an arbitrary formula, then 
 \begin{equation}
-\ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big(\exists x.\psi(x)\to\phi\big) \urcorner \in \text{Cn}_R.
+\ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big(\exists x.\psi(x)\to\phi\big) \urcorner \in \text{Cn}_R(\mathfrak{A}).
 \end{equation} 
 \end{fact}
 \begin{proof}
@@ -301,6 +308,56 @@ $$\text{elev}(r, p) \defeq (\text{elev}(r, \rho), m, [\text{elev}(r,p_i)]_{i=0}^
 \end{enumerate}
 \end{definition}
 
+\begin{lemma}
+\label{elevation-lemma}
+Let $\mathcal{A}$ be a set of axioms.
+Let $\eta$ be a sequence of non-negative integers.
+If $\phi\in\mathcal{A}$ iff $\elev(\eta, \phi)\in\mathcal{A}$ then
+a proof step $p=(r^\prime, B, s, \phi)$ is a prove of $\phi$ with respect of $\mathcal{A}$ iff
+$\text{elev}(r, p)$
+is a prove of $\text{elev}(r^\prime, \phi)$ with respect of $\mathcal{A}$.  
+\end{lemma}
+\begin{proof}
+This is easy to note once you realise the following invariances:
+\begin{enumerate}
+\item $\rho < r$ iff $\elev(\eta, \rho) < \elev(\eta, r)$,
+\item $d(\elev(\eta, r)) = d(r) + |\eta|$,
+\item $\phi_r\in\mathcal{A}$ iff $\elev(\eta, \phi_r)\in\mathcal{A}$,
+\item $\free(\phi_\rho) = \free(\elev(\eta, \phi_\rho))$. 
+\end{enumerate}
+\end{proof}
+
+Note that $\phi_r\in\mathfrak{A}$ iff $\elev(\eta, \phi_r)\in\mathfrak{A}$
+
+\begin{definition}
+Let $\mathfrak{B}$ by all formulas which can be obtained by schemas from Fact \ref{TRN}(TRN), Fact \ref{ALH}(ALH) and Fact \ref{EXH}(EXH). Let $\mathfrak{A}^+ = \mathfrak{A} \cup \mathfrak{B}$.
+\end{definition}
+\begin{theorem}
+If $\models \phi$, then $\phi \in \text{Cn}_R(\mathfrak{A})$
+\end{theorem}
+\begin{proof}
+If $\models \phi$, we have $\vdash \phi$. Then by \cite{hal2012} we have a seqence of formulas $[\phi_i]_{i=1}^k$, such that either $\phi_i\in\mathfrak{A}^+$ or $\phi_i$ is obtained by rules MOD or GEN from 
+$\{\phi_j: j < i\}$ for $i = 1, \dots, k$ and $\phi=\phi_k$.
+
+Let $U = \{i: \phi_i\in \mathfrak{B}\}$. Take a sequence $u(n)$ such that
+$u$ enumerates all elements from $U$ for $n=0, \dots, k^\prime$.
+
+Let $([n], B, s_n, \phi_{u(n)})$ be a proof step which is a prove of $\phi_{u(n)}$ with respect to $\mathfrak{A}$. Such proof steps exists by Fact \ref{TRN}(TRN), Fact \ref{ALH}(ALH), Fact \ref{EXH}(EXH) and Lemma \ref{elevation-lemma}.
+ 
+Now, consider
+\begin{lstlisting}[texcl, escapechar=\%]
+([], B, [
+	([0], B, %$s_n$%, %$\phi_{u(0)}$%),
+	...
+	([%$k^\prime$%], B, %$s_{k^\prime}$%, %$\phi_{u(k^\prime)}$%),
+	([%$k^\prime$% + 1], m_i, [], %$\phi_1$%),
+	...
+	([%$k^\prime$% + k], m_i, [], %$\phi_k$%),
+], %$\phi$%)
+\end{lstlisting}
+where $m_i = T$ for any $\phi_i\in \mathfrak{A}$ and $m_i = R$ for any $\phi_i\not\in\mathfrak{A}$. 
+In case of $i\in U$, $\phi_i$ is obtained by rule IND $\phi_{u(n)}$ where $u(n)=i$. For other $\phi_i$ we just use an original rule either MOD or GEN. Note that there is no constrain on variable $x$ in GEN since there is no assumptions in the main block of proof steps.
+\end{proof}
 \bibliographystyle{alpha}
 \bibliography{references}
 
