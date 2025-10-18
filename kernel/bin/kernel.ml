@@ -7,7 +7,7 @@ let rec var_occurs_in_term var = function
   | SkolemConst _ -> false
   | Func (_, terms) -> List.exists (var_occurs_in_term var) terms
 
-(*let rec var_occurs_free_in_formula var = function
+let rec var_occurs_free_in_formula var = function
   | True -> false
   | False -> false
   | Pred(_, args) -> List.exists (var_occurs_in_term var) args
@@ -17,7 +17,32 @@ let rec var_occurs_in_term var = function
   | Implies(a, b) -> (var_occurs_free_in_formula var a) || (var_occurs_free_in_formula var b)
   | Iff(a, b) -> (var_occurs_free_in_formula var a) || (var_occurs_free_in_formula var b)
   | Exists(v, f) -> not (v = var) && var_occurs_free_in_formula var f
-  | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f *)
+  | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f
+
+(* Collect all variables in a term *)
+(*let rec vars_in_term = function
+  | Var v -> [v]
+  | Const _ -> []
+  | ContextConst _ -> []
+  | SkolemConst _ -> []
+  | Func (_, args) -> List.flatten (List.map vars_in_term args)*)
+
+(* Collect all free variables in a formula *)
+(*let rec free_vars formula bound =
+  match formula with
+  | True | False -> []
+  | Pred(_, args) -> List.filter (fun v -> not (List.mem v bound)) (List.flatten (List.map vars_in_term args))
+  | Not f -> free_vars f bound
+  | And(a, b) | Or(a, b) | Implies(a, b) | Iff(a, b) ->
+      let va = free_vars a bound in
+      let vb = free_vars b bound in
+      va @ List.filter (fun x -> not (List.mem x va)) vb
+  | Exists(v, f) | Forall(v, f) -> free_vars f (v :: bound)*)
+
+(** Compute the universal closure of a formula *)
+(**let closure formula =
+  let vars = free_vars formula [] in
+  List.fold_right (fun v f -> Forall(v, f)) vars formula**)
 
 let rec substitute_in_term var replacement t = 
   match t with
@@ -182,13 +207,21 @@ let rec get_statement proof =
 
 let get_formula proof ref = get_statement proof ref |> formula_of_statement
 
-let rec reference_allowed current_ref ref = 
+let rec (>>) current_ref ref = 
   match current_ref, ref with 
     | Ref [k], Ref [i] when i < k -> true
     | Ref (head::_), Ref [i] when i < head -> true
-    | Ref (head::tail), Ref(head_ref::tail_ref) when head = head_ref -> reference_allowed (Ref tail) (Ref tail_ref)
+    | Ref (head::tail), Ref(head_ref::tail_ref) when head = head_ref -> Ref tail >> Ref tail_ref
     | _, _ -> false;;
 
+let (>>=) r1 r2 = r1 >> r2 || r1 = r2
+
+let rec is_suffix r1 r2 =
+  match r1, r2 with
+    | Ref [], Ref _ -> true
+    | Ref (head1::tail1), Ref (head2::tail2) when head1 = head2 -> is_suffix (Ref tail1) (Ref tail2)
+    | _, _ -> false
+ 
 let append ref i =
   match ref with
   | Ref lst -> Ref (lst @ [i])
@@ -199,12 +232,19 @@ let last_of_ref ref = match ref with Ref lst -> last_elem lst
 
 let context_depth_of_ref ref = match ref with Ref lst -> List.length lst - 1
 
+let rec var_accurs_free_in_assumptions proof r var = 
+  match proof with
+    | AssumptionStmt({ref; formula;_}) when r >> ref -> var_occurs_free_in_formula var formula
+    | BlockStmt {ref; statements;_} when is_suffix ref r -> List.exists (fun s -> var_accurs_free_in_assumptions s r var) statements
+    | _ -> false
+
+
 let rec skolem_const_compatible_with_ref_in_term ref t =
     match t with
       | Var _ -> true
       | Const _ -> true
       | ContextConst _ -> true
-      | SkolemConst seq -> (Ref seq = ref) || (reference_allowed ref (Ref seq))
+      | SkolemConst seq -> ref >>= Ref seq
       | Func (_, terms) -> List.for_all (skolem_const_compatible_with_ref_in_term ref) terms
 
 let rec skolem_const_compatible_with_ref_in_formula ref f =
@@ -238,6 +278,11 @@ let is_sko_aligned ref terms =
     | Ref seq, SkolemConst seq1 -> seq = seq1
     | _ -> false
 
+let is_gen_aligned ref terms proof =
+  match List.nth terms 0 with 
+    | Var v -> not (var_accurs_free_in_assumptions proof ref v)
+    | _ -> false
+
 let is_assumption_statement s = 
   match s with
     | AssumptionStmt _ -> true
@@ -255,12 +300,13 @@ let rec is_valid_conclusion proof r =
         -> true
     | RuleStmt {ref; label; refs; terms; formula} 
         when ref = r 
-          && List.for_all (reference_allowed ref) refs
+          && List.for_all ((>>) ref) refs
           && List.for_all (is_valid_conclusion proof) refs
           && formula_match_ref r formula
         -> (match label with 
             | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
             | "SKO" -> is_sko_aligned r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
+            | "GEN" -> is_gen_aligned r terms proof && formula = (rule label (List.map (get_formula proof) refs, terms))
             | _ -> formula = (rule label (List.map (get_formula proof) refs, terms)))
     | BlockStmt{ref; statements; formula} 
         when ref = r 

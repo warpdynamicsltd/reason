@@ -9,15 +9,39 @@ from reason.proofkit.derived.transform import *
 from reason.proofkit.kernel.proof import *
 from reason.proofkit.kernel import Kernel
 
-L = Language()
 
 class TestKernelWithQuant(unittest.TestCase):
     def test_simple(self):
+        L = Language()
         BEGIN()
         r1 = tau.p_to_p(L(f"P(x)"))
         GEN(r1, "x")
         f = RETURN()
         self.assertEqual(f, L("∀x. P(x) → P(x)"))
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            ASM(L("P(x)"))
+            r1 = ref() # P(x) -> P(x)
+
+        r2 = GEN(r1, "x") # ∀x. P(x) → P(x)
+        f = RETURN()
+        self.assertEqual(f, L("∀x. P(x) → P(x)"))
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            ASM(L("P(x)"))
+            r1 = ref()  # P(x) -> P(x)
+
+        with Context():
+            r2 = ASM(L("P(z)"))
+            r3 = GEN(r1, "x")  # ∀x. P(z)
+            r4 = ref()
+
+        f = RETURN()
+        self.assertEqual(f, L("P(z) → (∀x. P(x) → P(x))"))
 
     def test_context_const(self):
         L = Language()
@@ -127,6 +151,12 @@ class TestKernelWithQuant(unittest.TestCase):
 
         L = Language()
         BEGIN(L)
+        all_to_exist(L("P"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("( ∀x. P ) → ( ∃x. P )"))
+
+        L = Language()
+        BEGIN(L)
         all_over_imp(L("A"), L("B(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L(" ( ∀x. A → B(x) ) → ( A → ( ∀x. B(x) ) )"))
@@ -145,20 +175,65 @@ class TestKernelWithQuant(unittest.TestCase):
 
         L = Language()
         BEGIN(L)
+        de_morgan_all_not_to_not_exist(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("( ∀x. ~P(x) ) → ~ ( ∃x. P(x) )"))
+
+        L = Language()
+        BEGIN(L)
         de_morgan_exists_not_to_not_all(L("P(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L("( ∃x. ~P(x) ) → ~( ∀x. P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_not_all_to_exists_not(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("~( ∀x. P(x) ) → ( ∃x. ~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_not_exists_iff_all_not(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("~( ∃x. P(x) ) ⟷ ( ∀x. ~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        de_morgan_exists_not_iff_not_all(L("P(x)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. ~P(x) ) ⟷ ~( ∀x. P(x) )"))
 
 
     def test_rules(self):
         L = Language()
         BEGIN(L)
         with Context():
-            r1 = ASM(L("P(x) ⟷ Q(x)"))
+            r1 = p_iff_not_not_p(L("P(x)"))
             with Context():
                 r2 = ASM(L("∀x. P(x)"))
-                r3 = r_iff_all(r1, r2, "x")
-                self.assertEqual(formula(r3), L("∀x. Q(x)"))
+                r3 = r_iff_to_all(r1, r2, "x")
+                self.assertEqual(formula(r3), L("∀x. ~~P(x)"))
 
         f = RETURN()
-        self.assertEqual(f, L("(P(x) ⟷ Q(x)) → ( (∀x. P(x)) → (∀x. Q(x)))"))
+        self.assertEqual(f, L("(∀x. P(x)) → (∀x. ~~P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = p_iff_not_not_p(L("P(x)"))
+            with Context():
+                r2 = ASM(L("∃x. P(x)"))
+                r3 = r_iff_to_exists(r1, r2, "x")
+                self.assertEqual(formula(r3), L("∃x. ~~P(x)"))
+
+        f = RETURN()
+        self.assertEqual(f, L("(∃x. P(x)) → (∃x. ~~P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = p_iff_not_not_p(L("P(x)"))
+            r2 = r_iff_all(r1, "x")
+
+        f = RETURN()
+        self.assertEqual(f, L("( ∀x. P(x) ) ⟷ ( ∀x. ~~P(x) )"))

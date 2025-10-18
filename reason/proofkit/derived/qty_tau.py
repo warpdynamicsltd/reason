@@ -1,6 +1,8 @@
 from reason.core.fof_ops import And, Implies, Not, Or
 from reason.core.fof_types import FirstOrderFormula
 import reason.proofkit.derived.rules as rules
+import reason.proofkit.derived.qty_rules as qty_rules
+import reason.proofkit.derived.tautologies as tau
 from reason.proofkit.kernel import Ref
 from reason.proofkit.kernel.proof import *
 
@@ -69,12 +71,30 @@ def de_morgan_not_exists_to_all_not(p: FirstOrderFormula, x: str):
         GEN(r7, x) # ∀x. ~p(x)
         return ref()
 
+def de_morgan_all_not_to_not_exist(p: FirstOrderFormula, x: str):
+    """
+    ∀x. ~p(x) -> ~ ( ∃x. p(x) )
+    """
+    with Context():
+        r1 = ASM(Forall(x, Not(p)))
+        with Context():
+            r2 = ASM(Not(Not(Exists(x, p)))) # ~~∃x. p(x)
+            r3 = rules.r_not_not_to(r2) # ∃x. p(x)
+            sk = get_next_skolem_const_name()
+            r4 = SKO(r3, sk) # p(sk)
+            r5 = ALL(Not(p), Const(sk), x) # (∀x. ~p(x)) -> ~p(sk)
+            r6 = MOD(r5, r1) # ~p(sk)
+            rules.r_contradiction(r4, r6, Not(Exists(x, p))) # ~ ( ∃x. p(x) )
+            r6 = ref() # ~~( ∃x. p(x) ) -> ~ ( ∃x. p(x) )
+        rules.r_proof_p_by_not_p(r6) # ~ ( ∃x. p(x) )
+        return ref() # ∀x. ~p(x) -> ~ ( ∃x. p(x) )
+
 def de_morgan_exists_not_to_not_all(p: FirstOrderFormula, x: str):
     """
     ∃x. ~p(x) -> ~( ∀x. p(x) )
     """
     with Context():
-        r1 = ASM(Exists(x, Not(p)))
+        r1 = ASM(Exists(x, Not(p))) # ∃x. ~p(x)
         sk = get_next_skolem_const_name()
         r2 = SKO(r1, sk) # ~p(sk)
         with Context():
@@ -86,3 +106,39 @@ def de_morgan_exists_not_to_not_all(p: FirstOrderFormula, x: str):
             r8 = ref() # ( ~~ ∀x. p(x) ) -> (~ ∀x. p(x))
         rules.r_proof_p_by_not_p(r8) # ~∀x. p(x)
         return ref()
+
+def de_morgan_not_all_to_exists_not(p: FirstOrderFormula, x: str):
+    """
+    ~( ∀x. p(x) ) -> ∃x. ~p(x)
+    """
+    with Context():
+        r1 = ASM(Not(Forall(x, p))) # ~( ∀x. p(x) )
+        with Context():
+            r2 = ASM(Not(Exists(x, Not(p)))) # ~( ∃x. ~p(x) )
+            r3 = de_morgan_not_exists_to_all_not(Not(p), x) # ~( ∃x. ~p(x) ) -> ( ∀x. ~~p(x) )
+            r4 = MOD(r3, r2) # ( ∀x. ~~p(x) )
+            r5 = tau.p_iff_not_not_p(p) # p(x) <-> ~~p(x)
+            r6 = rules.r_iff_revolve(r5) # ~~p(x) <-> p(x)
+            r7 = qty_rules.r_iff_to_all(r6, r4, x) # ∀x. p(x)
+            rules.r_contradiction(r7, r1, Exists(x, Not(p))) # ∃x. ~p(x)
+            r8 = ref() # ~( ∃x. ~p(x) ) -> ∃x. ~p(x)
+        rules.r_proof_p_by_not_p(r8) # ∃x. ~p(x)
+        return ref()
+
+
+def de_morgan_not_exists_iff_all_not(p: FirstOrderFormula, x: str):
+    """
+    ~ ( ∃x. p(x) ) <-> ∀x. ~p(x)
+    """
+    r1 = de_morgan_not_exists_to_all_not(p, x)
+    r2 = de_morgan_all_not_to_not_exist(p, x)
+    return rules.r_imp_imp_iff(r1, r2)
+
+
+def de_morgan_exists_not_iff_not_all(p: FirstOrderFormula, x: str):
+    """
+    ∃x. ~p(x) <-> ~( ∀x. p(x) )
+    """
+    r1 = de_morgan_exists_not_to_not_all(p, x)
+    r2 = de_morgan_not_all_to_exists_not(p, x)
+    return rules.r_imp_imp_iff(r1, r2)

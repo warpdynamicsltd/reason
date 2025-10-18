@@ -193,6 +193,6 @@ class NnfProvedTransformer(IDNProvedTransformer):
     @ProvedTransformer.outer
     def iff(self, a, b):
         r = iff_iff(a, b) # (a -> b and b -> a) <-> (a <-> b)
-        return r_iff_revolve(r)
+        return r_iff_revolve(r) # (a <-> b) <-> (a -> b and b -> a)
 
 

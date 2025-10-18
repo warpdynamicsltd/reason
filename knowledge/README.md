@@ -18,7 +18,7 @@ If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$, then for
 
 $$\models  \alpha_1(a) \wedge \dots \wedge \alpha_n(a) \wedge \gamma_1 \wedge \dots \wedge \gamma_k \to \beta(a) $$
 
-Let $\gamma$ denotes $\gamma_1 \wedge \dots \wedge \gamma_k$. By Lemma [tautologies with constants](universal-constat-tautology)
+Let $\gamma$ denotes $\gamma_1 \wedge \dots \wedge \gamma_k$. By Lemma [tautologies with constants](#universal-constat-tautology)
 
 $$\models  \forall x. \ \alpha_1(x) \wedge \dots \wedge \alpha_n(x) \wedge \gamma \to \beta(x) ,$$
 
@@ -30,7 +30,7 @@ $$\models  \exists x. \ (\neg\alpha_1(x) \vee \dots \vee \neg\alpha_n(x) \vee \n
 
 $$\models  \neg\forall x.\alpha_1(x) \vee \dots \vee \neg\forall x.\alpha_n(x) \vee \neg\gamma \vee (\forall x.\beta(x)) .$$
 
-But by Definition [universal constant](universal-constant), $\Gamma\models \forall x.\alpha_i(x)$ and of course $\Gamma\models \gamma$, thus
+But by Definition [universal constant](#universal-constant), $\Gamma\models \forall x.\alpha_i(x)$ and of course $\Gamma\models \gamma$, thus
 $$\Gamma \models  \forall x. \beta(x) .$$
 
 <h3 id="corollary-universal-constant">Corollary: <b>invariance of universal constant</b></h3>
@@ -59,7 +59,7 @@ If $a\in\mathcal{C}$ is an universal constant with respect to $\Gamma$ and $\Gam
 
 $\Gamma\models \forall x.\big(\alpha(x) \to \beta(x)\big)$.
 
-<b>Proof.</b> By Theorem [implication](implication), $\Gamma\models \alpha(a) \to \beta(a)$. But since $a$ is a universal constant with respect to $\Gamma$, then $\forall x.\big(\alpha(x) \to \beta(x)\big)$.
+<b>Proof.</b> By Theorem [implication](#implication), $\Gamma\models \alpha(a) \to \beta(a)$. But since $a$ is a universal constant with respect to $\Gamma$, then $\forall x.\big(\alpha(x) \to \beta(x)\big)$.
 
 
 
