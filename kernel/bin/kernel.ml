@@ -216,6 +216,12 @@ let rec (>>) current_ref ref =
 
 let (>>=) r1 r2 = r1 >> r2 || r1 = r2
 
+let rec is_suffix r1 r2 =
+  match r1, r2 with
+    | Ref [], Ref _ -> true
+    | Ref (head1::tail1), Ref (head2::tail2) when head1 = head2 -> is_suffix (Ref tail1) (Ref tail2)
+    | _, _ -> false
+ 
 let append ref i =
   match ref with
   | Ref lst -> Ref (lst @ [i])
@@ -228,8 +234,8 @@ let context_depth_of_ref ref = match ref with Ref lst -> List.length lst - 1
 
 let rec var_accurs_free_in_assumptions proof r var = 
   match proof with
-    | AssumptionStmt({ref; formula;_}) -> r >> ref && var_occurs_free_in_formula var formula
-    | BlockStmt {statements;_}  -> List.exists (fun s -> var_accurs_free_in_assumptions s r var) statements
+    | AssumptionStmt({ref; formula;_}) when r >> ref -> var_occurs_free_in_formula var formula
+    | BlockStmt {ref; statements;_} when is_suffix ref r -> List.exists (fun s -> var_accurs_free_in_assumptions s r var) statements
     | _ -> false
 
 

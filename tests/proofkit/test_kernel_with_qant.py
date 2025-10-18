@@ -29,6 +29,20 @@ class TestKernelWithQuant(unittest.TestCase):
         f = RETURN()
         self.assertEqual(f, L("∀x. P(x) → P(x)"))
 
+        L = Language()
+        BEGIN(L)
+        with Context():
+            ASM(L("P(x)"))
+            r1 = ref()  # P(x) -> P(x)
+
+        with Context():
+            r2 = ASM(L("P(z)"))
+            r3 = GEN(r1, "x")  # ∀x. P(z)
+            r4 = ref()
+
+        f = RETURN()
+        self.assertEqual(f, L("P(z) → (∀x. P(x) → P(x))"))
+
     def test_context_const(self):
         L = Language()
         L.add_const("context_0")

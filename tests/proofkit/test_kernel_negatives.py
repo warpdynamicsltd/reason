@@ -479,9 +479,12 @@ class TestKernelNegatives(unittest.TestCase):
             with Context():
                 r2 = ASM(L("Q(x)"))
                 with Context():
-                    r2 = LEM(L("P(x)"))  # P(x) or ~P(x)
-                    r3 = GEN(r2, "x")  # (∀x. P(x) or ~P(x))
-            r3 = ref()  # P(z) -> (P(x) -> (∀x. P(x) or ~P(x)))
+                    r3 = ASM(L("R(y)"))
+                    r4 = LEM(L("P(x)"))  # P(x) or ~P(x)
+                    r5 = GEN(r2, "x")  # (∀x. P(x) or ~P(x))
+                    r6 = ref() # R(y) -> (∀x. P(x) or ~P(x))
+
+            r3 = ref()  # P(z) -> (Q(x) -> (R(y) -> (∀x. P(x) or ~P(x))))
         with pytest.raises(KernelError):
             RETURN()
 
