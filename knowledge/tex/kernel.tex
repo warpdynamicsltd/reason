@@ -26,6 +26,8 @@
 \newtheorem{note}[theorem]{Note}
 \newtheorem{law}{Law}
 
+\newcommand{\defeq}{\stackrel{\mathrm{def}}{=}}
+
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
@@ -268,6 +270,36 @@ If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$ and $\psi$ is an a
 Note that the assumption that $x\not\in \text{free}(\phi)$ is needed for 
 $\ulcorner \psi(x)\to\phi \urcorner(x/sk_{[1,1]})$ to become $\psi(sk_{[1,1})\to\phi$.
 \end{proof}
+
+\begin{definition}
+Let $r_1, r_2$ be two sequences of non-negative integers.
+\begin{equation}
+\text{elev}(r_1, r_2) \defeq [*r_1, *r_2].
+\end{equation}
+\end{definition}
+
+\begin{corollary}
+Let $r, r_1, r_2$ be sequences of non-negative integers, then 
+$r_1 < r_2$ iff $\text{elev}(r, r1) < \text{elev}(r, r2)$. 
+\end{corollary}
+
+\begin{definition}
+Let $\phi$ be a formula and $r$ be a sequence of non-negative integers.
+\begin{equation}
+\text{elev}(r, \phi) = \phi\prime
+\end{equation}
+where $\phi\prime$ is obtain by substituting any $c_d$ from $\phi$ by $c_{d + |r|}$ and any $sk_{\rho}$ by $sk_{\text{elev}(r, \rho)}$.
+\end{definition}
+
+\begin{definition}(Recursive definition of proof step elevation)
+Let $r$ be a sequence of non-negative integers
+\begin{enumerate}
+\item For a proof step $p=(\rho, m, [], \phi)$, 
+$$\text{elev}(r, p) \defeq (\text{elev}(r, \rho), m, [], \text{elev}(r, \phi)).$$
+\item For proof step $p=(\rho, m, [p_i]_{i=0}^k, \phi)$,
+$$\text{elev}(r, p) \defeq (\text{elev}(r, \rho), m, [\text{elev}(r,p_i)]_{i=0}^k, \text{elev}(r, \phi)).$$
+\end{enumerate}
+\end{definition}
 
 \bibliographystyle{alpha}
 \bibliography{references}

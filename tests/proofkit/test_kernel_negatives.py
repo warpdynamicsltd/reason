@@ -304,8 +304,24 @@ class TestKernelNegatives(unittest.TestCase):
                 )
             ],
             formula=L("Q → (Q → A)")
+        ),
+        Block(
+            ref=Ref([]),
+            statements=[
+                Assumption(
+                    ref=Ref([0]),
+                    formula=L("P(x)")
+                ),
+                Rule(
+                    ref=Ref([1]),
+                    label="GEN",
+                    refs=[Ref([0])],
+                    terms=[Variable('x')],
+                    formula=L("∀x. P(x)")
+                )
+            ],
+            formula=L("P(x) → (∀x. P(x))")
         )
-
     ]
 
 
@@ -433,6 +449,39 @@ class TestKernelNegatives(unittest.TestCase):
                 r2 = ref()  # P(c) -> (∀x. P(x))
             r3 = ref()
         CTV(r3, c, "z")  # P(z) -> (∀x. P(x))
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L("P(x)"))
+            r2 = GEN(r1, "x")
+            r3 = ref() # P(x) -> (∀x. P(x))
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L("P(x)"))
+            with Context():
+                r2 = LEM(L("P(x)")) # P(x) or ~P(x)
+                r3 = GEN(r2, "x") # (∀x. P(x) or ~P(x))
+            r3 = ref()  # P(x) -> (∀x. P(x) or ~P(x))
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L("P(z)"))
+            with Context():
+                r2 = ASM(L("Q(x)"))
+                with Context():
+                    r2 = LEM(L("P(x)"))  # P(x) or ~P(x)
+                    r3 = GEN(r2, "x")  # (∀x. P(x) or ~P(x))
+            r3 = ref()  # P(z) -> (P(x) -> (∀x. P(x) or ~P(x)))
         with pytest.raises(KernelError):
             RETURN()
 
