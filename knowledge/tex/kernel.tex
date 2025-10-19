@@ -29,6 +29,19 @@
 \newcommand{\defeq}{\stackrel{\mathrm{def}}{=}}
 \newcommand{\elev}{\text{elev}}
 \newcommand{\free}{\text{free}}
+\renewcommand{\axiom}{\text{Axiom}}
+\renewcommand{\rule}{\text{Rule}}
+\newcommand{\asm}{\text{Asm}}
+\newcommand{\block}{\text{Block}}
+\newcommand{\Sk}{\mathcal{S}}
+\newcommand{\sk}{\mathfrak{s}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\C}{\mathcal{C}}
+\renewcommand{\root}{\text{root}}
+\newcommand{\final}{\text{final}}
+\newcommand{\truth}{\tau}
+
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -55,7 +68,172 @@
 
 \maketitle
 
-\section{Kernel definition}
+\section{Reference System}
+
+\begin{definition}[\textbf{finite sequences}]
+Let $A$ be an arbitrary set, then $A^*$ is a set of all finite sequences of $A$.
+\end{definition}
+
+We will often use notation in which we will denote sequences as $[a_1, \dots, a_n]$.
+So if $a_i\in A$ then for $s=[a_1, \dots, a_n]$, we have $s\in A^*$. 
+
+For a sequence $s=[a_1, \dots, a_n]$, $*s$ means just $a_1, \dots, a_n$, which allows us to write in a compact form many sequence operations. E.g. concatenation of sequences $s_1, s_2$ is $[*s_1, *s_2]$. If $a\in A$, then $[*s, a]$ is just a sequence with appended $a$, etc. 
+
+To access $n-th$ element of a sequence we will use $0$-based indexing $a_i = s[i-1]$.
+Also $s[-1] = a_n$.
+We will denote a length of a sequence as $|s|$.
+We will denote empty sequence as $[]$. 
+
+\begin{definition}
+Let $r_1, r_2\in \N^*$.
+\begin{equation}
+r_1 < r_2
+\end{equation}
+iff there exist $k \in N$ and $r, s\in\N^*$ such that $s\not=[]$, $r_1 = [*r, k]$ and $r_2 = [*r, *s]$ and $s[0] > k$.
+\begin{equation}
+r_1 \leq r_2
+\end{equation}
+iff $r_1 < r_2$ or $r_1 = r_2$.
+\end{definition}
+
+\begin{corollary}
+For any non empty $r\in N^*$, we have $[0] \leq r$. 
+\end{corollary}
+
+\begin{definition}
+Let $r_1, r_2\in \N^*$.
+\begin{equation}
+r_1 \prec r_2
+\end{equation}
+iff there exists $s\in\N^*$ such that $r_2 = [*r_1, *s]$ and $s\not=[]$.
+\begin{equation}
+r_1 \preceq r_2
+\end{equation}
+iff $r_1 \prec r_2$ or $r_1 = r_2$.
+\end{definition}
+
+\begin{corollary}
+For any $r\in \N^*$, we have $[] \preceq r$.
+\end{corollary}
+
+\begin{theorem}
+$\leq$ on $N^*$ is a locally finite poset.
+\end{theorem}
+
+\begin{theorem}
+$\preceq$ on $N^*$ is a locally finite poset.
+\end{theorem}
+
+\begin{definition}
+A $D$ is a context iff $D\subset \N^*$ and
+there exists $r\in \N^*$ such that 
+for all $x\in D$, we have
+\begin{enumerate}
+\item $r \prec x$,
+\item $[*r, 0] < x$,
+\item $\{y \in \N: [*r,0] \leq y < x \} \subset D$,
+\item $\{y \in \N: r \prec y \prec x \} \subset D$.
+\end{enumerate}
+\end{definition}
+
+Such $r$ will be called a root of a context $D$.
+\begin{proposition}
+If $r_1$ and $r_2$ are roots of a context $D$, then $r_1 = r_2$. 
+\end{proposition} 
+
+We can then introduce a function $\root(D) = r$ where $r$ is a root of a context $D$.
+
+$\overline{D} \defeq D \cup \root(D)$.
+
+\begin{definition}
+Let $D$ be a context.
+\begin{equation}
+\final(D) = [*\root(D), k_0]\in D,
+\end{equation}
+such that for all $k\in\N$ and $k > k_0$, $[*\root(D), k_0]\not\in D$.
+\end{definition}
+
+
+\section{Proofs}
+
+Let $\F$ be a set of all first order logic formulas with variable set $V$ and constants set $C$.
+
+\begin{definition}
+Let $\C$ be a set of all consts $\C \defeq \{c_0, c_1, c_2, \dots \}$.
+\end{definition}
+
+\begin{definition}
+Let $\Sk$ be a set of all consts $\Sk \defeq \{\sk_r: r\in \N^*\}$.
+\end{definition}
+
+Let $\F^+$ be a set of all first order logic formulas with variable set $V$ and constants set $C \cup \C \cup \Sk$.
+
+\begin{definition}
+A pair $(D, \gamma)$ is called a reference system iff
+\begin{enumerate}
+\item $D\subset \N^*$ and $D$ is a context,
+\item $\gamma: \overline{D} \to \F^+$. 
+\end{enumerate}
+\end{definition}
+
+\begin{definition}
+A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset F^+$
+iff there exist functions $\alpha, \phi: \overline{D}\to \F^+$ such that for any $\rho\in \overline{D}$, $d = |\rho| - 1$:
+\begin{enumerate}
+\item $\gamma_\rho = \ulcorner \alpha_\rho \to \phi_\rho \urcorner$,
+\item for any $c_{d\prime}$ in $\gamma_\rho$, $d\prime \leq d$,
+\item for any $\sk_{\rho\prime}$ in $\gamma_\rho$, $\rho\prime \leq \rho$.
+\item if $\{r\in D: \rho \prec r\} = \emptyset$, then $\alpha_\rho = \truth$ and one of the following holds:
+\begin{enumerate}
+\item (AXM) $\phi_\rho\in \mathcal{A}$,
+\item (THR) there exists $\eta < \rho$ such that $\phi_\rho = \gamma_\eta$,
+\item (ASM) there exists $\eta \prec \rho$ 
+such that $\phi_\rho = \alpha_\eta$.  
+\item (MOD) there are $\eta_1, \eta_2 < \rho$, such that
+\begin{equation}
+\begin{cases}
+\gamma_{\eta_1} = \ulcorner \phi_{\eta_1} \to \phi_\rho \urcorner,\\ 
+\gamma_{\eta_2} = \ulcorner \truth \to \phi_{\eta_1} \urcorner,
+\end{cases}
+\end{equation}
+\item (CTV) there exists $\eta < \rho$ and $x\in V$ such that
+\begin{equation}
+\begin{cases}
+\alpha_\eta = \truth,\\
+\phi_\eta = \phi_\rho(x/c_d),
+\end{cases}
+\end{equation}
+\item (SKO) there exists $\eta < \rho$ and $x\in V$ and $\beta\in \F^+$ such that
+$\phi_\rho = \beta(x/sk_\rho)$ and
+\begin{equation}
+\begin{cases}
+\alpha_\eta = \truth,\\
+\phi_\eta = \ulcorner \exists x. \beta\urcorner,
+\end{cases}   
+\end{equation}
+\item (GEN) there exists $\eta < \rho$ and $x\in V$ such that
+\begin{equation}
+\begin{cases}
+\alpha_\eta = \truth,\\
+\phi_\rho = \ulcorner \forall x. \phi_\eta \urcorner,
+\end{cases}
+\end{equation}
+and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$.
+\end{enumerate}
+\item if $D^\prime = \{r\in D: \rho \prec r\} \not= \emptyset$, for 
+$\eta = \final(D^\prime)$, we have
+\begin{equation}
+\begin{cases}
+\alpha_\eta = \truth,\\
+\phi_\eta = \phi_\rho,
+\end{cases}
+\end{equation}
+\item for $\eta = \root(D)$, $\gamma_\eta = \ulcorner \truth\to\phi \urcorner$.
+\end{enumerate}
+\end{definition}
+
+
+\section{Kernel 1.0 definition}
 
 \subsection{Preliminaries}
 
@@ -358,6 +536,89 @@ Now, consider
 where $m_i = T$ for any $\phi_i\in \mathfrak{A}$ and $m_i = R$ for any $\phi_i\not\in\mathfrak{A}$. 
 In case of $i\in U$, $\phi_i$ is obtained by rule IND $\phi_{u(n)}$ where $u(n)=i$. For other $\phi_i$ we just use an original rule either MOD or GEN. Note that there is no constrain on variable $x$ in GEN since there is no assumptions in the main block of proof steps.
 \end{proof}
+
+\subsection{Soundness}
+\begin{theorem}
+$\text{Cn}_R(\mathfrak{A}) = \text{Cn}_R(\mathfrak{A}^+)$.
+\end{theorem}
+\begin{proof}
+Since, we have $\mathfrak{A} \subset \mathfrak{A}^+$, then $\text{Cn}_R(\mathfrak{A}) \subset \text{Cn}_R(\mathfrak{A}^+)$. It is enough then to show $\text{Cn}_R(\mathfrak{A}^+) \subset \text{Cn}_R(\mathfrak{A})$.
+
+Take any $\phi\in \text{Cn}_R(\mathfrak{A}^+)$. We have then a proof step $p = ([], B, s, \phi)$ which is a proof of $\phi$ with respect of $\mathfrak{A}^+$. 
+
+Consider all $\rho\in\mathcal{R}(p)$ such that $(\rho, T, [], \phi_\rho)$ where $\phi_\rho\in\mathfrak{B}$. Then by act \ref{TRN}(TRN), Fact \ref{ALH}(ALH), Fact \ref{EXH}(EXH) and Lemma \ref{elevation-lemma}, we have 
+\end{proof}
+
+\section{Kernel 2.0 definition}
+
+\subsection{Preliminaries}
+
+\begin{enumerate}
+\item If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}
+\item Let $\mathcal{S}$ be an infinite alphabet of skolem letters which is disjoint from consts and variable alphabets. Skolem variables will be denoted by $\mathfrak{s}_n$ for $\mathfrak{s}\in \mathcal{S}$ and $n$ non negative integers.
+\item Let $\mathcal{C}$ denote infinite alphabet of consts.
+\end{enumerate}
+
+\begin{definition}(Recursive definition of a proof step). For any formula $\phi$ and consts $c\in C$ and a letter $\sk\in \Sk$
+\begin{enumerate}
+\item $\axiom(\phi)$  is a proof step,
+\item $\rule(\phi)$ is a proof step,
+\item $\asm(\phi)$ is a proof step,
+\item for any sequence of proof steps $s$, $\block(c, \sk, s, \phi)$ is a proof step.  
+\end{enumerate}
+\end{definition}
+
+\begin{definition}
+Let $\eta=\block(c^\prime, \sk^\prime, s^\prime, \phi^\prime)$
+
+$\prec_\eta$ is a minimal transitive relation between proof steps such that
+\begin{enumerate}
+\item we have $\eta \prec_\eta \sigma$ for any $\sigma\in s^\prime$, 
+\item and for any step proof 
+$\rho = \block(c, \sk, s, \phi)$ such that 
+$\eta \prec_\eta p$, we have $p \prec_\eta \sigma$ 
+for $\sigma\in s$.
+\end{enumerate} 
+\end{definition}
+
+\begin{definition}
+For proof steps $\rho, \sigma$ 
+$$\sigma \preceq_\eta \rho$$
+iff $\sigma \prec_\eta \rho$ or $\sigma = \rho$.
+\end{definition}
+
+\begin{definition}
+For proof steps $\rho, \sigma$ we have 
+$$\sigma <_\eta \rho$$
+iff there exists $p=\block(c, \sk, s, \phi)$ such that there exist $\sigma^\prime$ such that $s = [ \dots, \sigma, \dots, \sigma^\prime, \dots]$ and either $\sigma^\prime=\rho$ or $\sigma^\prime \prec_\eta \rho$.
+\end{definition}
+
+\begin{definition}
+For proof steps $\rho, \sigma$ 
+$$\sigma \leq_\eta \rho$$
+iff $\sigma <_\eta \rho$ or $\sigma = \rho$.
+\end{definition}
+
+\begin{definition}
+Let $\eta$ be a block proof step.
+$\eta \preceq_\eta \block(c, \sk, s, \phi)$ is a proof of $\phi$ with respect to a set of formulas $\mathcal{A}$ iff for any $\sigma = s[i]$ for $i = 0, \dots, |s| - 1$
+\begin{enumerate}
+\item if $\sigma = \asm(\phi_\sigma)$, then $i = 0$,
+\item if $\sigma = \axiom(\phi_\sigma)$, then $\phi_\sigma\in\mathcal{A}$,
+\item if $\sigma = \rule(\phi_\sigma)$, then either
+\begin{itemize}
+\item (MOD) there exist $\sigma_1, \sigma_2 <_\eta \sigma$ such that
+$\phi_{\sigma_1} = \ulcorner \phi_{\sigma_2}\to \phi_\sigma \urcorner$,
+\item (SKO) there exist $\sigma_1 <_\eta \sigma$ and a variable $x$ such that
+$$\phi_\sigma = \alpha(x/\sk_i),$$
+where $\phi_{\sigma_1} = \ulcorner \exists x.\alpha \urcorner$,
+\item  
+\end{itemize}
+   
+\end{enumerate}
+\end{definition}
+
+
 \bibliographystyle{alpha}
 \bibliography{references}
 
