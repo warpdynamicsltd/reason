@@ -68,7 +68,7 @@
 
 \maketitle
 
-\section{Reference System}
+\section{Context}
 
 \begin{definition}[\textbf{finite sequences}]
 Let $A$ be an arbitrary set, then $A^*$ is a set of all finite sequences of $A$.
@@ -153,8 +153,12 @@ Let $D$ be a context.
 such that for all $k\in\N$ and $k > k_0$, $[*\root(D), k_0]\not\in D$.
 \end{definition}
 
+\begin{definition}
+$d:\N^*\to\N$ such that $d(\rho) \defeq |\rho| - 1$.
+\end{definition}
 
-\section{Proofs}
+
+\section{Reference System}
 
 Let $\F$ be a set of all first order logic formulas with variable set $V$ and constants set $C$.
 
@@ -177,61 +181,113 @@ A pair $(D, \gamma)$ is called a reference system iff
 \end{definition}
 
 \begin{definition}
-A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset F^+$
-iff there exist functions $\alpha, \phi: \overline{D}\to \F^+$ such that for any $\rho\in \overline{D}$, $d = |\rho| - 1$:
+A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset F^+$ iff for $\eta = \root(D)$, $\gamma_\eta = \ulcorner \truth\to\psi \urcorner$
+or $\gamma_\eta = \psi$
+and for any $\rho\in \overline{D}$ all of the following conditions holds:
 \begin{enumerate}
-\item $\gamma_\rho = \ulcorner \alpha_\rho \to \phi_\rho \urcorner$,
-\item for any $c_{d\prime}$ in $\gamma_\rho$, $d\prime \leq d$,
+\item for any $c_{d}$ in $\gamma_\rho$, $d \leq d(\rho)$,
 \item for any $\sk_{\rho\prime}$ in $\gamma_\rho$, $\rho\prime \leq \rho$.
-\item if $\{r\in D: \rho \prec r\} = \emptyset$, then $\alpha_\rho = \truth$ and one of the following holds:
+\item if $\{r\in D: \rho \prec r\} = \emptyset$, at least one of the following holds:
 \begin{enumerate}
-\item (AXM) $\phi_\rho\in \mathcal{A}$,
-\item (THR) there exists $\eta < \rho$ such that $\phi_\rho = \gamma_\eta$,
+\item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (ASM) there exists $\eta \prec \rho$ 
-such that $\phi_\rho = \alpha_\eta$.  
+such that $\gamma_\eta = \ulcorner \alpha_\eta \to \phi_\eta \urcorner$ and $\gamma_\rho=\alpha_\eta$.  
 \item (MOD) there are $\eta_1, \eta_2 < \rho$, such that
 \begin{equation}
-\begin{cases}
-\gamma_{\eta_1} = \ulcorner \phi_{\eta_1} \to \phi_\rho \urcorner,\\ 
-\gamma_{\eta_2} = \ulcorner \truth \to \phi_{\eta_1} \urcorner,
-\end{cases}
+\gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
 \end{equation}
 \item (CTV) there exists $\eta < \rho$ and $x\in V$ such that
 \begin{equation}
-\begin{cases}
-\alpha_\eta = \truth,\\
-\phi_\eta = \phi_\rho(x/c_d),
-\end{cases}
+\gamma_\eta = \gamma_\rho(x/c_d),
 \end{equation}
 \item (SKO) there exists $\eta < \rho$ and $x\in V$ and $\beta\in \F^+$ such that
-$\phi_\rho = \beta(x/sk_\rho)$ and
+$\gamma_\rho = \beta(x/sk_\rho)$ and
 \begin{equation}
-\begin{cases}
-\alpha_\eta = \truth,\\
-\phi_\eta = \ulcorner \exists x. \beta\urcorner,
-\end{cases}   
+\gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
 \item (GEN) there exists $\eta < \rho$ and $x\in V$ such that
 \begin{equation}
-\begin{cases}
-\alpha_\eta = \truth,\\
-\phi_\rho = \ulcorner \forall x. \phi_\eta \urcorner,
-\end{cases}
+\gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
-and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$.
+and for any $\zeta \prec \rho$, we have $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$ and $x\not\in\free(\alpha_\zeta)$,
 \end{enumerate}
 \item if $D^\prime = \{r\in D: \rho \prec r\} \not= \emptyset$, for 
 $\eta = \final(D^\prime)$, we have
 \begin{equation}
-\begin{cases}
-\alpha_\eta = \truth,\\
-\phi_\eta = \phi_\rho,
-\end{cases}
+\gamma_\rho = \ulcorner \alpha_\rho \to \gamma_\eta \urcorner,
 \end{equation}
-\item for $\eta = \root(D)$, $\gamma_\eta = \ulcorner \truth\to\phi \urcorner$.
 \end{enumerate}
 \end{definition}
 
+\section{Completness}
+
+\begin{definition}[Axiom Schemas]
+\label{axioms_schemas} 
+For any formulas $\alpha, \beta, \gamma$ the following are logical axioms:
+\begin{enumerate}
+\item (THR) $\tau$
+\item (LEM) $\alpha \vee \neg\alpha$
+\item (IMP) $\alpha \to (\beta\to\alpha)$
+\item (ANL) $\alpha \wedge \beta \to \alpha$
+\item (ANR) $\alpha \wedge \beta \to \beta$
+\item (AND) $\alpha \to (\beta \to (\alpha \wedge \beta))$
+\item (ORL) $\alpha \to \alpha \vee \beta$
+\item (ORR) $\beta \to \alpha \vee \beta$
+\item (DIS) $(\alpha \to \gamma) \to ((\beta \to \gamma) \to (\alpha \vee \beta \to \gamma))$
+\item (CON) $\neg \alpha \to (\alpha \to \beta)$
+\item (IFI) $(\alpha \to \beta)\to((\beta\to\alpha)\to(\alpha\leftrightarrow\beta))$
+\item (IFO) $(\alpha\leftrightarrow\beta) \to (\alpha\to\beta) \wedge (\beta\to\alpha)$
+\item (ALL) $(\forall x. \alpha) \to \alpha(x/\tau)$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
+\item (EXT) $\alpha(x/\tau) \to \exists x.\alpha$ where $\tau$ is an arbitrary term and $\alpha(x/\tau)$ is admissible.
+\end{enumerate}
+
+Let $\mathfrak{A}$ denotes a set of all formulas which can be obtained by the above schemas.
+\end{definition}
+
+\begin{lemma}
+Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta < r$.
+
+There exists a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+\begin{equation}
+\ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner
+\end{equation}
+with respect to $\mathfrak{A}$.
+\end{lemma}
+\begin{proof}
+\begin{lstlisting}[texcl, escapechar=\%]
+[*r] %$\mapsto (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma))$%
+[*r, 0] %$\mapsto (\alpha\to\beta)\to(\alpha\to\gamma)$%
+[*r, 0, 0] %$\mapsto \alpha\to\gamma$%
+[*r, 0, 0, 0] %$\mapsto \alpha$% # ASM $\gamma_{*r, 0, 0}$
+[*r, 0, 0, 1] %$\mapsto \alpha\to\beta$% # ASM $\gamma_{*r, 0}$
+[*r, 0, 0, 2] %$\mapsto \beta$% # MOD $\gamma_{*r, 0, 0, 1}, \gamma_{*r, 0, 0, 0}$
+[*r, 0, 0, 3] %$\mapsto \alpha \to (\beta\to\gamma)$% # ASM $\gamma_{*r}$
+[*r, 0, 0, 4] %$\mapsto \beta\to\gamma$% # MOD $\gamma_{*r, 0, 0, 3}, \gamma_{*r, 0, 0, 0, 0}$
+[*r, 0, 0, 5] %$\mapsto \gamma$% # MOD $\gamma_{*r, 0, 0, 4}, \gamma_{*r, 0, 0, 0, 2}$
+\end{lstlisting}
+\end{proof}
+
+\begin{lemma}[ALH]
+\label{ALH}
+Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta < r$.
+If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
+a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+\begin{equation}
+\ulcorner \big(\forall x. (\phi\to\psi(x))\big)\to\big(\phi\to\forall x.\psi(x)\big) \urcorner
+\end{equation}
+with respect to $\mathfrak{A}$. 
+\end{lemma}
+
+\begin{lemma}[EXH]
+\label{EXH}
+Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta < r$.
+If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
+a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+\begin{equation}
+\ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big(\exists x.\psi(x)\to\phi\big) \urcorner 
+\end{equation}
+with respect to $\mathfrak{A}$. 
+\end{lemma}
 
 \section{Kernel 1.0 definition}
 
