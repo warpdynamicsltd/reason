@@ -171,40 +171,39 @@ thus $r_1 < r_3$.
 $\leq$ on $N^*$ is a locally finite poset.
 \end{corollary}
 
-\begin{definition}
+\begin{definition}[\textbf{context}]
 A $D$ is a context iff $D\subset \N^*$ and
 there exists $r\in \N^*$ such that 
 for all $x\in D$, we have
 \begin{enumerate}
 \item $r \prec x$,
-\item $[*r, 0] \leq x$,
-\item $\{y \in \N: [*r,0] \leq y < x \} \subset D$,
-\item $\{y \in \N: r \prec y \prec x \} \subset D$.
+\item $\{y \in \N^*: r \prec y < x \} \subset D$,
+\item $\{y \in \N^*: r \prec y \prec x \} \subset D$.
 \end{enumerate}
 Such $r$ will be called a root of a context $D$.
 \end{definition}
 
 Note that $\emptyset$ is a context and for any $r\in\N^*$ r is a root of $\emptyset$.
+\begin{proposition}
+If $D$ is a nonempty context with a root $r$, then $[*r, 0]\in D$.
+\end{proposition}
 
-\begin{lemma}
-Let $D$ be a nonempty context with a root $r$, then $[*r,0]\in D$.
-\end{lemma}
 \begin{proof}
-Since $D$ is nonempty, we have $x\in D$ and by definition $\{y \in \N: [*r,0] \leq y < x \} \subset D$, thus $[*r, 0]\in D$.
+Take any $x\in D$. Since $r \prec x$, there exists $k\in\N$ and $s\in\N^*$ such that
+$x = [*r, k, *s]$. If $k > 0$, we have $r \prec [*r, 0] < x$, thus by definition $[*r, 0]\in D$. If $k = 0$, then we have $r \prec [*r, 0] \prec x$, and again by definition $[*r, 0]\in D$.
 \end{proof}
-
 
 \begin{proposition}
 If $r_1$ and $r_2$ are roots of a context $D\not=\emptyset$, then $r_1 = r_2$. 
 \end{proposition}
 \begin{proof}
-Since $[*r_1, 0], [*r_2, 0]\in D$ we have both $[*r_1, 0] \leq [*r_2, 0]$ and
-$[*r_2, 0]\leq[*r_1, 0]$, thus $[*r_1, 0]=[*r_2, 0]$ and hence $r_1 = r_2$. 
+Since $[*r_1, 0], [*r_2, 0]\in D$ we have both $r_1 \prec [*r_2, 0]$ and
+$r_2 \prec [*r_1, 0]$. And thus $r_1 \preceq r_2$ and $r_2 \preceq r_1$. Thus $r_1 = r_2$.
 \end{proof} 
 
-We can then introduce a function $\root$ such that for any non empty $D$, $\root(D) = r$ is a root of a context $D$.
+We can then introduce a function $\root$. For any non empty $D$, $\root(D)$ is a root of a context $D$.
 
-Also we will introduce for any nonempty $D$, $\overline{D} \defeq D \cup \root(D)$.
+Also for any nonempty $D$, $\overline{D} \defeq D \cup \root(D)$.
 
 \begin{definition}
 Let $D$ be a context and $x_0\in D$.
@@ -216,6 +215,22 @@ Let $D$ be a context and $x_0\in D$.
 \begin{theorem}
 If $D$ is a context and $x_0\in D$, then $\context(D,x_0)$ is a context with a root $x_0$.
 \end{theorem}
+\begin{proof}
+Let $r$ be a root of $D$.
+Take any $x \in \context(D,x_0)$. By definition $x\in D$ and $x_0 \prec x$.
+
+Take any $y\in \N^*$ such that $x_0 \prec y < x$. We have $r \prec x_0$, thus $r \prec y < x$ and since $D$ is a context with root $r$, we have $y\in D$. But $x_0\prec y$, thus $y\in \context(D,x_0)$.
+
+Thus $\{y \in \N^*: x_0 \prec y < x \} \subset \context(D,x_0)$.
+
+Take any $y \in \N^*$ such that $x_0 \prec y \prec x$, thus $r \prec y \prec x$, so $y\in D$.But $x_0\prec y$, thus $y\in \context(D,x_0)$.
+
+Thus $\{y \in \N^*: x_0 \prec y \prec x \} \subset \context(D,x_0)$.
+\end{proof}
+
+\begin{lemma}
+Let $r, s\in\N^*$. If $[*r, 0]\not< [*s, 0]$ and $[*r, 0] < [*s, 1]$, then $r = s$.
+\end{lemma}
 
 \begin{theorem}
 Let $D$ be a context, $s\in\N^*$ and $k_0\in\N$. If $[*s, k_0]\in D$, then for
@@ -263,7 +278,7 @@ A pair $(D, \gamma)$ is called a reference system iff
 \end{enumerate}
 \end{definition}
 
-\begin{definition}
+\begin{definition}[\textbf{proof}]
 A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset F^+$ iff for $\eta = \root(D)$, $\gamma_\eta = \ulcorner \truth\to\psi \urcorner$
 or $\gamma_\eta = \psi$
 and for any $\rho\in \overline{D}$ all of the following conditions holds:
