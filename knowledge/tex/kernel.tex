@@ -35,12 +35,15 @@
 \newcommand{\block}{\text{Block}}
 \newcommand{\Sk}{\mathcal{S}}
 \newcommand{\sk}{\mathfrak{s}}
+\renewcommand{\i}{\mathfrak{i}}
+\newcommand{\ii}{\hat{\mathfrak{i}}}
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\F}{\mathcal{F}}
 \newcommand{\C}{\mathcal{C}}
 \renewcommand{\root}{\text{root}}
 \newcommand{\final}{\text{final}}
 \newcommand{\truth}{\tau}
+\newcommand{\context}{\text{Ctx}}
 
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
@@ -96,6 +99,16 @@ r_1 \leq r_2
 iff $r_1 < r_2$ or $r_1 = r_2$.
 \end{definition}
 
+\begin{definition}
+Let $r_1, r_2\in\N^*$ and $r_1 < r_2$.
+\begin{equation}
+\i_{r_1, r_2} \defeq \max \{ i < |r_1| : r_1[i] = r_2[i] \},
+\end{equation}
+\begin{equation}
+\ii_{r_1, r_2} \defeq \i_{r_1, r_2} + 1.
+\end{equation}
+\end{definition}
+
 \begin{corollary}
 For any non empty $r\in N^*$, we have $[0] \leq r$. 
 \end{corollary}
@@ -105,7 +118,7 @@ Let $r_1, r_2\in \N^*$.
 \begin{equation}
 r_1 \prec r_2
 \end{equation}
-iff there exists $s\in\N^*$ such that $r_2 = [*r_1, *s]$ and $s\not=[]$.
+iff there exists $s\in\N^*$ such that $s\not=[]$ and $r_2 = [*r_1, *s]$.
 \begin{equation}
 r_1 \preceq r_2
 \end{equation}
@@ -113,16 +126,50 @@ iff $r_1 \prec r_2$ or $r_1 = r_2$.
 \end{definition}
 
 \begin{corollary}
+$\preceq$ on $N^*$ is a locally finite poset.
+\end{corollary}
+
+\begin{corollary}
 For any $r\in \N^*$, we have $[] \preceq r$.
 \end{corollary}
 
-\begin{theorem}
-$\leq$ on $N^*$ is a locally finite poset.
-\end{theorem}
+\begin{lemma}
+For any $r_1, r_2, r_3\in\N^*$ we have
+\begin{equation}
+r_1 \not< r_1,
+\end{equation}
+\begin{equation}
+r_1 < r_2 \text{ and } r_2 < r_3 \implies r_1 < r_3.
+\end{equation}
+\end{lemma}
+\begin{proof}
+$r_1 \not< r_1$ follows directly from definition.
+Assume that $\i_{r_1, r_2} \leq \i_{r_2, r_3}$.
+Then 
+$$
+r_1[k] = r_2[k] = r_3[k]
+$$
+for all $k \leq \i_{r_1, r_2}$.
+Note that
+$$
+r_1[\ii_{r_1, r_2}] < r_2[\ii_{r_1, r_2}] \leq r_3[\ii_{r_1, r_2}],
+$$
+thus $r_1 < r_3$.
 
-\begin{theorem}
-$\preceq$ on $N^*$ is a locally finite poset.
-\end{theorem}
+Now, assume that $\i_{r_1, r_2} > \i_{r_2, r_3}$, then
+$$
+r_1[k] = r_2[k] = r_3[k]
+$$
+for all $k \leq \i_{r_2, r_3}$. Note that
+$$
+r_1[\ii_{r_2, r_3}] = r_2[\ii_{r_2, r_3}] < r_3[\ii_{r_2, r_3}],
+$$
+thus $r_1 < r_3$.   
+\end{proof}
+
+\begin{corollary}
+$\leq$ on $N^*$ is a locally finite poset.
+\end{corollary}
 
 \begin{definition}
 A $D$ is a context iff $D\subset \N^*$ and
@@ -130,27 +177,63 @@ there exists $r\in \N^*$ such that
 for all $x\in D$, we have
 \begin{enumerate}
 \item $r \prec x$,
-\item $[*r, 0] < x$,
+\item $[*r, 0] \leq x$,
 \item $\{y \in \N: [*r,0] \leq y < x \} \subset D$,
 \item $\{y \in \N: r \prec y \prec x \} \subset D$.
 \end{enumerate}
+Such $r$ will be called a root of a context $D$.
 \end{definition}
 
-Such $r$ will be called a root of a context $D$.
+Note that $\emptyset$ is a context and for any $r\in\N^*$ r is a root of $\emptyset$.
+
+\begin{lemma}
+Let $D$ be a nonempty context with a root $r$, then $[*r,0]\in D$.
+\end{lemma}
+\begin{proof}
+Since $D$ is nonempty, we have $x\in D$ and by definition $\{y \in \N: [*r,0] \leq y < x \} \subset D$, thus $[*r, 0]\in D$.
+\end{proof}
+
+
 \begin{proposition}
-If $r_1$ and $r_2$ are roots of a context $D$, then $r_1 = r_2$. 
-\end{proposition} 
+If $r_1$ and $r_2$ are roots of a context $D\not=\emptyset$, then $r_1 = r_2$. 
+\end{proposition}
+\begin{proof}
+Since $[*r_1, 0], [*r_2, 0]\in D$ we have both $[*r_1, 0] \leq [*r_2, 0]$ and
+$[*r_2, 0]\leq[*r_1, 0]$, thus $[*r_1, 0]=[*r_2, 0]$ and hence $r_1 = r_2$. 
+\end{proof} 
 
-We can then introduce a function $\root(D) = r$ where $r$ is a root of a context $D$.
+We can then introduce a function $\root$ such that for any non empty $D$, $\root(D) = r$ is a root of a context $D$.
 
-$\overline{D} \defeq D \cup \root(D)$.
+Also we will introduce for any nonempty $D$, $\overline{D} \defeq D \cup \root(D)$.
+
+\begin{definition}
+Let $D$ be a context and $x_0\in D$.
+\begin{equation}
+\context(D,x_0) \defeq \{ x\in D: x_0 \prec x\}.
+\end{equation}
+\end{definition}
+
+\begin{theorem}
+If $D$ is a context and $x_0\in D$, then $\context(D,x_0)$ is a context with a root $x_0$.
+\end{theorem}
+
+\begin{theorem}
+Let $D$ be a context, $s\in\N^*$ and $k_0\in\N$. If $[*s, k_0]\in D$, then for
+all $k \in \langle 0, k_0 \rangle$, we have $[*s,k]\in D$.
+\end{theorem}
+\begin{proof}
+Take an $r\in\N^*$ which is a root of $D$. Take $[*s, k_0]\in D$.
+Since $r\prec [*s, k_0]$, we have $r\preceq s$.
+Since $[*r, 0]\in D$ and we have $[*r, 0] < [*s, k] < [*s, k_0]$ for $k \in (0, k_0)$, hence $[*s, k]\in D$. If $[*r, 0] < [*s,0]$ then $[*r, 0] < [*s,0] < [*s, k_0]$ and $[*s, 0]\in D$.
+If $[*r, 0] \not< [*s,0]$ but $[*r, 0] < [*s,1]$, there must be $r=s$ and thus anyway $[*s,0]\in D$. 
+\end{proof}
 
 \begin{definition}
 Let $D$ be a context.
 \begin{equation}
-\final(D) = [*\root(D), k_0]\in D,
+\final(D) \defeq [*\root(D), k_0]\in D,
 \end{equation}
-such that for all $k\in\N$ and $k > k_0$, $[*\root(D), k_0]\not\in D$.
+such that for all $k\in\N$ and $k > k_0$, $[*\root(D), k]\not\in D$.
 \end{definition}
 
 \begin{definition}
@@ -175,7 +258,7 @@ Let $\F^+$ be a set of all first order logic formulas with variable set $V$ and 
 \begin{definition}
 A pair $(D, \gamma)$ is called a reference system iff
 \begin{enumerate}
-\item $D\subset \N^*$ and $D$ is a context,
+\item $D\subset \N^*$ and $D$ is an notempty context,
 \item $\gamma: \overline{D} \to \F^+$. 
 \end{enumerate}
 \end{definition}
@@ -187,7 +270,7 @@ and for any $\rho\in \overline{D}$ all of the following conditions holds:
 \begin{enumerate}
 \item for any $c_{d}$ in $\gamma_\rho$, $d \leq d(\rho)$,
 \item for any $\sk_{\rho\prime}$ in $\gamma_\rho$, $\rho\prime \leq \rho$.
-\item if $\{r\in D: \rho \prec r\} = \emptyset$, at least one of the following holds:
+\item if $\context(D, \rho) = \emptyset$, at least one of the following holds:
 \begin{enumerate}
 \item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (ASM) there exists $\eta \prec \rho$ 
@@ -211,8 +294,8 @@ $\gamma_\rho = \beta(x/sk_\rho)$ and
 \end{equation}
 and for any $\zeta \prec \rho$, we have $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$ and $x\not\in\free(\alpha_\zeta)$,
 \end{enumerate}
-\item if $D^\prime = \{r\in D: \rho \prec r\} \not= \emptyset$, for 
-$\eta = \final(D^\prime)$, we have
+\item if $\context(D, \rho) \not= \emptyset$, then for 
+$\eta = \final(\context(D, \rho))$, we have
 \begin{equation}
 \gamma_\rho = \ulcorner \alpha_\rho \to \gamma_\eta \urcorner,
 \end{equation}
@@ -223,7 +306,7 @@ $\eta = \final(D^\prime)$, we have
 
 \begin{definition}[Axiom Schemas]
 \label{axioms_schemas} 
-For any formulas $\alpha, \beta, \gamma$ the following are logical axioms:
+For any formulas $\alpha, \beta, \gamma\in\F^+$ the following are logical axioms:
 \begin{enumerate}
 \item (THR) $\tau$
 \item (LEM) $\alpha \vee \neg\alpha$
