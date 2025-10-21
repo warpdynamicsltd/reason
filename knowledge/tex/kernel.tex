@@ -44,6 +44,7 @@
 \newcommand{\final}{\text{final}}
 \newcommand{\truth}{\mathfrak{t}}
 \newcommand{\context}{\text{Ctx}}
+\newcommand{\Cnr}{\text{Cn}_\text{R}}
 
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
@@ -66,6 +67,7 @@
   breakatwhitespace=true,
   tabsize=3
 }
+\setlength{\parindent}{0pt}
 
 \begin{document}
 
@@ -266,18 +268,14 @@ $d:\N^*\to\N \cup \{ -1 \}$ such that $d(\rho) \defeq |\rho| - 1$.
 
 
 \section{Reference System}
-
+If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}.
 Let $\F$ be a set of all first order logic formulas with variable set $V$ and constants set $C$.
-
-\begin{definition}[\textbf{context consts}]
-Let $\C$ be a set of all consts $\C \defeq \{c_0, c_1, c_2, \dots \}$.
-\end{definition}
 
 \begin{definition}[\textbf{Skolem consts}]
 Let $\Sk$ be a set of all consts $\Sk \defeq \{\sk_r: r\in \N^*\}$.
 \end{definition}
 
-Let $\F^+$ be a set of all first order logic formulas with variable set $V$ and constants set $C \cup \C \cup \Sk$.
+Let $\F^+$ be a set of all first order logic formulas with variable set $V$ and constants set $C \cup \Sk$.
 
 \begin{definition}[\textbf{substitution}]
 If $\alpha$ is a formula and $\tau$ is an arbitrary term, then 
@@ -299,11 +297,9 @@ A pair $(D, \gamma)$ is called a reference system iff
 \end{definition}
 
 \begin{definition}[\textbf{proof}]
-A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset F^+$ iff for $\eta = \root(D)$, $\gamma_\eta = \ulcorner \truth\to\psi \urcorner$
-or $\gamma_\eta = \psi$
+A reference system $(D, \gamma)$ is a proof of $\psi\in\F^+$ with respect to $\mathcal{A}\subset \F^+$ iff for $r = \root(D)$, $\gamma_r = \psi$
 and for any $\rho\in \overline{D}$ all of the following conditions holds:
 \begin{enumerate}
-\item for any $c_{d}$ in $\gamma_\rho$, $d \leq d(\rho)$,
 \item for any $\sk_\eta$ in $\gamma_\rho$, $\eta \leq \rho$,
 \item if $\context(D, \rho) = \emptyset$, at least one of the following holds:
 \begin{enumerate}
@@ -314,21 +310,16 @@ such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$.
 \begin{equation}
 \gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
 \end{equation}
-\item (CTV) there exists $\eta < \rho$ and $x\in V$ such that
-\begin{equation}
-\gamma_\eta = \gamma_\rho(x/c_d),
-\end{equation}
-such that $d=d(\rho)$.
-\item (SKO) there exists $\eta < \rho$ and $x\in V$ and $\beta\in \F^+$ such that
-$\gamma_\rho = \beta(x/sk_\rho)$ and
-\begin{equation}
-\gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
-\end{equation}
 \item (GEN) there exists $\eta < \rho$ and $x\in V$ such that
 \begin{equation}
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
 and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$,
+\item (SKO) there exists $\eta < \rho$ and $x\in V$ and $\beta\in \F^+$ such that
+$\gamma_\rho = \beta(x/sk_\rho)$ and
+\begin{equation}
+\gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
+\end{equation}
 \end{enumerate}
 \item if $\context(D, \rho) \not= \emptyset$, then there exists $\alpha\in\F^+$
  such that
@@ -341,7 +332,7 @@ where $\eta = \final(\context(D, \rho))$.
 
 \section{Completness}
 
-\begin{definition}[Axiom Schemas]
+\begin{definition}[\textbf{logical axioms}]
 \label{axioms_schemas} 
 For any formulas $\alpha, \beta, \gamma\in\F^+$ the following are logical axioms:
 \begin{enumerate}
@@ -365,7 +356,7 @@ Let $\mathfrak{A}$ denotes a set of all formulas which can be obtained by the ab
 \end{definition}
 
 \begin{lemma}
-Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F^+$ such that for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
 
 There exists a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
@@ -389,7 +380,7 @@ with respect to $\mathfrak{A}$.
 
 \begin{lemma}[ALH]
 \label{ALH}
-Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
 a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
@@ -406,22 +397,117 @@ with respect to $\mathfrak{A}$.
 [*r, 0, 2] %$\mapsto \phi\to\psi(x)$% # MOD $\gamma_{*r, 0, 1}, \gamma_{*r, 0, 0}$
 [*r, 0, 3] %$\mapsto \phi $% # ASM $\gamma_{*r, 0}$
 [*r, 0, 4] %$\mapsto \psi(x) $% # MOD $\gamma_{*r, 0, 2}, \gamma_{*r, 0, 3}$
-[*r, 0, 4] %$\mapsto \forall x.\psi(x) $% # GEN $\gamma_{*r, 0, 4}$
+[*r, 0, 5] %$\mapsto \forall x.\psi(x) $% # GEN $\gamma_{*r, 0, 4}$
 \end{lstlisting}
 Note that the assumption that $x\not\in \text{free}(\phi)$ is needed to be able to apply a rule GEN $\gamma_{*r, 0, 5}$.
 \end{proof}
 
 \begin{lemma}[EXH]
 \label{EXH}
-Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such that for any constant $c_d$ in them, we have $d \leq d(r)$ and for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\phi, \psi\in \F^+$ such that for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
 a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
-\ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big(\exists x.\psi(x)\to\phi\big) \urcorner 
+\ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big((\exists x.\psi(x))\to\phi\big) \urcorner 
 \end{equation}
 with respect to $\mathfrak{A}$. 
 \end{lemma}
+\begin{proof}
+\begin{lstlisting}[texcl, escapechar=\%]
+[*r] %$\mapsto \big(\forall x. (\psi(x)\to\phi)\big)\to\big((\exists x.\psi(x))\to\phi\big)$%
+[*r, 0] %$\mapsto (\exists x.\psi(x))\to\phi$%
+[*r, 0, 0] %$\mapsto \forall x. (\psi(x)\to\phi)$% # ASM $\gamma_{*r}$
+[*r, 0, 1] %$\mapsto \exists x.\psi(x)$% # ASM $\gamma_{*r, 0}$
+[*r, 0, 2] %$\mapsto\psi(\sk_{[*r, 0, 2]})$% # SKO $\gamma_{*r, 0, 1}$
+[*r, 0, 3] %$\mapsto \big(\forall x. (\psi(x)\to\phi)\big)\to(\psi(\sk_{[*r, 0, 2]})\to\phi)$%, # ALL
+[*r, 0, 4] %$\mapsto \psi(\sk_{[*r, 0, 2]})\to\phi$% # MOD $\gamma_{*r, 0, 3}, \gamma_{*r, 0, 0}$
+[*r, 0, 5] %$\mapsto \phi$% # MOD $\gamma_{*r, 0, 4}, \gamma_{*r, 0, 2}$
+\end{lstlisting}
+Note that the assumption that $x\not\in \text{free}(\phi)$ is needed for 
+$\ulcorner \psi(x)\to\phi \urcorner(x/\sk_{[*r,0,2]})$ to become $\psi(\sk_{[*r,0,2})\to\phi$.
+\end{proof}
 
+\begin{definition}
+Let $\mathfrak{B}$ by all formulas which can be obtained by schemas from Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) and Lemma \ref{EXH}(EXH). Let $\mathfrak{A}^+ = \mathfrak{A} \cup \mathfrak{B}$.
+\end{definition}
+
+\begin{lemma}
+\label{flatten}
+Let $\mathcal{A} \subset \F^+$, 
+$(D, \gamma)$ be a reference system with $r = \root(D)$, $\gamma_r = \ulcorner \truth \to \phi \urcorner$ with $\phi \in \F^+$
+and let $\final(D) = [*r,k_f]$.
+If for each $k\in \langle 0, k_f \rangle$, the following statements holds for 
+$\rho=[*r,k]$,
+\begin{enumerate}
+\item for any $\sk_\eta$ in $\gamma_\rho$, $\eta \leq \rho$,
+\item if $\context(D, \rho) = \emptyset$, at least one of the following holds:
+\begin{enumerate}
+\item (AXM) $\gamma_\rho\in \mathcal{A}$,
+\item (MOD) there exist $\eta_1, \eta_2 < \rho$, such that
+\begin{equation}
+\gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
+\end{equation}
+\item (GEN) there exists $\eta < \rho$ and $x\in V$ such that
+\begin{equation}
+\gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
+\end{equation}
+\item (SKO) there exists $\eta < \rho$ and $x\in V$ and $\beta\in \F^+$ such that
+$\gamma_\rho = \beta(x/sk_\rho)$ and
+\begin{equation}
+\gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
+\end{equation}
+\end{enumerate}
+\item if $\context(D, \rho) \not= \emptyset$, 
+then $\big(\context(D, \rho), \gamma\big)$ is a proof of $\gamma_\rho$ with respect to $\mathcal{A}$,
+\end{enumerate}
+then $(D, \gamma)$ is a proof of $\gamma_r$ with respect to $\mathcal{A}$.
+\end{lemma}
+
+\begin{definition}[\textbf{consequences}]
+Let $\phi\in\F$ and $\mathcal{A}\subset \F$. 
+$\phi\in\Cnr(\mathcal{A})$ iff there exists a proof $(D, \gamma)$ of $\phi$ or 
+$\ulcorner \truth\to\phi \urcorner$ with respect to $\mathcal{A}$ with $\root(D) = []$.
+\end{definition}
+
+\begin{theorem}[\textbf{completness}]
+Let $\phi\in\F$. If $\models\phi$, then $\phi\in\Cnr(\mathfrak{A})$.
+\end{theorem}
+\begin{proof}
+Assume that $\models \phi$. Then by \cite{hal2012} we have a sequence 
+$[\phi_i]_{i=0}^n \subset \F$ such that $\phi = \phi_n$ and for any $i=0, \dots, n$ at least one of the following holds:
+\begin{enumerate}
+\item (AXM) $\phi_i \in (\mathfrak{A} \cup \mathfrak{B}) \cap\F$,
+\item (MOD) there exist $j_1, j_2 < i$, such that
+\begin{equation}
+\phi_{j_1} = \ulcorner \phi_{j_2} \to \phi_i \urcorner,
+\end{equation}
+\item (GEN) there exists $j < i$ and $x\in V$ such that
+\begin{equation}
+\phi_i = \ulcorner \forall x. \phi_j \urcorner.
+\end{equation}
+\end{enumerate}
+
+We will construct now a reference system $(D, \gamma)$.
+
+Let $\gamma_{[]} = \ulcorner \truth\to\phi \urcorner$.
+Let's define $\gamma_{[i]} = \phi_i$ for $i=0, \dots, n$.
+Let
+\begin{equation}
+D_i =
+\begin{cases}
+\emptyset \text{ for } \phi_i \in \F\setminus \mathfrak{B},\\
+P_i \text{ for } \phi_i\in \F \cap \mathfrak{B},
+\end{cases}
+\end{equation}
+where in case of $\phi_i\in \F \cap \mathfrak{B}$, $(P_i, \gamma)$ is a proof of $\phi_i$ with respect to $\mathfrak{A}$ where $P_i$ is context with root $[i]$ as given by Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) or Lemma \ref{EXH}(EXH).
+Since all $P_i$ are disjoint, the definition of function $\gamma$ on them is correct. 
+
+Now we are ready to define $D$. Let
+\begin{equation}
+D = \{[i]: i = 0, \dots, n\} \cup \bigcup_{i=0}^n D_i.
+\end{equation}
+By Lemma \ref{flatten}, it is easy to show that a refernce system $(D, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
+\end{proof}
 \section{Kernel 1.0 definition}
 
 \subsection{Preliminaries}
