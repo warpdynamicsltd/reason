@@ -6,7 +6,7 @@
 \usepackage{color}
 
 
-\title{Reason Kernel Documentation with Proofs}
+\title{Introduction to Reason Kernel}
 \author{Michał Stanisław Wójcik}
 \date{\today}
 
@@ -48,6 +48,7 @@
 \newcommand{\Cnr}{\text{Cn}_\text{R}}
 \renewcommand{\L}{\mathscr{L}}
 \newcommand{\V}{\mathscr{V}}
+\newcommand{\prove}{\vdash}
 
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
@@ -346,7 +347,18 @@ where $\eta = \final(\context(D, \rho))$.
 \end{enumerate}
 \end{definition}
 
+Now, we will define consequence in Reason System.
+
+\begin{definition}[\textbf{consequence}]
+Let $\phi\in\F(\L)$ and $\mathcal{A}\subset \F(\L)$.
+ 
+$\phi\in\Cnr(\mathcal{A})$ iff there exists a proof $(D, \gamma)$ of $\phi$ or 
+$\ulcorner \truth\to\phi \urcorner$ with respect to $\mathcal{A}$ with $\root(D) = []$.
+\end{definition}
+
 \section{Completness}
+
+Let us introduce a certain set of logical axioms. An implication transitivity axiom and 2 other quantifier related axioms are omitted for a purpose.
 
 \begin{definition}[\textbf{logical axioms}]
 \label{axioms_schemas} 
@@ -445,8 +457,32 @@ $\ulcorner \psi(x)\to\phi \urcorner(x/\sk_{[*r,0,2]})$ to become $\psi(\sk_{[*r,
 \end{proof}
 
 \begin{definition}
-Let $\mathfrak{B}$ by all formulas which can be obtained by schemas from Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) and Lemma \ref{EXH}(EXH). Let $\mathfrak{A}^+ = \mathfrak{A} \cup \mathfrak{B}$.
+\label{provability}
+Let $\mathfrak{B}$ by all formulas from $\F(\L^+)$ which can be obtained by schemas from Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) and Lemma \ref{EXH}(EXH). Let $\mathfrak{A}^s = \mathfrak{A} \cup \mathfrak{B}$.
 \end{definition}
+
+We will use $\vdash$ to indicate established provability known from standard textbooks for First Order Logic. Described e.g. in \cite{hal2012}.
+Let's recall:
+\begin{definition}
+Let $T\subset \F(\L)$ and $\phi\in\F(\L)$.
+$T\prove \phi$ iff
+there exists a sequence 
+$[\phi_i]_{i=0}^n \subset \F(\L)$ such that $\phi = \phi_n$ and for any $i=0, \dots, n$ at least one of the following holds:
+\begin{enumerate}
+\item (AXM) $\phi_i \in (\mathfrak{A}^s \cup T) \cap\F(\L)$,
+\item (MOD) there exist $j_1, j_2 < i$, such that
+\begin{equation}
+\phi_{j_1} = \ulcorner \phi_{j_2} \to \phi_i \urcorner,
+\end{equation}
+\item (GEN) there exists $j < i$ and $x\in \V$ such that
+\begin{equation}
+\phi_i = \ulcorner \forall x. \phi_j \urcorner.
+\end{equation}
+\end{enumerate}
+
+\end{definition} 
+
+One can show the following lemma.
 
 \begin{lemma}
 \label{flatten}
@@ -480,20 +516,17 @@ then $\big(\context(D, \rho), \gamma\big)$ is a proof of $\gamma_\rho$ with resp
 then $(D, \gamma)$ is a proof of $\gamma_r$ with respect to $\mathcal{A}$.
 \end{lemma}
 
-\begin{definition}[\textbf{consequences}]
-Let $\phi\in\F(\L)$ and $\mathcal{A}\subset \F(\L)$. 
-$\phi\in\Cnr(\mathcal{A})$ iff there exists a proof $(D, \gamma)$ of $\phi$ or 
-$\ulcorner \truth\to\phi \urcorner$ with respect to $\mathcal{A}$ with $\root(D) = []$.
-\end{definition}
 
-\begin{theorem}[\textbf{completness}]
-Let $\phi\in\F(\L)$. If $\models\phi$, then $\phi\in\Cnr(\mathfrak{A})$.
+\begin{theorem}
+Let $T\subset \F(\L)$ and $\phi\in\F(\L)$. 
+
+If $T\prove\phi$, then $\phi\in\Cnr(\mathfrak{A}\cup T)$.
 \end{theorem}
 \begin{proof}
-Assume that $\models \phi$. Then by \cite{hal2012} we have a sequence 
+Assume that $T\prove \phi$. Then by Definition \ref{provability} we have a sequence 
 $[\phi_i]_{i=0}^n \subset \F(\L)$ such that $\phi = \phi_n$ and for any $i=0, \dots, n$ at least one of the following holds:
 \begin{enumerate}
-\item (AXM) $\phi_i \in (\mathfrak{A} \cup \mathfrak{B}) \cap\F(\L)$,
+\item (AXM) $\phi_i \in (\mathfrak{A} \cup \mathfrak{B} \cup T) \cap\F(\L)$,
 \item (MOD) there exist $j_1, j_2 < i$, such that
 \begin{equation}
 \phi_{j_1} = \ulcorner \phi_{j_2} \to \phi_i \urcorner,
@@ -505,9 +538,9 @@ $[\phi_i]_{i=0}^n \subset \F(\L)$ such that $\phi = \phi_n$ and for any $i=0, \d
 \end{enumerate}
 
 We will construct now a reference system $(D, \gamma)$.
-
 Let $\gamma_{[]} = \ulcorner \truth\to\phi \urcorner$.
 Let's define $\gamma_{[i]} = \phi_i$ for $i=0, \dots, n$.
+Note that our main problem are $\phi_i\in\mathfrak{B}$ (the rest is either from $\mathfrak{A}$, or $T$ or are derived from the rest by MOD or GEN). But we can add to each of them their own context proof.
 Let
 \begin{equation}
 D_i =
@@ -523,7 +556,7 @@ Now we are ready to define $D$. Let
 \begin{equation}
 D = \{[i]: i = 0, \dots, n\} \cup \bigcup_{i=0}^n D_i.
 \end{equation}
-By Lemma \ref{flatten}, it is easy to show that a refernce system $(D, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
+By Lemma \ref{flatten}, one can show that a refernce system $(D, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
 \end{proof}
 
 
