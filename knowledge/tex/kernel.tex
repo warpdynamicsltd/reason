@@ -718,6 +718,9 @@ k \in (0, k_f\rangle.
 \end{cases}
 \end{equation}
 
+By Definition \ref{proof-definition}, we have $\alpha\in \F_{-1}$ and $\gamma_{r_k}\in \overline{\F}_k$. 
+Thus $T_k \subset \F_k$ for $k=0,\dots,k_f$.  
+
 Take an arbitrary interpretation $(\M, j)$ for which $(\M, j)\models T$.
 
 If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\beta \urcorner = \phi$.
@@ -745,22 +748,13 @@ Let us write down our induction assumptions.
 \begin{equation}
 \M_i \text{ is an extension of } \M_{i-1} \text{ for } i < k
 \end{equation}
-\begin{equation}
-T_k\subset \F_k.
-\end{equation} 
 
-Note that $\alpha\in \F_0$, hence $T_0\subset \F_0$.
-
-Take $k$ from $0, \dots, k_f$. 
-
-Note that $(\M_{k-1}, j)\models T_k$. 
-
-We will consider two cases:
+Take $k$ from $0, \dots, k_f$. Note that $(\M_{k-1}, j)\models T_k$. We will consider two cases:
 \begin{enumerate}
 \item $\context(D, r_k) = \emptyset$. By Definition\ref{proof-definition}, for $\gamma_{r_k}$ one of the following cases holds. We will stop a construction step of $\M_k$ after first satisfied case in the following order.
 
 \begin{enumerate}
-\item (AXM) $\gamma_{r_k}\in T_k \cup \mathfrak{A}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. If $\gamma_{r_k}\in T_k$, then $(\M_k, j)\models\gamma_{r_k}$. If $\gamma_{r_0}\in \mathfrak{A}$, then $(\M_k, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is an logical axiom. Note that the above argument works for $k = 0$ without any of induction assumptions. 
+\item (AXM) $\gamma_{r_k}\in T \cup \mathfrak{A}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. If $\gamma_{r_k}\in T$, then $(\M_k, j)\models\gamma_{r_k}$. If $\gamma_{r_k}\in \mathfrak{A}$, then $(\M_k, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is an logical axiom. Note that the above argument works for $k = 0$ without any of induction assumptions. 
 
 \item (ASM) $\gamma_{r_k} = \alpha$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. Then trivially $(\M_k,j)\models \gamma_{r_k}$. Note that the above argument works for $k = 0$ without any of induction assumptions.
 
