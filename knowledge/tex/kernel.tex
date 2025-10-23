@@ -11,7 +11,7 @@
 \date{\today}
 
 \theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[subsection]
+\newtheorem{theorem}{Theorem}[section]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{corollary}[theorem]{Corollary}
@@ -49,7 +49,7 @@
 \renewcommand{\L}{\mathscr{L}}
 \newcommand{\V}{\mathscr{V}}
 \newcommand{\prove}{\vdash}
-
+\newcommand{\M}{\mathbf{M}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -105,6 +105,11 @@ r_1 \leq r_2
 iff $r_1 < r_2$ or $r_1 = r_2$.
 \end{definition}
 
+\begin{corollary}
+Let $r_1, r_2\in \N^*$.
+If $r_1 < r_2$, then $|r_1| \leq |r_2|$.
+\end{corollary}
+
 \begin{definition}
 Let $r_1, r_2\in\N^*$ and $r_1 < r_2$.
 \begin{equation}
@@ -120,7 +125,7 @@ For any non empty $r\in N^*$, we have $[0] \leq r$.
 \end{corollary}
 
 \begin{corollary}
-For any non $r\in N^*$, we have $[] \not< r$.
+For any non empty $r\in N^*$, we have $[] \not< r$.
 \end{corollary}
 
 \begin{definition}
@@ -140,8 +145,37 @@ $\preceq$ on $N^*$ is a locally finite poset.
 \end{corollary}
 
 \begin{corollary}
+Let $r_1, r_2\in \N^*$.
+If $r_1 \prec r_2$, then $|r_1| < |r_2|$.
+\end{corollary}
+
+\begin{corollary}
+\label{proceed-no-prefix}
+For any $r_1, r_1\in\N^*$, if $r_1 < r_2$ then
+$r_1\not\prec r_2$ and $r_2 \not\prec r_1$.
+\end{corollary}
+\begin{proof}
+If $r_1 < r_2$ then by definition $r_1 \not\prec r_2$. Since $|r_1| \leq |r_2|$, it is clear that
+$|r_2| \not< |r_1|$ and thus $r_2\not\prec r_1$.
+\end{proof}   
+
+
+
+\begin{corollary}
 For any $r\in \N^*$, we have $[] \preceq r$.
 \end{corollary}
+
+\begin{proposition}
+\label{common_prefix}
+Let $r, r_1, r_2\in\N^*$. 
+If $r_1 \prec r$ and $r_2 \prec r$, 
+then $r_1 \preceq r_2$ or $r_2 \preceq r_1$. 
+\end{proposition}
+\begin{proof}
+Without loss of generality, we can assume that $|r_1|\leq |r_2|$.
+Let $s\N^*$ be a non empty sequence such that $r = [*r_2, *s]$. 
+Now, since $r_1 \prec r$ and $|r_1|\leq |r_2|$, we must have $r_1 \preceq r_2$.    
+\end{proof}
 
 \begin{lemma}
 For any $r_1, r_2, r_3\in\N^*$ we have
@@ -154,6 +188,8 @@ r_1 < r_2 \text{ and } r_2 < r_3 \implies r_1 < r_3.
 \end{lemma}
 \begin{proof}
 $r_1 \not< r_1$ follows directly from definition.
+
+Now, take any $r_1, r_2, r_3\in\N^*$ such that $r_1 < r_2 \text{ and } r_2 < r_3$.
 Assume that $\i_{r_1, r_2} \leq \i_{r_2, r_3}$.
 Then 
 $$
@@ -238,6 +274,43 @@ Take any $y \in \N^*$ such that $x_0 \prec y \prec x$, thus $r \prec y \prec x$,
 Thus $\{y \in \N^*: x_0 \prec y \prec x \} \subset \context(D,x_0)$.
 \end{proof}
 
+\begin{theorem}
+Let $D$ be a context and $x_0\in D$.
+
+For any $x\in\context(D, x_0)$ and $z\in D$, if $x < z$, then $z\in \context(D, x_0)$.  
+\end{theorem}
+\begin{proof}
+Since $x_0 \prec x$, we have $s\in\N^*$ and $k\in \N$ such that
+$$
+x = [*x_0, *s, k].
+$$
+thus since $x < z$, we have an nonempty $u\in\N^*$ such that
+$$
+[*x_0, *s, k] = x < z = [*x_0, *s, *u]
+$$
+such that $u[0] > k$. But this means that $x_0 \prec z$, thus $z\in \context(D, x_0)$.
+\end{proof}
+
+\begin{theorem}
+Let $D$ be a context.
+If $r_1\not\prec r_2$, $r_2\not\prec r_1$ and $r_1\not=r_2$ we have
+$$
+\context(D, r_1) \cap \context(D, r_2) = \emptyset.
+$$
+\end{theorem}
+\begin{proof}
+Assume to the contrary that there exists $r\in \context(D, r_1) \cap \context(D, r_2)$. Thus by Proposition \ref{common_prefix}, we have $r_1\preceq r_2$ or $r_2\preceq r_1$, which contradics assumtions of this theorem. 
+\end{proof}
+
+And then by Corollary \ref{proceed-no-prefix}, we have the following:
+
+\begin{corollary}
+Let $D$ be a context. If $r_1 < r_2$, then
+$$
+\context(D, r_1) \cap \context(D, r_2) = \emptyset.
+$$
+\end{corollary}
+
 \begin{lemma}
 Let $r, s\in\N^*$. If $[*r, 0]\not< [*s, 0]$ and $[*r, 0] < [*s, 1]$, then $r = s$.
 \end{lemma}
@@ -245,6 +318,18 @@ Let $r, s\in\N^*$. If $[*r, 0]\not< [*s, 0]$ and $[*r, 0] < [*s, 1]$, then $r = 
 Let $r_1 = [*r, 0]$ and $r_2 = [*s, 1]$. Since $[*r, 0] < [*s, 1]$, 
 $\i_{r_1, r_2} \leq |r| - 1$. 
 Since $[*r, 0]\not< [*s, 0]$, we must have $\i_{r_1, r_2} = |r| - 1$. Thus $r = s$.
+\end{proof}
+
+\begin{lemma}
+\label{minimal-shift}
+Let $r, x\in \N^*$ and $r_0 = [*r, 0]$, then for any $x < r_0$, we have $x < r$.
+\end{lemma}
+\begin{proof}
+Assume that $x < r_0$.
+Note that $\i_{x, r_0} < |r| - 1$. Thus 
+$$x[\i_{x, r_0}] = r_0[\i_{x, r_0}] = r[\i_{x, r_0}]$$ 
+and  
+$$x[\ii_{x, r_0}] < r_0[\ii_{x, r_0}] = r[\ii_{x, r_0}].$$
 \end{proof}
 
 \begin{theorem}
@@ -314,11 +399,11 @@ A pair $(D, \gamma)$ is called a reference system iff
 \end{definition}
 
 \begin{definition}[\textbf{proof}]
+\label{proof-definition}
 A reference system $(D, \gamma)$ is a proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ iff for $r = \root(D)$, $\gamma_r = \psi$
 and for any $\rho\in \overline{D}$ all of the following conditions holds:
 \begin{enumerate}
-\item for any $\sk_\eta$ in $\gamma_\rho$, $\eta \leq \rho$,
-\item if $\context(D, \rho) = \emptyset$, at least one of the following holds:
+\item if $\context(D, \rho) = \emptyset$, then for any $\sk_\eta$ in $\gamma_\rho$, we have $\eta \leq \rho$ and at least one of the following holds:
 \begin{enumerate}
 \item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (ASM) there exists $\eta \prec \rho$ and $\beta\in \F(\L^+)$
@@ -338,7 +423,7 @@ $\gamma_\rho = \beta(x/sk_\rho)$ and
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
 \end{enumerate}
-\item if $\context(D, \rho) \not= \emptyset$, then there exists $\alpha\in\F(\L^+)$
+\item if $\context(D, \rho) \not= \emptyset$, then for any $\sk_\eta$ in $\gamma_\rho$, we have $\eta < \rho$ and there exists $\alpha\in\F(\L^+)$
  such that
 \begin{equation}
 \gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
@@ -518,6 +603,7 @@ then $(D, \gamma)$ is a proof of $\gamma_r$ with respect to $\mathcal{A}$.
 
 
 \begin{theorem}
+\label{semantic-completness}
 Let $T\subset \F(\L)$ and $\phi\in\F(\L)$. 
 
 If $T\prove\phi$, then $\phi\in\Cnr(\mathfrak{A}\cup T)$.
@@ -559,7 +645,84 @@ D = \{[i]: i = 0, \dots, n\} \cup \bigcup_{i=0}^n D_i.
 By Lemma \ref{flatten}, one can show that a refernce system $(D, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
 \end{proof}
 
+\begin{corollary}[\textbf{completness}]
+Let $\phi\in\F(\L)$. If $\models \phi$, then $\phi\in\Cnr(\mathfrak{A})$.
+\end{corollary}
+\begin{proof}
+Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theorem.
 
+\end{proof}
+
+\section{Soudness}
+\begin{definition}
+Let $\L = (\mathscr{C} \cup \Sk, \mathscr{P}, \mathscr{F})$ be a signature of a language and let $r\in\N^*$.
+\begin{equation}
+\L_r \defeq (\mathscr{C} \cup \{\sk_\rho: \rho < r\}, \mathscr{P}, \mathscr{F}).
+\end{equation}
+\end{definition}
+\begin{theorem}
+\label{soundnes-theorem}
+Let $r\in \N^*$ and 
+let $\M$ be a model for $\F(\L_r)$.
+Let $T\subset \F(\L_r)$ and $\phi\in \F(\L_r)$.
+
+If $(D, \gamma)$ is a proof of $\phi\in \F(\L_r)$ with respect to $\mathfrak{A}\cup T$ with $r = \root(D)$, 
+for any interpretation $(\M, j)\models T$, we have $(\M, j)\models \phi$.  
+\end{theorem}
+\begin{proof}
+We will prove this by induction over $|D|$. Let $|D| = n$. By induction we can assume that 
+\begin{equation}
+\label{induction-1}
+\text{Theorem \ref{soundnes-theorem} holds for any } |D| < n.
+\end{equation}
+
+Let $A$ be a domain of $\M$. Let $\final(D) = [*r, k_f]$.
+
+Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\beta \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$.
+
+Take an arbitrary interpretation $(\M, j)$ for which $(\M, j)\models T$.
+\\
+If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\beta \urcorner = \phi$.
+
+
+Hence, we can assume $(\M,j)\models \alpha$.
+
+We will show that $(\M,j)\models \gamma_{r_0}$. 
+
+Let $\M_0$ to be some extension of $\M$ to $\{\sk_{r_0}\}$.
+
+Let $T_0 = T \cup \{\alpha\}$.
+
+One can show that $\F(\L_r)\subset \F(\L_{r_0})$.
+ 
+We will consider two cases:
+\begin{enumerate}
+\item Assume that $\context(D, r_0) = \emptyset$. Then $\gamma_{r_0}$ could be obtained only by rules (AXM) or (ASM) from Definition \ref{proof-definition}.
+
+\begin{enumerate}
+\item (AXM) If $\gamma_{r_0}\in T \cup \mathfrak{A}$. If $\gamma_{r_0}\in T$, then $(\M, j)\models\gamma_{r_0}$ by assumption. If $\gamma_{r_0}\in \mathfrak{A}$, then $(\M, j)\models\gamma_{r_0}$ since $\gamma_{r_0}$ is an logical axiom.  
+
+\item (ASM) If $\gamma_{r_0} = \alpha$, then trivially $(\M,j)\models \gamma_{r_0}$.
+\end{enumerate}
+\item Assume that $\context(D, r_0) \not= \emptyset$.
+By Definition \ref{proof-definition}, $\gamma_{r_0}\in \F(\L_r)$.
+Since $T_0\subset\ \F(\L_r)\subset \F(\L_{r_0})$,
+one can verify that $\context(D, r_0)$ is a proof of $\gamma_{r_0}$ with respect to $\mathfrak{A}\cup T_0$. Since $\M_0\models T_0$, by induction assumption (\ref{induction-1}), we have $(\M_0, j)\models\gamma_{r_0}$ 
+and hence $(\M, j)\models\gamma_{r_0}$.
+\end{enumerate}
+
+We proved that $(\M,j)\models \gamma_{r_0}$.
+
+Now, we will prove by induction that $(\M_k,j)\models \gamma_{k}$. 
+
+We can then make another induction assumption that 
+
+\begin{equation}
+\label{induction-2}
+(\M,j)\models \gamma_{i} \text{ for } i < k. 
+\end{equation}
+
+\end{proof}
 \bibliographystyle{alpha}
 \bibliography{references}
 
