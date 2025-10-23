@@ -659,6 +659,9 @@ Let $\L = (\mathscr{C} \cup \Sk, \mathscr{P}, \mathscr{F})$ be a signature of a 
 \begin{equation}
 \L_r \defeq (\mathscr{C} \cup \{\sk_\rho: \rho < r\}, \mathscr{P}, \mathscr{F}).
 \end{equation}
+\begin{equation}
+\overline{\L}_r \defeq (\mathscr{C} \cup \{\sk_\rho: \rho \leq r\}, \mathscr{P}, \mathscr{F}).
+\end{equation}
 \end{definition}
 \begin{theorem}
 \label{soundnes-theorem}
@@ -678,44 +681,91 @@ We will prove this by induction over $|D|$. Let $|D| = n$. By induction we can a
 
 Let $A$ be a domain of $\M$. Let $\final(D) = [*r, k_f]$.
 
-Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\beta \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$.
+Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\beta \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. 
+Let $\F_k = \F(\L_{r_k})$ for $k=0, \dots, k_f$ and let $\F_{-1} = \F(\L_r)$. 
+One can show that $\F_{k-1} \subset \F_k$ for $k=0, \dots, k_f$.
 
 Take an arbitrary interpretation $(\M, j)$ for which $(\M, j)\models T$.
-\\
+
 If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\beta \urcorner = \phi$.
 
+Hence, we can assume 
 
-Hence, we can assume $(\M,j)\models \alpha$.
+\begin{equation}
+\label{assumption-alpha}
+(\M,j)\models \alpha.
+\end{equation}
+ 
+We will construct recursively sequences $\M_k, T_k$. Let $\M_{-1} = \M$.
 
-We will show that $(\M,j)\models \gamma_{r_0}$. 
+We will prove by induction that $(\M_k,j)\models \gamma_{k}$.  
+Let us write down our induction assumptions.
+\begin{equation}
+\label{induction-2}
+(\M_i,j)\models \gamma_{i} \text{ for } i < k, 
+\end{equation}
+\begin{equation}
+\M_i \text{ is a model for } \F(\overline{\L}_{r_i}) \text{ for } i < k,
+\end{equation}
 
-Let $\M_0$ to be some extension of $\M$ to $\{\sk_{r_0}\}$.
+\begin{equation}
+\M_i \text{ is an extension of } \M_{i-1} \text{ for } i < k
+\end{equation}
+\begin{equation}
+T_k\subset \F_k.
+\end{equation} 
 
 Let $T_0 = T \cup \{\alpha\}$.
+Note that $\alpha\in \F_{-1}$, hence $T_0\subset \F_{-1}$.
 
-One can show that $\F(\L_r)\subset \F(\L_{r_0})$.
- 
+Take $k$ from $0, \dots, k_f$. If $k > 0$, let $T_k = T_{k-1} \cup \{\gamma_{r_{k-1}}\}$.
+
+Note that $(\M_{k-1}, j)\models T_k$. 
+
 We will consider two cases:
 \begin{enumerate}
-\item Assume that $\context(D, r_0) = \emptyset$. Then $\gamma_{r_0}$ could be obtained only by rules (AXM) or (ASM) from Definition \ref{proof-definition}.
+\item $\context(D, r_k) = \emptyset$. By Definition\ref{proof-definition}, for $\gamma_{r_k}$ there could hold the following cases.
 
 \begin{enumerate}
-\item (AXM) If $\gamma_{r_0}\in T \cup \mathfrak{A}$. If $\gamma_{r_0}\in T$, then $(\M, j)\models\gamma_{r_0}$ by assumption. If $\gamma_{r_0}\in \mathfrak{A}$, then $(\M, j)\models\gamma_{r_0}$ since $\gamma_{r_0}$ is an logical axiom.  
+\item (AXM) $\gamma_{r_k}\in T_k \cup \mathfrak{A}$. Let $\M_k$ be some extension of $\M_{k-1}$ with added some $\sk_{r_k}^{\M_k}\in A$. If $\gamma_{r_k}\in T_k$, then $(\M_k, j)\models\gamma_{r_k}$. If $\gamma_{r_0}\in \mathfrak{A}$, then $(\M_k, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is an logical axiom. Note that the above argument works for $k = 0$ without any of induction assumptions. 
 
-\item (ASM) If $\gamma_{r_0} = \alpha$, then trivially $(\M,j)\models \gamma_{r_0}$.
+\item (ASM) $\gamma_{r_k} = \alpha$. Let $\M_k$ be some extension of $\M_{k-1}$ with added some $\sk_{r_k}^{\M_k}\in A$. Then trivially $(\M_k,j)\models \gamma_{r_k}$.
+
+\item (MOD) there exist $\eta_1, \eta_2 < r_k$, such that
+$\gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner$.
+Let $\M_k$ be some extension of $\M_{k-1}$ with added some $\sk_{r_k}^{\M_k}\in A$.
+Note that $\gamma_{\eta_1}, \gamma_{\eta_2}\in T_k$. 
+So $(\M_k, j)\models \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner, \gamma_{\eta_2}$ and therefore $(\M_k,j)\models \gamma_{r_k}$.
+\item (GEN) there exists $\eta < r_k$ and $x\in \V$ such that
+$\gamma_{r_k} = \ulcorner \forall x. \gamma_\eta \urcorner$,
+and $x\not\in\free(\alpha)$.  Let $\M_k$ be some extension of $\M_{k-1}$ with added some $\sk_{r_k}^{\M_k}\in A$. Since $\gamma_\eta\in T_k$, 
+we have $(\M_k, j)\models \gamma_\eta$.
+
+Take any $a\in A$.  Let
+\begin{equation}
+j\cfrac{a}{x}(v)
+\begin{cases}
+a \text{ if } v = x,\\
+j(v) \text{ otherwise}.
+\end{cases}
+\end{equation}
+Since $x\not\in\free(\alpha)$ and $(\M, j)\models\alpha$, we have $(\M, j\cfrac{a}{x})\models\alpha$.
+Then we can repeat the reasoning from (\ref{assumption-alpha}) for an interpretation $j\cfrac{a}{x}$ up to this point and got $(\M_k, j\cfrac{a}{x})\models \gamma_\eta$.
+But since $a\in A$ was arbitrary chosen, we have $(\M_k, j)\models \forall x. \gamma_\eta $, and thus $(\M_k,j)\models \gamma_{r_k}$.
+
+\item (SKO) there exists $\eta < r_k$ and $x\in \V$ and $\beta\in \F_k$ such that
+$\gamma_{r_0} = \beta(x/\sk_{r_k})$ and
+$\gamma_\eta = \ulcorner \exists x. \beta\urcorner$. Since $\gamma_\eta\in T_k$, we have $(\M_{k-1},j)\models \exists x. \beta$.
+Let $\M_k$ be some extension of $\M_{k-1}$ with 
+$\sk_{r_k}^{\M_k} \in A$ such that $\beta^{(M_k,j)}(x/\sk_{r_k}^{\M_k})$. Then $(\M_k, j)\models \beta(x/\sk_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
+
 \end{enumerate}
-\item Assume that $\context(D, r_0) \not= \emptyset$.
-By Definition \ref{proof-definition}, $\gamma_{r_0}\in \F(\L_r)$.
-Since $T_0\subset\ \F(\L_r)\subset \F(\L_{r_0})$,
-one can verify that $\context(D, r_0)$ is a proof of $\gamma_{r_0}$ with respect to $\mathfrak{A}\cup T_0$. Since $\M_0\models T_0$, by induction assumption (\ref{induction-1}), we have $(\M_0, j)\models\gamma_{r_0}$ 
-and hence $(\M, j)\models\gamma_{r_0}$.
+\item $\context(D, r_k) \not= \emptyset$.
+Let $\M_k$ to be some extension of $\M_{k-1}$ with added some $\sk_{r_k}^{\M_k}\in A$.
+By Definition \ref{proof-definition}, $\gamma_{r_k}\in \F_k$.
+Since $T_k\subset\F_k$,
+one can verify that $\context(D, r_k)$ is a proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$. Since $\M_k\models T_k$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
 \end{enumerate}
-
-We proved that $(\M,j)\models \gamma_{r_0}$.
-
-Now, we will prove by induction that $(\M_k,j)\models \gamma_{k}$. 
-
-We can then make another induction assumption that 
 
 \begin{equation}
 \label{induction-2}
