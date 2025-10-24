@@ -1,4 +1,5 @@
-\documentclass{article}
+\documentclass[10pt]{article}
+\usepackage[utf8]{inputenc}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathrsfs}
 \usepackage{natbib}
@@ -74,10 +75,75 @@
 \setlength{\parindent}{0pt}
 
 \begin{document}
-
 \maketitle
 
+\begin{abstract}
+We propose a novel formal system for structuring proofs in first-order logic, inspired by the intuitive methods commonly employed by mathematicians. Traditional formalizations of proof, as found in most introductory logic textbooks, rely on linear sequences of formulas constructed via axioms and inference rules. While rigorous, such representations are ill-suited to capturing the contextual and hierarchical nature of proofs as they are typically written and understood. In this paper, we introduce a context-based proof system that formally models the dynamic management of assumptions and auxiliary constructions—analogous to the way contexts are established and dissolved in both informal mathematical writing and declarative programming languages. We develop a precise framework for referencing and manipulating these contexts and demonstrate that our approach retains the formal strength of classical derivation systems. This framework not only provides a closer alignment with mathematical practice but also lays the groundwork for efficient implementation of automated proof verification tools tailored to first-order logic.
+\end{abstract}
+
+\section{Intuition of Context Proofs}
+When proving a theorem, mathematicians frequently use phrases such as ``take any $n \in \N$'', ``there exists an $m$ such that...'', ``we will now prove that...'', or ``we have just proved...''. Intuitively, with a phrase like ``we will now prove that...'', a specific context is established in which we define or construct objects, manipulate these objects, and, upon reaching a conclusion, often dismiss these auxiliary constructions with a phrase such as ``we have just proved...''. At this point, only the elements essential for the subsequent steps of the argument are retained. In this sense, writing a mathematical proof closely resembles writing a declarative program: we open and close contexts, introducing and discarding objects as they become relevant or obsolete.
+\\
+
+In contrast, the standard approach to formalizing proofs in most first-order logic textbooks is to represent proofs as sequences of formulas. Typically, we begin by selecting a set of logical axioms and domain-specific axioms, and by specifying derivation rules (such as modus ponens and generalization). We then construct a sequence, where each member is either an axiom or a formula obtained by applying these rules to earlier formulas in the sequence. If the sequence concludes with the desired statement, the proof is considered complete.
+\\
+
+At first glance, these two paradigms—the informal, intuitive style and the formal, sequential style—seem quite different. The sequential approach, while formally rigorous, is often less amenable to writing intuitive proofs or building practical automatic proof checkers. The informal approach, on the other hand, is more natural for mathematicians but lacks formal precision.
+\\
+
+In this paper, we seek to develop a formal system of context-based proving in first-order logic, constructed from the ground up. The goal is to create a system that not only mirrors the intuitive approach used by mathematicians but can also be readily translated into the core of an automatic, machine-verifiable proof checker for first-order logic.
+\\
+
+Let's first observe an example of what I mean by context proof.
+
+\begin{lstlisting}[texcl, escapechar=\%]
+# we state an assumption and a thesis of the theorem we are going to prove
+(0) %$ \neg ( \exists x. \phi(x) ) \to \forall x. \neg\phi(x)$% 
+
+# we open a context of a proof
+(0, 0) %$\neg ( \exists x. \phi(x) )$% # we recall assumption
+# we state an auxiliary fact we are going to prove 
+(0, 1) %$ \phi(x) \to \neg \phi(x) $%
+
+# we open a sub-context of a proof
+(0, 1, 0)  %$ \phi(x) $% # we recall assumption
+(0, 1, 1) %$ \phi(x) \to \exists x. \phi(x)$% # we write down a logical tautology
+(0, 1, 2) %$\exists x. \phi(x)$% # we use modus ponens to (0,1,1) and (0,1,0).
+(0, 1, 3) %$\neg ( \exists x. \phi(x) ) \wedge (\exists x. \phi(x))$% # we gather (0, 0) and (0, 1, 2)
+(0, 1, 4) %$\neg ( \exists x. \phi(x) ) \wedge (\exists x. \phi(x)) \to \neg \phi(x)$% # we write down a logical tautology
+(0, 1, 5) %$\neg \phi(x)$% # we apply modus ponens to (0, 1, 4) and (0, 1, 3)
+
+# we close the sub-context and we proceed with main context of the proof
+(0, 2) %$(\phi(x) \to \neg \phi(x)) \to \neg \phi(x)$% # we write down a logical tautology 
+(0, 3) %$\neg \phi(x)$% # we apply modus ponens to (0, 2) amd (0, 1)
+(0, 4) %$\forall x. \neg\phi(x)$% # we apply generalisation rule to (0, 3)
+
+# and this concludes prove as we arrived to the thesis
+\end{lstlisting}
+
+Only one variable was used but one can note that the formulas above are correctly stated since this is clear which variable is bound and which is free.
+\\
+
+If we analyse the above example we will notice that at the left side of each line there is a reference and at the right side there is a formula. 
+\\
+
+In Section \ref{context} we will define references as a finite sequences of nonnegative integers. 
+By Definition \ref{reference-order}, we will introduce a reference order $<$ in which for the line with reference $r$, we can refer only to lines with references $\rho$ for which $\rho < r$.
+We intuitively understand that we can refere to line $(0, 0)$ from line $(0, 1, 3)$, but we can not refere to line $(0, 1, 2)$ from line $(0, 4)$ which would have caused imediate contradiction. Indeed, in the reference order 
+$(0, 0) < (0, 1, 3)$ but $(0, 1, 2) \not< (0, 4)$.
+To give a formal definition of \textit{a context} we will also need a common ``being a prefix'' relation e.g.
+$(0, 1) \prec (0, 1, 0)$.
+In Section \ref{context}, we will also prove basic properties of these two orders and relations between them.
+\\
+
+The observation that at the left side of each line there is a reference and at the right side a formula, leads to the idea that \textit{a context proof} is some function from a set of references to the set of formulas. This idea will be developed in Section \ref{reference-proof}. We will call such a function \textit{a refernce system} and we will define in Definition \ref{proof-definition} formal conditions for \textit{a refernce system} to be a proof.
+\\
+
+In Section \ref{completness}, we will prove completness of context proofs, i.e  that if $\models \phi$, there exists a context proof of $\phi$. In Section \ref{soudness}, we will prove soundness of context proofs, i.e. that if there exists a context proof of $\phi$ with respect to $T$, then $T\models \phi$.
+
+
 \section{Context}
+\label{context}
 
 \begin{definition}[\textbf{finite sequences}]
 Let $A$ be an arbitrary set, then $A^*$ is a set of all finite sequences of $A$.
@@ -93,7 +159,8 @@ Also $s[-1] = a_n$.
 We will denote a length of a sequence as $|s|$.
 We will denote empty sequence as $[]$. 
 
-\begin{definition}
+\begin{definition}[\textbf{reference order}]
+\label{reference-order}
 Let $r_1, r_2\in \N^*$.
 \begin{equation}
 r_1 < r_2
@@ -110,6 +177,14 @@ Let $r_1, r_2\in \N^*$.
 If $r_1 < r_2$, then $|r_1| \leq |r_2|$.
 \end{corollary}
 
+\begin{corollary}
+For any non empty $r\in N^*$, we have $[0] \leq r$.
+\end{corollary}
+
+\begin{corollary}
+For any non empty $r\in N^*$, we have $[] \not< r$.
+\end{corollary}
+
 \begin{definition}
 Let $r_1, r_2\in\N^*$ and $r_1 < r_2$.
 \begin{equation}
@@ -120,15 +195,8 @@ Let $r_1, r_2\in\N^*$ and $r_1 < r_2$.
 \end{equation}
 \end{definition}
 
-\begin{corollary}
-For any non empty $r\in N^*$, we have $[0] \leq r$.
-\end{corollary}
-
-\begin{corollary}
-For any non empty $r\in N^*$, we have $[] \not< r$.
-\end{corollary}
-
-\begin{definition}
+\begin{definition}[\textbf{prefix order}]
+\label{prefix-order}
 Let $r_1, r_2\in \N^*$.
 \begin{equation}
 r_1 \prec r_2
@@ -375,6 +443,7 @@ $d:\N^*\to\N \cup \{ -1 \}$ such that $d(\rho) \defeq |\rho| - 1$.
 \end{definition}
 
 \begin{lemma}
+\label{base-reference-inclusions}
 Let $D$ be a nonempty context with root $r\in\N^*$.
 Let $r_k = [*r, k]$ for $k=0,\dots, k_f$ where $r_{k_f} = \final(D)$.
 Let $A_{-1} = \{x < r: x\in\N^*\}$ and
@@ -393,9 +462,25 @@ By Lemma \ref{minimal-shift}, we have $A_0 \subset A_{-1}$. Thus $A_{-1} = A_0$.
 $$A_{k-1} \subset A_k$$ for $k=1,\dots, k_f$ follows from transitivity of $<$.
 
 \end{proof}
+\begin{lemma}
+\label{first-level-references}
+Let $D$ be a nonempty context with root $r\in\N^*$.
+Let $r_k = [*r, k]$ for $k=0,\dots, k_f$ where $r_{k_f} = \final(D)$.
+For any $z\in \context(D, r_k)$,
+$$
+\{ x\in D\setminus \context(D, r_k): x < z \} = \{r_0, \dots, r_{k-1}\}. 
+$$
+\end{lemma}
+\begin{proof}
+Take any $z\in \context{D, r_k}$.
+Then $z = [*r, k, *s]$ with $s\not=[]$. Take $x\in D\setminus \context(D, r_k)$ such that $x < z$. If $\i_{x, z} \geq |r|$, then $x\in D$, so $\i_{x, z} < |r|$. 
+But if $\i_{x, z} < |r| - 1$, then $x\not\in D$, thus $\i_{x, z} = |r| - 1$.
+Hence $x = [*r, k^\prime]$ where $0\leq k^\prime < k$.   
+\end{proof}
 
 
-\section{Reference System}
+\section{Reference System and Proof}
+\label{reference-proof}
 If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}.
 We consider a language of first order logic.
 Let $\V$ be an infinite set of variable symbols.
@@ -490,7 +575,7 @@ such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$.
 \end{equation}
 and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$,
 \item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
-$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(sk^m_\rho)$ and
+$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ and
 \begin{equation}
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
@@ -514,6 +599,7 @@ $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathcal{A}$ with $\root(D)
 \end{definition}
 
 \section{Completness}
+\label{completness}
 
 Let us introduce a certain set of logical axioms. An implication transitivity axiom and 2 other quantifier related axioms are omitted for a purpose.
 
@@ -661,7 +747,7 @@ $\rho=[*r,k]$,
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
 \item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
-$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(sk^m_\rho)$ and
+$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ and
 \begin{equation}
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
@@ -725,6 +811,7 @@ Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theo
 \end{proof}
 
 \section{Soudness}
+\label{soudness}
 \begin{definition}[\textbf{constrained-proof}]
 \label{constrained-proof}
 Let $\L$ be a signature of a language.
@@ -765,7 +852,7 @@ Let $A$ be a domain of $\M$. Let $\final(D) = [*r, k_f]$.
 Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\omega \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. 
 Let $\F_k = \F(\L_{r_k})$ for $k=0, \dots, k_f$ and let $\F_{-1} = \F(\L_r)$.
 Let $\overline{\F}_k = \F(\overline{\L_{r_k}})$ for $k=0, \dots, k_f$ and let $\overline{\F}_{-1} = \F(\overline{\L_r})$. 
-One can show that $\F_{k-1} \subset \F_k$ for $k=0, \dots, k_f$.
+By Lemma \ref{base-reference-inclusions} we have $\F_{k-1} \subset \F_k$ for $k=0, \dots, k_f$.
 
 Let
 \begin{equation}
@@ -880,8 +967,8 @@ Thus $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\mod
 \item $\context(D, r_k) \not= \emptyset$.
 Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$.
 By Definition \ref{constrained-proof}, $\gamma_{r_k}\in \F_k$.
-Since $T_k\subset\F_k$,
-one can verify that $\context(D, r_k)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_k\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
+Since $T_k\subset\F_k$ and by Lemma \ref{first-level-references},
+one can show that $(\context(D, r_k), \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_k\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
 Note that the above argument works for $k = 0$ without any of induction assumptions. 
 \end{enumerate}
 
@@ -891,6 +978,19 @@ But $\gamma_{r_{k_f}} = \omega$ where
 $\phi = \ulcorner \alpha\to\omega \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is an extension of $\M$, we have $(\M, j)\models\omega$ and then $(\M, j)\models\phi$.
 
 \end{proof}
+
+\section{Related Work}
+
+The idea of managing local assumptions within proofs has a long history in proof theory, dating back to the Jaśkowski-Fitch style of natural deduction, where subproofs or “boxes” represent temporary contexts that are opened and discharged (see the survey in the Stanford Encyclopedia of Philosophy \cite{sepND}). 
+
+Several systems have sought to formalize or mechanize this structure. Nested sequent calculi \cite{brunnler2010}, \cite{pimentel2019} generalize Gentzen's sequent systems by organizing sequents in a tree, thereby making the hierarchical proof structure explicit. 
+
+Standefer \cite{standefer2014} investigates translations between tree-structured and linear natural-deduction proofs, clarifying how subproof hierarchies can be represented sequentially. 
+
+Labelled deductive systems \cite{broda2004} extend natural deduction by attaching labels to formulas, capturing contextual or modal information within the syntax; this approach resembles the role of reference indices in our system. Structured proof languages such as Isar \cite{nipkow2002,wenzel2019} and teaching environments like ProofWeb \cite{kaliszyk2008} pursue the same goal from a computational perspective, aiming for human-readable, block-structured proofs with machine-checkable semantics.
+
+Compared with these systems, context-proofs provide an explicit and uniform treatment of proof structure through finite-sequence references, a prefix relation defining contexts, and a reference-formula mapping that formalizes mathematical reasoning within nested subcontexts. While sharing conceptual roots with the frameworks above, our formalization offers a purely syntactic and general mechanism for hierarchical proof management that remains compatible with first-order logic and conducive to mechanized verification.
+
 \bibliographystyle{alpha}
 \bibliography{references}
 
