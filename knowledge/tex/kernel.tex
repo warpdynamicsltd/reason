@@ -6,7 +6,7 @@
 \usepackage{color}
 
 
-\title{Introduction to Reason Kernel}
+\title{Introduction to Context Proofs}
 \author{Michał Stanisław Wójcik}
 \date{\today}
 
@@ -178,6 +178,32 @@ Now, since $r_1 \prec r$ and $|r_1|\leq |r_2|$, we must have $r_1 \preceq r_2$.
 \end{proof}
 
 \begin{lemma}
+\label{ord-prec-trans}
+Let $r_1, r_2, r_3\in \N^*$.
+If $r_1 < r_2$ and $r_2 \prec r_3$, then $r_1 < r_3$
+\end{lemma}
+\begin{proof}
+We have
+$$
+r_1 = [*r, k], r_2 = [*r, *s], r_3 = [*r, *s, *z]
+$$
+where $s[0] > k$, thus $r_1 < r_3$.
+\end{proof}
+
+\begin{lemma}
+\label{prec-ord-trans}
+Let $r_1, r_2, r_3\in \N^*$.
+If $r_1 \prec r_2$ and $r_2 < r_3$, then $r_1 \prec r_3$
+\end{lemma}
+\begin{proof}
+We have
+$$
+r_2 = [*r_1, *z, *k], r_3 = [*r_1, *z, *s],
+$$
+where $z\not=[]$, then $r_1 \prec r_3$.
+\end{proof}
+
+\begin{lemma}
 For any $r_1, r_2, r_3\in\N^*$ we have
 \begin{equation}
 r_1 \not< r_1,
@@ -280,15 +306,8 @@ Let $D$ be a context and $x_0\in D$.
 For any $x\in\context(D, x_0)$ and $z\in D$, if $x < z$, then $z\in \context(D, x_0)$.  
 \end{theorem}
 \begin{proof}
-Since $x_0 \prec x$, we have $s\in\N^*$ and $k\in \N$ such that
-$$
-x = [*x_0, *s, k].
-$$
-thus since $x < z$, we have an nonempty $u\in\N^*$ such that
-$$
-[*x_0, *s, k] = x < z = [*x_0, *s, *u]
-$$
-such that $u[0] > k$. But this means that $x_0 \prec z$, thus $z\in \context(D, x_0)$.
+Since $x_0 \prec x$ and $x < z$, by Lemma \ref{ord-prec-trans}, $x_0 \prec z$ and
+thus $z\in \context(D, x_0)$. 
 \end{proof}
 
 \begin{theorem}
@@ -355,6 +374,26 @@ such that for all $k\in\N$ and $k > k_0$, $[*\root(D), k]\not\in D$.
 $d:\N^*\to\N \cup \{ -1 \}$ such that $d(\rho) \defeq |\rho| - 1$.
 \end{definition}
 
+\begin{lemma}
+Let $D$ be a nonempty context with root $r\in\N^*$.
+Let $r_k = [*r, k]$ for $k=0,\dots, k_f$ where $r_{k_f} = \final(D)$.
+Let $A_{-1} = \{x < r: x\in\N^*\}$ and
+$$
+A_k = \{x < r_k: x\in\N^*\}
+$$
+for $k=0,\dots, k_f$, then
+$$A_{-1} = A_0$$
+and
+$$A_{k-1} \subset A_k$$ for $k=0,\dots, k_f$.
+\end{lemma}
+\begin{proof}
+By Lemma \ref{ord-prec-trans}, we have $A_{-1} \subset A_0$.
+By Lemma \ref{minimal-shift}, we have $A_0 \subset A_{-1}$. Thus $A_{-1} = A_0$.
+
+$$A_{k-1} \subset A_k$$ for $k=1,\dots, k_f$ follows from transitivity of $<$.
+
+\end{proof}
+
 
 \section{Reference System}
 If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}.
@@ -380,6 +419,20 @@ $\sk^k_r$ is intended to use as function symbol of arity $k$ for $k > 0$ and con
 
 
 Let $\F(\L)$ be a set of all first order logic formulas with all non logical symbols from signature $\L$.
+
+\begin{definition}
+Let $\L = (\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language and let $r\in\N^*$.
+\begin{equation}
+\L_r \defeq \bigg(\mathscr{C} \cup \big\{\sk^0_\rho: \rho < r\big\}, \mathscr{P}, \mathscr{F}
+\cup \bigg\{\sk^m_\rho: \rho < r, m\in\N\setminus\{0\}\bigg\}
+\bigg).
+\end{equation}
+\begin{equation}
+\overline{\L}_r \defeq \bigg(\mathscr{C} \cup \big\{\sk^0_\rho: \rho \leq r\big\}, \mathscr{P}, \mathscr{F}
+\cup \bigg\{\sk^m_\rho: \rho \leq r, m\in\N\setminus\{0\}\bigg\}
+\bigg).
+\end{equation}
+\end{definition}
 
 \begin{definition}
 Let $\L(\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language, let $\alpha\in\F(\L)$ and let $\tau$ be an arbitrary term.
@@ -418,10 +471,11 @@ A pair $(D, \gamma)$ is called a reference system iff
 
 \begin{definition}[\textbf{proof}]
 \label{proof-definition}
+Let $\L$ be a signature of a language.
 A reference system $(D, \gamma)$ is a proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ iff for $r = \root(D)$, $\gamma_r = \psi$
-and for any $\rho\in \overline{D}$ all of the following conditions holds:
+and for any $\rho\in \overline{D}$ the following conditions holds:
 \begin{enumerate}
-\item if $\context(D, \rho) = \emptyset$, then for any $\sk_\eta$ in $\gamma_\rho$, we have $\eta \leq \rho$ and at least one of the following holds:
+\item if $\context(D, \rho) = \emptyset$, then $\gamma_\rho\in\F(\overline{\L}_\rho)$ and at least one of the following holds:
 \begin{enumerate}
 \item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (ASM) there exists $\eta \prec \rho$ and $\beta\in \F(\L^+)$
@@ -430,7 +484,7 @@ such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$.
 \begin{equation}
 \gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
 \end{equation}
-\item (GEN) there exists $\eta < \rho$ and $x\in \V$ such that
+\item \label{gen-part} (GEN) there exists $\eta < \rho$ and $x\in \V$ such that
 \begin{equation}
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
@@ -441,7 +495,7 @@ $\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(sk^m_\rho)$ and
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
 \end{enumerate}
-\item if $\context(D, \rho) \not= \emptyset$, then for any $\sk_\eta$ in $\gamma_\rho$, we have $\eta < \rho$ and there exists $\alpha\in\F(\L^+)$
+\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exist $\eta < \rho$ and $\alpha\in\F(\L^+)$
  such that
 \begin{equation}
 \gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
@@ -450,7 +504,7 @@ where $\eta = \final(\context(D, \rho))$.
 \end{enumerate}
 \end{definition}
 
-Now, we will define consequence in Reason System.
+Now, we will define consequence in \textit{context proving}.
 
 \begin{definition}[\textbf{consequence}]
 Let $\phi\in\F(\L)$ and $\mathcal{A}\subset \F(\L)$.
@@ -488,7 +542,7 @@ Let $\mathfrak{A}$ denotes a set of all formulas which can be obtained by the ab
 
 \begin{lemma}[(TRN)]
 \label{TRN}
-Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F(\L^+)$ such that for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F(\L_r)$
 
 There exists a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
@@ -512,7 +566,7 @@ with respect to $\mathfrak{A}$.
 
 \begin{lemma}[ALH]
 \label{ALH}
-Let $r\in \N^*$ and $\phi, \psi\in \F(\L^+)$ such for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\phi, \psi\in \F(\L_r)$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
 a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
@@ -536,7 +590,7 @@ Note that the assumption that $x\not\in \text{free}(\phi)$ is needed to be able 
 
 \begin{lemma}[EXH]
 \label{EXH}
-Let $r\in \N^*$ and $\phi, \psi\in \F(\L^+)$ such that for any constant $\sk_\eta$ in them, we have $\eta \leq r$.
+Let $r\in \N^*$ and $\phi, \psi\in \F(\L_r)$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
 a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
@@ -595,8 +649,7 @@ and let $\final(D) = [*r,k_f]$.
 If for each $k\in \langle 0, k_f \rangle$, the following statements holds for 
 $\rho=[*r,k]$,
 \begin{enumerate}
-\item for any $\sk_\eta$ in $\gamma_\rho$, $\eta \leq \rho$,
-\item if $\context(D, \rho) = \emptyset$, at least one of the following holds:
+\item if $\context(D, \rho) = \emptyset$, then $\gamma_\rho\in\F(\overline{\L}_\rho)$ at least one of the following holds:
 \begin{enumerate}
 \item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (MOD) there exist $\eta_1, \eta_2 < \rho$, such that
@@ -607,8 +660,8 @@ $\rho=[*r,k]$,
 \begin{equation}
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
-\item (SKO) there exists $\eta < \rho$ and $x\in \V$ and $\beta\in \F(\L^+)$ such that
-$\gamma_\rho = \beta(x/sk_\rho)$ and
+\item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
+$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(sk^m_\rho)$ and
 \begin{equation}
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
@@ -672,27 +725,33 @@ Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theo
 \end{proof}
 
 \section{Soudness}
-\begin{definition}
-Let $\L = (\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language and let $r\in\N^*$.
+\begin{definition}[\textbf{constrained-proof}]
+\label{constrained-proof}
+Let $\L$ be a signature of a language.
+A reference system $(D, \gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff
+the Definition \ref{proof-definition} holds with changed (GEN) case (\ref{gen-part}) as follows:
+\\
+\\
+(GEN) there exists $\eta < \rho$ and $x\in \V\setminus V$ such that
 \begin{equation}
-\L_r \defeq \bigg(\mathscr{C} \cup \big\{\sk^0_\rho: \rho < r\big\}, \mathscr{P}, \mathscr{F}
-\cup \bigg\{\sk^m_\rho: \rho < r, m\in\N\setminus\{0\}\bigg\}
-\bigg).
+\gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
-\begin{equation}
-\overline{\L}_r \defeq \bigg(\mathscr{C} \cup \big\{\sk^0_\rho: \rho \leq r\big\}, \mathscr{P}, \mathscr{F}
-\cup \bigg\{\sk^m_\rho: \rho \leq r, m\in\N\setminus\{0\}\bigg\}
-\bigg).
-\end{equation}
+and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$.
 \end{definition}
+
+The intuition behind a \textit{constrained-proof} is that this is a proof with ceratain variables forced to act as constants.
+
+Note that each \textit{constrained-proof} is a proof.
+And each proof is a \textit{constrained-proof} with $V=\emptyset$.
+
 \begin{theorem}
 \label{soundnes-theorem}
 Let $r\in \N^*$ and 
 let $\M$ be a model for $\F(\L_r)$.
 Let $T\subset \F(\L_r)$ and $\phi\in \F(\L_r)$.
-
-If $(D, \gamma)$ is a proof of $\phi\in \F(\L_r)$ with respect to $\mathfrak{A}\cup T$ with $r = \root(D)$, 
-for any interpretation $(\M, j)\models T$, we have $(\M, j)\models \phi$.  
+Let $D$ be a context with $r = \root(D)$
+If $(D, \gamma)$ is a constrained-proof of $\phi\in \F(\L_r)$ with respect to $\mathfrak{A}\cup T$ with fixed variables $V\subset\V$, 
+then for any interpretation $(\M, j)\models T$, we have $(\M, j)\models \phi$.  
 \end{theorem}
 \begin{proof}
 We will prove this by induction over $|D|$. Let $|D| = n$. By induction we can assume that 
@@ -703,7 +762,7 @@ We will prove this by induction over $|D|$. Let $|D| = n$. By induction we can a
 
 Let $A$ be a domain of $\M$. Let $\final(D) = [*r, k_f]$.
 
-Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\beta \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. 
+Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\omega \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. 
 Let $\F_k = \F(\L_{r_k})$ for $k=0, \dots, k_f$ and let $\F_{-1} = \F(\L_r)$.
 Let $\overline{\F}_k = \F(\overline{\L_{r_k}})$ for $k=0, \dots, k_f$ and let $\overline{\F}_{-1} = \F(\overline{\L_r})$. 
 One can show that $\F_{k-1} \subset \F_k$ for $k=0, \dots, k_f$.
@@ -723,7 +782,7 @@ Thus $T_k \subset \F_k$ for $k=0,\dots,k_f$.
 
 Take an arbitrary interpretation $(\M, j)$ for which $(\M, j)\models T$.
 
-If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\beta \urcorner = \phi$.
+If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\omega \urcorner = \phi$.
 
 Hence, we can assume 
 
@@ -764,7 +823,7 @@ This can only hold for $k > 0$.
 Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$.
 Note that $\gamma_{\eta_1}, \gamma_{\eta_2}\in T_k$. 
 So $(\M_k, j)\models \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner, \gamma_{\eta_2}$ and therefore $(\M_k,j)\models \gamma_{r_k}$.
-\item \label{gen} (GEN) there exists $\eta < r_k$ and $x\in \V$ such that
+\item \label{gen} (GEN) there exists $\eta < r_k$ and $x\in \V\setminus V$ such that
 $\gamma_{r_k} = \ulcorner \forall x. \gamma_\eta \urcorner$,
 and $x\not\in\free(\alpha)$. This can only hold for $k > 0$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. Since $\gamma_\eta\in T_k$, 
 we have $(\M_k, j)\models \gamma_\eta$.
@@ -815,21 +874,21 @@ $$
 \beta^{\M_{k-1}}\bigg((\sk^m_{r_k})^{\M_{k}}(j(x_1), \dots, j(x_n)), j(x_1), \dots, j(x_n)\bigg).
 $$
 
-Then $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
+Thus $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
 
 \end{enumerate}
 \item $\context(D, r_k) \not= \emptyset$.
 Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$.
-By Definition \ref{proof-definition}, $\gamma_{r_k}\in \F_k$.
+By Definition \ref{constrained-proof}, $\gamma_{r_k}\in \F_k$.
 Since $T_k\subset\F_k$,
-one can verify that $\context(D, r_k)$ is a proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$. Since $\M_k\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
+one can verify that $\context(D, r_k)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_k\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
 Note that the above argument works for $k = 0$ without any of induction assumptions. 
 \end{enumerate}
 
 We showed that $(\M_k, j)\models\gamma_{r_k}$ for $k=0, \dots, k_f$.
 In particular, $(\M_{k_f}, j)\models\gamma_{r_{k_f}}$.
-But $\gamma_{r_{k_f}} = \beta$ where 
-$\phi = \ulcorner \alpha\to\beta \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is an extension of $\M$, we have $(\M, j)\models\beta$ and then $(\M, j)\models\phi$.
+But $\gamma_{r_{k_f}} = \omega$ where 
+$\phi = \ulcorner \alpha\to\omega \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is an extension of $\M$, we have $(\M, j)\models\omega$ and then $(\M, j)\models\phi$.
 
 \end{proof}
 \bibliographystyle{alpha}
