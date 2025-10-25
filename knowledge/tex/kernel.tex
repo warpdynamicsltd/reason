@@ -78,10 +78,13 @@
 \maketitle
 
 \begin{abstract}
-We propose a novel formal system for structuring proofs in first-order logic, inspired by the intuitive methods commonly employed by mathematicians. Traditional formalizations of proof, as found in most introductory logic textbooks, rely on linear sequences of formulas constructed via axioms and inference rules. While rigorous, such representations are ill-suited to capturing the contextual and hierarchical nature of proofs as they are typically written and understood. In this paper, we introduce a context-based proof system that formally models the dynamic management of assumptions and auxiliary constructions—analogous to the way contexts are established and dissolved in both informal mathematical writing and declarative programming languages. We develop a precise framework for referencing and manipulating these contexts and demonstrate that our approach retains the formal strength of classical derivation systems. This framework not only provides a closer alignment with mathematical practice but also lays the groundwork for efficient implementation of automated proof verification tools tailored to first-order logic.
+The paper describes a system for structuring proofs in first-order logic, inspired by the intuitive methods commonly employed by mathematicians. Traditional formalizations of proof, as found in most introductory logic textbooks, rely on linear sequences of formulas constructed via axioms and inference rules. While rigorous, such representations are ill-suited to capturing the contextual and hierarchical nature of proofs as they are typically written and understood. In this paper, we introduce a context-based proof system that formally models the dynamic management of assumptions and auxiliary constructions—analogous to the way contexts are established and dissolved in both informal mathematical writing and declarative programming languages. We develop a precise framework for referencing and manipulating these contexts and demonstrate that our approach retains the formal strength of classical derivation systems. This framework not only provides a closer alignment with mathematical practice but also lays the groundwork for efficient implementation of automated proof verification tools tailored to first-order logic.
 \end{abstract}
 
-\section{Intuition of Context Proofs}
+\section{Introduction}
+The purpose of this paper is to present a formal description of context-proofs, intended as a kernel for an automatic proof-checking system. Since there are several related approaches (see Section~\ref{related}), it is useful to provide a complete formal specification of the proof mechanism, serving as precise documentation of the kernel.
+\\
+
 When proving a theorem, mathematicians frequently use phrases such as ``take any $n \in \N$'', ``there exists an $m$ such that...'', ``we will now prove that...'', or ``we have just proved...''. Intuitively, with a phrase like ``we will now prove that...'', a specific context is established in which we define or construct objects, manipulate these objects, and, upon reaching a conclusion, often dismiss these auxiliary constructions with a phrase such as ``we have just proved...''. At this point, only the elements essential for the subsequent steps of the argument are retained. In this sense, writing a mathematical proof closely resembles writing a declarative program: we open and close contexts, introducing and discarding objects as they become relevant or obsolete.
 \\
 
@@ -980,16 +983,21 @@ $\phi = \ulcorner \alpha\to\omega \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is a
 \end{proof}
 
 \section{Related Work}
+\label{related}
+The idea of managing local assumptions within proofs has a long history in proof theory, dating back to the Jaśkowski-Fitch \cite{fitch1966}, \cite{jaskowski1934} style of natural deduction, where subproofs or “boxes” represent temporary contexts that are opened and discharged (see also the survey in the Stanford Encyclopedia of Philosophy \cite{sepND}).
+\\ 
 
-The idea of managing local assumptions within proofs has a long history in proof theory, dating back to the Jaśkowski-Fitch style of natural deduction, where subproofs or “boxes” represent temporary contexts that are opened and discharged (see the survey in the Stanford Encyclopedia of Philosophy \cite{sepND}). 
+Several systems have sought to formalize or mechanize this structure. Nested sequent calculi \cite{brunnler2010}, \cite{fitch1966} generalize Gentzen's sequent systems by organizing sequents in a tree, thereby making the hierarchical proof structure explicit.
+\\ 
 
-Several systems have sought to formalize or mechanize this structure. Nested sequent calculi \cite{brunnler2010}, \cite{pimentel2019} generalize Gentzen's sequent systems by organizing sequents in a tree, thereby making the hierarchical proof structure explicit. 
+Standefer \cite{standefer2019} investigates translations between tree-structured and linear natural-deduction proofs, clarifying how subproof hierarchies can be represented sequentially. 
+\\
 
-Standefer \cite{standefer2014} investigates translations between tree-structured and linear natural-deduction proofs, clarifying how subproof hierarchies can be represented sequentially. 
+Labelled deductive systems \cite{broda2004} extend natural deduction by attaching labels to formulas, capturing contextual or modal information within the syntax; this approach resembles the role of reference indices in our system. 
+\\
 
-Labelled deductive systems \cite{broda2004} extend natural deduction by attaching labels to formulas, capturing contextual or modal information within the syntax; this approach resembles the role of reference indices in our system. Structured proof languages such as Isar \cite{nipkow2002,wenzel2019} and teaching environments like ProofWeb \cite{kaliszyk2008} pursue the same goal from a computational perspective, aiming for human-readable, block-structured proofs with machine-checkable semantics.
-
-Compared with these systems, context-proofs provide an explicit and uniform treatment of proof structure through finite-sequence references, a prefix relation defining contexts, and a reference-formula mapping that formalizes mathematical reasoning within nested subcontexts. While sharing conceptual roots with the frameworks above, our formalization offers a purely syntactic and general mechanism for hierarchical proof management that remains compatible with first-order logic and conducive to mechanized verification.
+Structured proof languages such as Isar \cite{wenzel2002} pursue the same goal from a computational perspective, aiming for human-readable, block-structured proofs with machine-checkable semantics.
+\\
 
 \bibliographystyle{alpha}
 \bibliography{references}
