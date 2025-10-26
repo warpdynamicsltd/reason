@@ -31,6 +31,7 @@
 \newcommand{\defeq}{\stackrel{\mathrm{def}}{=}}
 \newcommand{\elev}{\text{elev}}
 \newcommand{\free}{\text{free}}
+\newcommand{\bound}{\text{bound}}
 \renewcommand{\axiom}{\text{Axiom}}
 \renewcommand{\rule}{\text{Rule}}
 \newcommand{\asm}{\text{Asm}}
@@ -51,6 +52,8 @@
 \newcommand{\V}{\mathscr{V}}
 \newcommand{\prove}{\vdash}
 \newcommand{\M}{\mathbf{M}}
+\renewcommand{\succ}{\text{S}}
+\newcommand{\shift}{\text{shift}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -484,9 +487,12 @@ Hence $x = [*r, k^\prime]$ where $0\leq k^\prime < k$.
 
 \section{Reference System and Proof}
 \label{reference-proof}
+
+\subsection{First Order Logic Preleminaries}
+
 If not stated otherwise, we will use terminology compatible with e.g. \cite{hal2012}.
 We consider a language of first order logic.
-Let $\V$ be an infinite set of variable symbols.
+Let $\V$ be an infinite countable set of variable symbols.
 
 \begin{definition}
 Let $\mathscr{C}$ be a set of constant symbols, let $\mathscr{P}$ be a set of predicate symbols and $\mathscr{F}$ be a set of function symbols. 
@@ -506,7 +512,7 @@ $$
 $\sk^k_r$ is intended to use as function symbol of arity $k$ for $k > 0$ and constant symbol for $k=0$. When not ambigous we will use $\sk^k_r$ for $k > 0$ to denote the whole term with $k$ free variables.
 
 
-Let $\F(\L)$ be a set of all first order logic formulas with all non logical symbols from signature $\L$.
+Let $\F(\L)$ be a set of all first order logic formulas with all non logical symbols from signature $\L$ and variables from the set $\V$.
 
 \begin{definition}
 Let $\L = (\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language and let $r\in\N^*$.
@@ -524,14 +530,15 @@ Let $\L = (\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language 
 
 \begin{definition}
 Let $\L(\mathscr{C}, \mathscr{P}, \mathscr{F})$ be a signature of a language, let $\alpha\in\F(\L)$ and let $\tau$ be an arbitrary term.
-\begin{equation}
-\free(\alpha)
-\defeq \{v\in\V: v \text{ is not bound by any quantifier in } \alpha\},
-\end{equation}
 
-\begin{equation}
-\free(\tau) \defeq  \{v\in\V: v \text{ occurs in } \tau\}.
-\end{equation}
+
+\begin{align}
+&\free(\alpha)
+\defeq \{v\in\V: v \text{ is not bound by any quantifier in } \alpha\},\\
+&\free(\tau) \defeq  \{v\in\V: v \text{ occurs in } \tau\},\\
+&\bound(\alpha) \defeq \{v\in\V: \text{ there exists a quantifier which bounds variable } v\}.
+\end{align}
+
 
 \end{definition}
 
@@ -542,12 +549,166 @@ by $\alpha(x/\tau)$ we denote a formula in which each instance of a free variabl
 \end{definition}
 
 \begin{definition}[\textbf{admissible substitution}]
+\label{admissible}
 Let $\L$ be a signature of a language.
 Let $\alpha\in\F(\L)$ and $\tau$ be an arbitrary term.
 $\alpha(x/\tau)$ is admissible iff no free
 occurrence of $x$ in $\alpha$ is in the range of a quantifier that binds any variable which
 appears in $\tau$.
 \end{definition}
+
+As it will play an important role in one inverence rule, we will justify the concept of \textit{admissible substitiution}.
+
+Let's first recall the following definition.
+\begin{definition}
+Let $\L$ be a signature of a language.
+Let $\M$ be a model of $\L$ with domain $A$ and let $j:\V\to A$ be an interpretation of variables. Then we define  
+\end{definition}
+
+\begin{equation}
+j\cfrac{a}{x}(v) \defeq
+\begin{cases}
+a \text{ if } v = x,\\
+j(v) \text{ otherwise}.
+\end{cases}
+\end{equation}
+
+\begin{theorem}
+\label{admissible-theorem}
+Let $\L$ be a signature of a language. Let $\alpha\in\F(\L)$ and let $\tau$ be an arbitrary term. If $\alpha(x/\tau)$ is admissible, then for any model $\M$ of $\L$ with domain $A$ and any interpretation of variables $j:\V\to A$ we have
+\begin{equation}
+(\M, j\cfrac{\tau^{(\M, j)}}{x})\models \alpha \text{ iff } (\M, j)\models \alpha(x/\tau).
+\end{equation} 
+\end{theorem}
+\begin{proof}
+Denote $\tau$ by $\tau(x_1, \dots, x_n)$ whete $x_i$ are all free variables used in term $\tau$. Take any place in a formula $\alpha(x/\tau)$ where $\tau(x_1, \dots, x_n)$ sits after replacement for $x$. Since $\alpha(x/\tau)$ is addmissable, all $x_i$ in this place are free. Then under interpretation $j$ term $\tau$ becomes $\tau^\M(j(x_1),\dots, j(x_n)$). Since there is no free variable $x$ in $\alpha(x/\tau)$, $\alpha$ under interpretation $j\cfrac{\tau^{(\M, j)}}{x}$ is exactly the same thing as $\alpha(x/\tau)$ under interpretation $j$.   
+\end{proof}
+
+We can easily demonstrate that the assumption of \textit{admissability} in the above theorem is neccesary. Consider a trivial example for a model of Peano Arythmetic. 
+Let $\alpha \text{ be a formula } \ulcorner \exists y. x = y \urcorner$ and let $\tau$ be $\ulcorner \succ(y) \urcorner$. Obviously $\alpha(x/\tau)$ is not admissable and becomes 
+$\ulcorner \exists y. S(y) = y \urcorner$ which is simply false in any model of Peano Arythmetic.
+
+\begin{definition}
+Let $\L$ be a signature of a language.
+Let $\alpha, \beta\in\F(\L)$ and let
+$f:\bound(\alpha) \to \V$.
+\begin{equation}
+[f](\alpha) \defeq ( \alpha \text{ with each bound variable } u \text{ replaced by } f(u) ). 
+\end{equation}
+\end{definition}
+
+\begin{definition}
+\label{isomorphic-copy}
+Let $\L$ be a signature of a language.
+Let $\alpha, \beta\in\F(\L)$. We will say that $\alpha, \beta$ are isomorphic
+iff there exists function 
+$$f:\bound(\alpha) \xrightarrow[\text{onto}]{\text{1-1}} \bound(\beta)$$
+and $[f](\alpha) = \beta$ and $[f^{-1}](\beta) = \alpha$. 
+\end{definition}
+
+\begin{lemma}
+\label{fix-replacement}
+Let $\L$ be a signature of a language.
+Let $\alpha, \beta\in\F(\L)$. If
+$$f:\bound(\alpha) \xrightarrow[\text{onto}]{\text{1-1}} \bound(\beta)$$
+such that $[f](a)=\beta$ 
+and for any $u\in\bound(\alpha)$ such that $f(u)\not=u$, we have $f(u)\not\in\free(\alpha)$,
+then $\alpha$ is isomorphic with $\beta$.
+\end{lemma}
+\begin{proof}
+To show that $[f^{-1}](\beta) = \alpha$ it is enough to show that for any $u\in\bound(\beta)$ at place $p$ in $\beta$, there is $f^{-1}(u)$ at place $p$ in $\alpha$.
+\\
+
+Take any $u\in\bound(\beta)$ at place $p$ in $\beta$. Then the place $p$ is in a range of $Qu.$ in $\beta$. Thus place $p$ is in a range of $Qf^{-1}(u).$ in $\alpha$. 
+\\
+
+If variable in place $p$ in $\alpha$ is free, then it must be $u$. 
+If $u = f^{-1}(u)$, it will be in a range of $Qu.$ and thus it can't be free. 
+Then we must assume $f^{-1}(u) \not= u$. 
+
+But $f^{-1}(u)\in\bound(\alpha)$ and thus $u = f(f^{-1}(u))\not\in\free(\alpha)$. Hence, variable in place $p$ in $\alpha$ must be bounded. But then it must be $f^{-1}(u)$.
+
+\end{proof}
+
+\begin{theorem}
+\label{isomorphic-equisatisatibility}
+Let $\L$ be a signature of a language and let $\alpha,\beta\in\F(\L)$.
+If $\alpha, \beta$ are isomorphic then for any model $\M$ of $\L$ with domain $A$ and any interpretation of variables $j:\V\to A$ we have
+$$
+(\M, j)\models \alpha \text{ iff } (\M, j)\models \beta.
+$$
+\end{theorem}
+\begin{proof}
+It is enough to show that, 
+a variable $x$ is free in place $p$ in $\alpha$ iff
+a variable $x$ is free in place $p$ in $\beta$.
+In fact, since there is a symetry between $\alpha$ and $\beta$, it is enough to show that, if 
+a variable $x$ is free in place $p$ in $\alpha$ then
+a variable $x$ is free in place $p$ in $\beta$.
+
+Let $f$ be as in Definition \ref{isomorphic-copy}.
+
+Assume that a variable $x$ is free in a place $p$ in $\alpha$.
+
+\begin{enumerate}
+\item If there is a bounded variable $u$ in place $p$ in $\beta$, then place $p$ is in a range of some quantifier $Qu.$ in $\beta$ and $f^{-1}(u) = x$. Then place $p$ is in a range of quantifier $Qx.$ in $\alpha$. Then $x$ can't be free in $\alpha$. Contradiction.
+
+\item If there is a free variable $u$ in place $p$ in $\beta$, then $u = x$.
+\end{enumerate}
+\end{proof}
+
+\begin{definition}
+We can construct a special $\shift$ operator. 
+$\shift_\alpha:\bound(\alpha) \xrightarrow[\text{onto}]{\text{1-1}} \V$, such that
+$$
+\shift_\alpha\big( \bound(\alpha)\big) \cap \free(\alpha) = \emptyset.
+$$
+\end{definition}
+
+Indeed, if $\V$ is coutable and infinite, we can establish a linear order on $\V$. With such an order, the construction of $\shift_\alpha$ is just a technical exercise whose details are irrelevant from the perspective of this paper.
+
+\begin{definition}
+Let $\L$ be a signature of a language. 
+Let $\alpha\in\F(\L)$, Let $x\in\free(\alpha)$.
+we will define a special operator 
+$\langle \cdot \rangle_x:\F(\L)$.
+Let 
+$$
+U_x = \{u\in\bound(\alpha)\cap\free(\alpha): \text{there exists quantifier with $x$ in its range which binds $u$}\}
+$$
+
+Let 
+
+\begin{equation}
+f_{\alpha, x}(u) =
+\begin{cases}
+\shift_\alpha(u) \text{ for } u\in U_x,\\
+u \text{ otherwise }.
+\end{cases}
+\end{equation}
+
+Let
+\begin{equation}
+\langle \alpha \rangle_x \defeq [f_{\alpha, x}](\alpha).
+\end{equation}
+
+\end{definition}
+
+\begin{theorem}
+Let $\L$ be a signature of a language. 
+Let $\alpha\in\F(\L)$, Let $x\in\free(\alpha)$.
+Then we have
+\begin{equation}
+\alpha \text{ is isomorphic to } \langle \alpha \rangle_x,
+\end{equation}
+and for any term $\tau$ with $\free(\tau) \subset \free(\alpha)$, $\langle \alpha \rangle_x (x/\tau)$ is admissable.
+\end{theorem}
+\begin{proof}
+By Theorem \ref{fix-replacement} and Definition \ref{admissible}.
+\end{proof}
+
+
+\subsection{Context Proof Definition}
 
 \begin{definition}
 A pair $(D, \gamma)$ is called a reference system iff
@@ -567,7 +728,9 @@ and for any $\rho\in \overline{D}$ the following conditions holds:
 \begin{enumerate}
 \item (AXM) $\gamma_\rho\in \mathcal{A}$,
 \item (ASM) there exists $\eta \prec \rho$ and $\beta\in \F(\L^+)$
-such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$.  
+such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$,
+\item (ISO) there exists $\eta < \rho$ and 
+$\gamma_\eta$ is isomporphic to $\gamma_\rho$,
 \item (MOD) there exist $\eta_1, \eta_2 < \rho$, such that
 \begin{equation}
 \gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
@@ -578,7 +741,7 @@ such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$.
 \end{equation}
 and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$,
 \item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
-$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ and
+$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ with $\beta(x/\sk^m_\rho)$ admissible and
 \begin{equation}
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
@@ -691,14 +854,16 @@ with respect to $\mathfrak{A}$.
 [*r] %$\mapsto \big(\forall x. (\psi(x)\to\phi)\big)\to\big((\exists x.\psi(x))\to\phi\big)$%
 [*r, 0] %$\mapsto (\exists x.\psi(x))\to\phi$%
 [*r, 0, 0] %$\mapsto \forall x. (\psi(x)\to\phi)$% # ASM $\gamma_{*r}$
-[*r, 0, 1] %$\mapsto \exists x.\psi(x)$% # ASM $\gamma_{*r, 0}$
-[*r, 0, 2] %$\mapsto\psi(\sk^m_{[*r, 0, 2]})$% # SKO $\gamma_{*r, 0, 1}$
-[*r, 0, 3] %$\mapsto \big(\forall x. (\psi(x)\to\phi)\big)\to(\psi(\sk^m_{[*r, 0, 2]})\to\phi)$%, # ALL
-[*r, 0, 4] %$\mapsto \psi(\sk_{[*r, 0, 2]})\to\phi$% # MOD $\gamma_{*r, 0, 3}, \gamma_{*r, 0, 0}$
-[*r, 0, 5] %$\mapsto \phi$% # MOD $\gamma_{*r, 0, 4}, \gamma_{*r, 0, 2}$
+[*r, 0, 1] %$\mapsto \forall x. (\langle \psi \rangle_x (x) \to\phi)$% # ISO $\gamma_{*r, 0, 0}$
+[*r, 0, 2] %$\mapsto \exists x.\psi(x)$% # ASM $\gamma_{*r, 0}$
+[r*, 0, 3] %$\mapsto \exists x.\langle \psi \rangle_x (x)$% # ISO $\gamma_{*r, 0, 2}$
+[*r, 0, 4] %$\mapsto\langle \psi \rangle_x(\sk^m_{[*r, 0, 2]})$% # SKO $\gamma_{*r, 0, 3}$
+[*r, 0, 5] %$\mapsto \big(\forall x. (\langle \psi \rangle_x(x)\to\phi)\big)\to(\langle \psi \rangle_x(\sk^m_{[*r, 0, 2]})\to\phi)$%, # ALL
+[*r, 0, 6] %$\mapsto \langle \psi \rangle_x(\sk_{[*r, 0, 2]})\to\phi$% # MOD $\gamma_{*r, 0, 5}, \gamma_{*r, 0, 1}$
+[*r, 0, 7] %$\mapsto \phi$% # MOD $\gamma_{*r, 0, 6}, \gamma_{*r, 0, 4}$
 \end{lstlisting}
 Note that the assumption that $x\not\in \text{free}(\phi)$ is needed for 
-$\ulcorner \psi(x)\to\phi \urcorner(x/\sk^m_{[*r,0,2]})$ to become $\psi(\sk^m_{[*r,0,2})\to\phi$.
+$\ulcorner \langle \psi \rangle_x(x)\to\phi \urcorner(x/\sk^m_{[*r,0,2]})$ to become $\langle \psi \rangle_x(\sk^m_{[*r,0,2]})\to\phi$.
 \end{proof}
 
 \begin{definition}
@@ -750,7 +915,7 @@ $\rho=[*r,k]$,
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
 \item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
-$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ and
+$\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ with $\beta(x/\sk^m_\rho)$ admissible and
 \begin{equation}
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
@@ -837,7 +1002,7 @@ And each proof is a \textit{constrained-proof} with $V=\emptyset$.
 \begin{theorem}
 \label{soundnes-theorem}
 Let $r\in \N^*$ and 
-let $\M$ be a model for $\F(\L_r)$.
+let $\M$ be a model of $\L_r$.
 Let $T\subset \F(\L_r)$ and $\phi\in \F(\L_r)$.
 Let $D$ be a context with $r = \root(D)$
 If $(D, \gamma)$ is a constrained-proof of $\phi\in \F(\L_r)$ with respect to $\mathfrak{A}\cup T$ with fixed variables $V\subset\V$, 
@@ -852,9 +1017,9 @@ We will prove this by induction over $|D|$. Let $|D| = n$. By induction we can a
 
 Let $A$ be a domain of $\M$. Let $\final(D) = [*r, k_f]$.
 
-Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\omega \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. 
-Let $\F_k = \F(\L_{r_k})$ for $k=0, \dots, k_f$ and let $\F_{-1} = \F(\L_r)$.
-Let $\overline{\F}_k = \F(\overline{\L_{r_k}})$ for $k=0, \dots, k_f$ and let $\overline{\F}_{-1} = \F(\overline{\L_r})$. 
+Let $r_k = [*r, k]$ for $k=0, \dots, k_f$. Let $\gamma_r = \ulcorner \alpha\to\omega \urcorner$. Note that by Definition \ref{proof-definition}, we have $\phi = \gamma_r$. To simplify notation let $\L_k := \L_{r_k}$ for $k=0, \dots, k_f$.  
+Let $\F_k = \F(\L_k)$ for $k=0, \dots, k_f$ and let $\F_{-1} = \F(\L_r)$.
+Let $\overline{\F}_k = \F(\overline{\L_k})$ for $k=0, \dots, k_f$ and let $\overline{\F}_{-1} = \F(\overline{\L_r})$. 
 By Lemma \ref{base-reference-inclusions} we have $\F_{k-1} \subset \F_k$ for $k=0, \dots, k_f$.
 
 Let
@@ -886,55 +1051,57 @@ We will take a special care to construct $\M_k$ in a way which does not depend o
 
 We will prove by induction that $(\M_k,j)\models \gamma_{k}$.  
 Let us write down our induction assumptions.
-\begin{equation}
-\label{induction-2}
-(\M_i,j)\models \gamma_{i} \text{ for } i < k, 
-\end{equation}
-\begin{equation}
-\M_i \text{ is a model for } \overline{\F}_i \text{ for } i < k,
-\end{equation}
-
-\begin{equation}
-\M_i \text{ is an extension of } \M_{i-1} \text{ for } i < k
-\end{equation}
+\begin{align}
+\label{induction-a-1}
+&(\M_i,j)\models \gamma_{i} \text{ for } 0 < i < k, \\
+\label{induction-a-2}
+&\M_i \text{ is a model of } \overline{\L_i} \text{ for } 0 < i < k, \\
+\label{induction-a-3}
+&\M_i \text{ is an extension of } \M_{i-1} \text{ for } 0 < i < k
+\end{align}
 
 Take $k$ from $0, \dots, k_f$. Note that $(\M_{k-1}, j)\models T_k$. We will consider two cases:
 \begin{enumerate}
-\item $\context(D, r_k) = \emptyset$. By Definition\ref{proof-definition}, for $\gamma_{r_k}$ one of the following cases holds. We will stop a construction step of $\M_k$ after first satisfied case in the following order.
+\item $\context(D, r_k) = \emptyset$. By Definition \ref{proof-definition}, $\gamma_{r_k}\in \F_k$ and one of the following cases holds. We will stop a construction step of $\M_k$ after first satisfied case in the following order.
 
 \begin{enumerate}
-\item (AXM) $\gamma_{r_k}\in T \cup \mathfrak{A}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. If $\gamma_{r_k}\in T$, then $(\M_k, j)\models\gamma_{r_k}$. If $\gamma_{r_k}\in \mathfrak{A}$, then $(\M_k, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is an logical axiom. Note that the above argument works for $k = 0$ without any of induction assumptions. 
+\item (AXM) $\gamma_{r_k}\in T \cup \mathfrak{A}$. If $\gamma_{r_k}\in T$, then $(\M_{k-1}, j)\models\gamma_{r_k}$. If $\gamma_{r_k}\in \mathfrak{A}$, then $(\M_{k-1}, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is a logical axiom. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k, j)\models\gamma_{r_k}$. Note that the above argument works for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
 
-\item (ASM) $\gamma_{r_k} = \alpha$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. Then trivially $(\M_k,j)\models \gamma_{r_k}$. Note that the above argument works for $k = 0$ without any of induction assumptions.
+\item (ASM) $\gamma_{r_k} = \alpha$. Then trivially $(\M_k,j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then
+$\M_k\models \gamma_{r_k}$. Note that the above argument works for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}).
+
+\item (ISO) there exists $\eta < r_k$ and 
+$\gamma_\eta$ is isomporphic to $\gamma_{r_k}$. This can only hold for $k > 0$. Since $\gamma_\eta\in T_k$, we have 
+$(\M_{k-1}, j)\models \gamma_\eta$ and by Theorem \ref{isomorphic-equisatisatibility} 
+we have $(\M_{k-1}, j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k,j)\models \gamma_{r_k}$. 
 
 \item (MOD) there exist $\eta_1, \eta_2 < r_k$, such that
 $\gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner$.
 This can only hold for $k > 0$.
-Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$.
 Note that $\gamma_{\eta_1}, \gamma_{\eta_2}\in T_k$. 
-So $(\M_k, j)\models \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner, \gamma_{\eta_2}$ and therefore $(\M_k,j)\models \gamma_{r_k}$.
+So $(\M_{k-1}, j)\models \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner, \gamma_{\eta_2}$ and therefore $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k,j)\models \gamma_{r_k}$.
 \item \label{gen} (GEN) there exists $\eta < r_k$ and $x\in \V\setminus V$ such that
 $\gamma_{r_k} = \ulcorner \forall x. \gamma_\eta \urcorner$,
-and $x\not\in\free(\alpha)$. This can only hold for $k > 0$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$. Since $\gamma_\eta\in T_k$, 
-we have $(\M_k, j)\models \gamma_\eta$.
+and $x\not\in\free(\alpha)$. This can only hold for $k > 0$.  Since $\gamma_\eta\in T_k$, 
+we have $(\M_{k-1}, j)\models \gamma_\eta$.
 
 Take any $a\in A$.  Let
 \begin{equation}
-j\cfrac{a}{x}(v)
+j\cfrac{a}{x}(v) \defeq
 \begin{cases}
 a \text{ if } v = x,\\
 j(v) \text{ otherwise}.
 \end{cases}
 \end{equation}
 Since $x\not\in\free(\alpha)$ and $(\M, j)\models\alpha$, we have $(\M, j\cfrac{a}{x})\models\alpha$.
-Then we can repeat the reasoning from (\ref{assumption-alpha}) for an interpretation $j\cfrac{a}{x}$ up to this point and got $(\M_k, j\cfrac{a}{x})\models \gamma_\eta$.
-This is possible because construction of $\M_k$ does not depend on $j$.
-But since $a\in A$ was arbitrary chosen, we have $(\M_k, j)\models \forall x. \gamma_\eta $, and thus $(\M_k,j)\models \gamma_{r_k}$.
+Then we can repeat the reasoning from (\ref{assumption-alpha}) for an interpretation $j\cfrac{a}{x}$ up to this point and got $(\M_{k-1}, j\cfrac{a}{x})\models \gamma_\eta$.
+This is possible because construction of $\M_{k-1}$ nowhere depends on $j$.
+But since $a\in A$ was arbitrary chosen, we have $(\M_{k-1}, j)\models \forall x. \gamma_\eta $, and thus $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k,j)\models \gamma_{r_k}$.
 
 \item (SKO) there exists $\eta < r_k$, $x\in \V$, $\beta\in \F_k$ and $m\in\N$ such that
 $\gamma_{r_0} = \beta(x/\sk^m_{r_k})$,
 $\gamma_\eta = \ulcorner \exists x. \beta\urcorner$ and 
-$\free(\sk^m_{r_k})=\free(\gamma_\eta)$. 
+$\free(\sk^m_{r_k})=\free(\gamma_\eta)$ with $\beta(x/\sk^m_\rho)$ admissible. 
 This can only hold for $k > 0$.
 Since $\gamma_\eta\in T_k$, we have $(\M_{k-1},j)\models \exists x. \beta$.
 
@@ -956,7 +1123,7 @@ we choose such an $a$ and set $(\sk^m_{r_k})^{\M_{k}}(a_1, \dots, a_n) = a$.
 
 Otherwise we set $(\sk^m_{r_k})^{\M_{k}}(a_1, \dots, a_n)$ to arbitrary but fixed element of $A$.
 
-Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{F_k}$ which models $\sk^m_{r_k}$ as defined above.
+Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$ which models $\sk^m_{r_k}$ as defined above.
 Note that construction of $\M_k$ does not depend on interpretation $j$.
 Since $(\M_{k-1},j)\models \exists x. \beta$, we have
 
@@ -964,21 +1131,21 @@ $$
 \beta^{\M_{k-1}}\bigg((\sk^m_{r_k})^{\M_{k}}(j(x_1), \dots, j(x_n)), j(x_1), \dots, j(x_n)\bigg).
 $$
 
-Thus $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
+Therefore $(\M_k, j\cfrac{(\sk^m_{r_k})^{(\M_{k}, j)}}{x})\models \beta$ and since $\beta(x/\sk^m_\rho)$ is admissible, by Theorem \ref{admissible-theorem}, we have $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
 
 \end{enumerate}
 \item $\context(D, r_k) \not= \emptyset$.
-Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\F_k}$.
 By Definition \ref{constrained-proof}, $\gamma_{r_k}\in \F_k$.
 Since $T_k\subset\F_k$ and by Lemma \ref{first-level-references},
-one can show that $(\context(D, r_k), \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_k\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_k, j)\models\gamma_{r_k}$.
-Note that the above argument works for $k = 0$ without any of induction assumptions. 
+one can show that $(\context(D, r_k), \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_{k-1}$ is a model of $\L_k$, $(\M_{k-1},j)\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_{k-1}, j)\models\gamma_{r_k}$.
+Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k, j)\models\gamma_{r_k}$.
+Note that the above argument works for $k = 0$ without any of without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
 \end{enumerate}
 
 We showed that $(\M_k, j)\models\gamma_{r_k}$ for $k=0, \dots, k_f$.
 In particular, $(\M_{k_f}, j)\models\gamma_{r_{k_f}}$.
 But $\gamma_{r_{k_f}} = \omega$ where 
-$\phi = \ulcorner \alpha\to\omega \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is an extension of $\M$, we have $(\M, j)\models\omega$ and then $(\M, j)\models\phi$.
+$\phi = \ulcorner \alpha\to\omega \urcorner \in \F(\L_r)$. Since $\M_{k_f}$ is an extension of $\M$ but $\M$ is a model of $\L_r$, we have $(\M, j)\models\omega$ and then $(\M, j)\models\phi$.
 \end{proof}
 
 Since there is an additional constrain on (GEN) rule in Definition \ref{proof-definition} compared to Definition \ref{classical-proof}, that you can not apply generalisation to a variable used as free in any assumption to which you are able to refer and this constrain played a crucial role in a proof of Theorem \ref{soundnes-theorem}, one may wonder if this constrain is really necessary. We will show now a trivial example, how \textit{naive} (GEN) could lead to a false proof.
