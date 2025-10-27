@@ -605,13 +605,13 @@ Let $(D, \L, \gamma)$ be a reference system.
 For $\rho\in D$ we define
 \begin{equation}
 \fixed_D(\rho) \defeq 
-\bigcup_\eta \{\free(\alpha_\eta)\} : \eta \prec \rho \text{ and } \gamma_\eta = 
+\bigcup_\eta \{\free(\alpha_\eta) : \eta\in D \text{ and } \eta \prec \rho \text{ and } \gamma_\eta = 
 \ulcorner \alpha_\eta \to \beta_\eta \urcorner \}.
 \end{equation}
 \end{definition}
 
-In other words $\fixed_D(\rho)$ is a set of all free variablesin antecedent
- if $\gamma_\eta$ is in implication form for all $\eta$ which are prefix of $\rho$.
+In other words $\fixed_D(\rho)$ is a set of all free variables which occurs in antecedent
+if $\gamma_\eta$ is in implication form for all $\eta\in D$ which are prefix of $\rho$.
 
 \begin{definition}[\textbf{proof}]
 \label{proof-definition}
@@ -659,7 +659,7 @@ Let us introduce a certain set of logical axioms. An implication transitivity ax
 
 \begin{definition}[\textbf{logical axioms}]
 \label{axioms_schemas}
-Let one $\truth$ be a chosen predicate symbol of $0$-arity. 
+Let $\truth$ be a chosen predicate symbol of $0$-arity. 
 For any formulas $\alpha, \beta, \gamma\in\F(\L^+)$ the following are logical axioms:
 \begin{enumerate}
 \item (THR) $\truth$
@@ -851,7 +851,7 @@ D_i =
 P_i \text{ for } \phi_i\in \F(\L) \cap \mathfrak{B},
 \end{cases}
 \end{equation}
-where in case of $\phi_i\in \F(\L) \cap \mathfrak{B}$, $(P_i, \gamma)$ is a proof of $\phi_i$ with respect to $\mathfrak{A}$ where $P_i$ is context with root $[i]$ as given by Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) or Lemma \ref{EXH}(EXH).
+where in case of $\phi_i\in \F(\L) \cap \mathfrak{B}$, $(P_i, \L^+, \gamma)$ is a proof of $\phi_i$ with respect to $\mathfrak{A}$ where $P_i$ is a context with root $[i]$ as given by Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) or Lemma \ref{EXH}(EXH).
 Since all $P_i$ are disjoint, the definition of function $\gamma$ on them is correct. 
 
 Now we are ready to define $D$. Let
