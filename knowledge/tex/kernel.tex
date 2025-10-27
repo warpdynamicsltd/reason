@@ -54,6 +54,7 @@
 \newcommand{\M}{\mathbf{M}}
 \renewcommand{\succ}{\text{S}}
 \newcommand{\shift}{\text{shift}}
+\newcommand{\fixed}{\text{fixed}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -108,7 +109,7 @@ Let's first observe an example of what I mean by context proof.
 
 # we open a context of a proof
 (0, 0) %$\neg ( \exists x. \phi(x) )$% # we recall assumption
-# we state an auxiliary fact we are going to prove 
+# we state an auxiliary fact we are going to prove under assumption (0, 0).
 (0, 1) %$ \phi(x) \to \neg \phi(x) $%
 
 # we open a sub-context of a proof
@@ -124,7 +125,7 @@ Let's first observe an example of what I mean by context proof.
 (0, 3) %$\neg \phi(x)$% # we apply modus ponens to (0, 2) amd (0, 1)
 (0, 4) %$\forall x. \neg\phi(x)$% # we apply generalisation rule to (0, 3)
 
-# and this concludes prove as we arrived to the thesis
+# and this concludes proof as we arrived to the thesis
 \end{lstlisting}
 
 Only one variable was used but one can note that the formulas above are correctly stated since this is clear which variable is bound and which is free.
@@ -696,7 +697,7 @@ Let
 
 \begin{theorem}
 Let $\L$ be a signature of a language. 
-Let $\alpha\in\F(\L)$, Let $x\in\free(\alpha)$.
+Let $\alpha\in\F(\L)$ and let $x\in\free(\alpha)$.
 Then we have
 \begin{equation}
 \alpha \text{ is isomorphic to } \langle \alpha \rangle_x,
@@ -711,17 +712,28 @@ By Theorem \ref{fix-replacement} and Definition \ref{admissible}.
 \subsection{Context Proof Definition}
 
 \begin{definition}
-A pair $(D, \gamma)$ is called a reference system iff
+A tuple $(D, \L, \gamma)$ is called a reference system iff
 \begin{enumerate}
+\item $\L$ is a signature of a language
 \item $D\subset \N^*$ and $D$ is an notempty context,
 \item $\gamma: \overline{D} \to \F(\L^+)$. 
 \end{enumerate}
 \end{definition}
 
+\begin{definition}
+Let $(D, \L, \gamma)$ be a reference system.
+For $\rho\in D$ we define
+\begin{equation}
+\fixed_D(\rho) \defeq 
+\bigcup_\eta \{\free(\alpha_\eta)\} : \eta \prec \rho \text{ and } \gamma_\eta = 
+\ulcorner \alpha_\eta \to \beta_\eta \urcorner \}.
+\end{equation}
+\end{definition}
+
 \begin{definition}[\textbf{proof}]
 \label{proof-definition}
 Let $\L$ be a signature of a language.
-A reference system $(D, \gamma)$ is a proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ iff for $r = \root(D)$, $\gamma_r = \psi$
+A reference system $(D, \L^+, \gamma)$ is a proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ iff for $r = \root(D)$, $\gamma_r = \psi$
 and for any $\rho\in \overline{D}$ the following conditions holds:
 \begin{enumerate}
 \item if $\context(D, \rho) = \emptyset$, then $\gamma_\rho\in\F(\overline{\L}_\rho)$ and at least one of the following holds:
@@ -735,11 +747,10 @@ $\gamma_\eta$ is isomporphic to $\gamma_\rho$,
 \begin{equation}
 \gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_\rho \urcorner,
 \end{equation}
-\item \label{gen-part} (GEN) there exists $\eta < \rho$ and $x\in \V$ such that
+\item \label{gen-part} (GEN) there exists $\eta < \rho$ and $x\in \V\setminus  \fixed_D(\rho)$ such that
 \begin{equation}
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
-and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$,
 \item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
 $\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ with $\beta(x/\sk^m_\rho)$ admissible and
 \begin{equation}
@@ -787,15 +798,15 @@ Let $\mathfrak{A}$ denotes a set of all formulas which can be obtained by the ab
 \begin{definition}[\textbf{consequence}]
 Let $\phi\in\F(\L)$ and $\mathcal{A}\subset \F(\L)$.
  
-$\phi\in\Cnr(\mathcal{A})$ iff there exists a proof $(D, \gamma)$ of $\phi$ or 
+$\phi\in\Cnr(\mathcal{A})$ iff there exists a proof $(D, \L, \gamma)$ of $\phi$ or 
 $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathcal{A}$ with $\root(D) = []$.
 \end{definition}
 
-\begin{lemma}[(TRN)]
+\begin{lemma}[TRN]
 \label{TRN}
 Let $r\in \N^*$ and $\alpha, \beta, \gamma \in \F(\L_r)$
 
-There exists a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+There exists a reference system $(D, \L_r, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
 \ulcorner (\alpha \to (\beta\to\gamma))\to((\alpha\to\beta)\to(\alpha\to\gamma)) \urcorner
 \end{equation}
@@ -819,7 +830,7 @@ with respect to $\mathfrak{A}$.
 \label{ALH}
 Let $r\in \N^*$ and $\phi, \psi\in \F(\L_r)$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
-a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+a reference system $(D, \L, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
 \ulcorner \big(\forall x. (\phi\to\psi(x))\big)\to\big(\phi\to\forall x.\psi(x)\big) \urcorner
 \end{equation}
@@ -843,7 +854,7 @@ Note that the assumption that $x\not\in \text{free}(\phi)$ is needed to be able 
 \label{EXH}
 Let $r\in \N^*$ and $\phi, \psi\in \F(\L_r)$.
 If $\phi$ is a formula for which $x\not\in \text{free}(\phi)$, then there exists
-a reference system $(D, \gamma)$ with $\root(D) = r$ which is a proof of 
+a reference system $(D, \L^+, \gamma)$ with $\root(D) = r$ which is a proof of 
 \begin{equation}
 \ulcorner \big(\forall x. (\psi(x)\to\phi)\big)\to\big((\exists x.\psi(x))\to\phi\big) \urcorner 
 \end{equation}
@@ -898,7 +909,7 @@ One can show the following lemma.
 \begin{lemma}
 \label{flatten}
 Let $\mathcal{A} \subset \F(\L^+)$, 
-$(D, \gamma)$ be a reference system with $r = \root(D)$, $\gamma_r = \ulcorner \truth \to \phi \urcorner$ with $\phi \in \F(\L^+)$
+$(D, \L^+, \gamma)$ be a reference system with $r = \root(D)$, $\gamma_r = \ulcorner \truth \to \phi \urcorner$ with $\phi \in \F(\L^+)$
 and let $\final(D) = [*r,k_f]$.
 If for each $k\in \langle 0, k_f \rangle$, the following statements holds for 
 $\rho=[*r,k]$,
@@ -921,7 +932,7 @@ $\gamma_\rho = \beta(x/\sk^m_\rho)$, $\free(\gamma_\eta) = \free(\sk^m_\rho)$ wi
 \end{equation}
 \end{enumerate}
 \item if $\context(D, \rho) \not= \emptyset$, 
-then $\big(\context(D, \rho), \gamma\big)$ is a proof of $\gamma_\rho$ with respect to $\mathcal{A}$,
+then $\big(\context(D, \rho), \L^+, \gamma\big)$ is a proof of $\gamma_\rho$ with respect to $\mathcal{A}$,
 \end{enumerate}
 then $(D, \gamma)$ is a proof of $\gamma_r$ with respect to $\mathcal{A}$.
 \end{lemma}
@@ -948,7 +959,7 @@ $[\phi_i]_{i=0}^n \subset \F(\L)$ such that $\phi = \phi_n$ and for any $i=0, \d
 \end{equation}
 \end{enumerate}
 
-We will construct now a reference system $(D, \gamma)$.
+We will construct now a reference system $(D, \L^+, \gamma)$.
 Let $\gamma_{[]} = \ulcorner \truth\to\phi \urcorner$.
 Let's define $\gamma_{[i]} = \phi_i$ for $i=0, \dots, n$.
 Note that our main problem are $\phi_i\in\mathfrak{B}$ (the rest is either from $\mathfrak{A}$, or $T$ or are derived from the rest by MOD or GEN). But we can add to each of them their own context proof.
@@ -967,7 +978,7 @@ Now we are ready to define $D$. Let
 \begin{equation}
 D = \{[i]: i = 0, \dots, n\} \cup \bigcup_{i=0}^n D_i.
 \end{equation}
-By Lemma \ref{flatten}, one can show that a refernce system $(D, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
+By Lemma \ref{flatten}, one can show that a refernce system $(D, \L^+, \gamma)$ is a proof of $\ulcorner \truth\to\phi \urcorner$ with respect to $\mathfrak{A}$.
 \end{proof}
 
 \begin{corollary}[\textbf{completness}]
@@ -983,15 +994,14 @@ Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theo
 \begin{definition}[\textbf{constrained-proof}]
 \label{constrained-proof}
 Let $\L$ be a signature of a language.
-A reference system $(D, \gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff
+A reference system $(D, \L^+,\gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff
 the Definition \ref{proof-definition} holds with changed (GEN) case (\ref{gen-part}) as follows:
 \\
 \\
-(GEN) there exists $\eta < \rho$ and $x\in \V\setminus V$ such that
+(GEN) there exists $\eta < \rho$ and $x\in \V\setminus (V \cup \fixed_D(\rho))$ such that
 \begin{equation}
 \gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
 \end{equation}
-and for any $\zeta \prec \rho$, $x\not\in\free(\alpha_\zeta)$ where $\gamma_\zeta = \ulcorner \alpha_\zeta\to\phi_\zeta\urcorner$.
 \end{definition}
 
 The intuition behind a \textit{constrained-proof} is that this is a proof with ceratain variables forced to act as constants.
@@ -1137,7 +1147,7 @@ Therefore $(\M_k, j\cfrac{(\sk^m_{r_k})^{(\M_{k}, j)}}{x})\models \beta$ and sin
 \item $\context(D, r_k) \not= \emptyset$.
 By Definition \ref{constrained-proof}, $\gamma_{r_k}\in \F_k$.
 Since $T_k\subset\F_k$ and by Lemma \ref{first-level-references},
-one can show that $(\context(D, r_k), \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $\{\free(\alpha)\}$. Since $\M_{k-1}$ is a model of $\L_k$, $(\M_{k-1},j)\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_{k-1}, j)\models\gamma_{r_k}$.
+one can show that $(\context(D, r_k), \L^+, \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $V \cup free(\alpha)$. Since $\M_{k-1}$ is a model of $\L_k$, $(\M_{k-1},j)\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_{k-1}, j)\models\gamma_{r_k}$.
 Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k, j)\models\gamma_{r_k}$.
 Note that the above argument works for $k = 0$ without any of without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
 \end{enumerate}
