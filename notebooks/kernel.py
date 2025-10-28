@@ -1,4 +1,5 @@
 #%%
+import json
 from reason.core.language import Language
 from reason.proofkit.derived.rules import *
 from reason.proofkit.derived.tautologies import *
@@ -26,6 +27,7 @@ block = Block(
 )
 
 # Kernel.prove_tautology(block)
+print(json.dumps(block.to_json(), indent=2))
 
 L = Language()
 
