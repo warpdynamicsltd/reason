@@ -55,6 +55,7 @@
 \renewcommand{\succ}{\text{S}}
 \newcommand{\shift}{\text{shift}}
 \newcommand{\fixed}{\text{fixed}}
+\newcommand{\refset}{\text{ref}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -164,7 +165,9 @@ For a sequence $s=[a_1, \dots, a_n]$, $*s$ means just $a_1, \dots, a_n$, which a
 To access $n-th$ element of a sequence we will use $0$-based indexing $a_i = s[i-1]$.
 Also $s[-1] = a_n$.
 We will denote a length of a sequence as $|s|$.
-We will denote empty sequence as $[]$. 
+We will denote empty sequence as $[]$.
+
+In this paper finite sequence of nonnegative integers will be sometimes called \textit{a reference}.   
 
 \begin{definition}[\textbf{reference order}]
 \label{reference-order}
@@ -871,30 +874,56 @@ Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theo
 
 \section{Soudness}
 \label{soudness}
+\begin{definition}
+Let $\L$ be a signature of a language.
+Let $(D, \L^+,\gamma)$ be a reference system and $T\subset \F(\L^+)$ and $\rho\in D$.
+\begin{equation}
+\refset_D(\rho, T) = \{\gamma_n\in D: n < \rho\}\cup T.
+\end{equation}
+\end{definition}
+
 \begin{definition}[\textbf{constrained-proof}]
 \label{constrained-proof}
 Let $\L$ be a signature of a language.
-A reference system $(D, \L^+,\gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff
-the Definition \ref{proof-definition} holds with changed (GEN) case (\ref{gen-part}) and (SKO) case (\ref{sko-part}) as follows:
+A reference system $(D, \L^+,\gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff for $r = \root(D)$, $\gamma_r = \psi$
+and for any $\rho\in \overline{D}$ the following conditions holds:
 \begin{enumerate}
-\item (GEN) there exists $\eta < \rho$ and $x\in \V\setminus (V \cup \fixed_D(\rho))$ such that
+\item \label{shallow-part} if $\context(D, \rho) = \emptyset$, then $\gamma_\rho\in\F(\overline{\L}_\rho)$ and at least one of the following holds:
+\begin{enumerate}
+\item (AXM) $\gamma_\rho\in \mathcal{A}$,
+\item (ASM) there exists $\eta \prec \rho$ and $\beta\in \F(\L^+)$
+such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$,
+%\item (ISO) there exists $\eta < \rho$ and 
+%$\gamma_\eta$ is isomporphic to $\gamma_\rho$,
+\item (MOD) there exist $\phi_1, \phi_2\in \refset_D(\mathcal{A}, \rho)$, such that
 \begin{equation}
-\gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
+\phi_1 = \ulcorner \phi_2 \to \gamma_\rho \urcorner,
+\end{equation}
+\item (GEN) there exists $\phi \in \refset_D(\mathcal{A}, \rho)$ and $x\in \V\setminus (V \cup \fixed_D(\rho))$ such that
+\begin{equation}
+\gamma_\rho = \ulcorner \forall x. \phi \urcorner,
 \end{equation}
 
-\item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
+\item (SKO) there exists $\phi \in \refset_D(\mathcal{A}, \rho)$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
 $\gamma_\rho = \beta(x/\sk^m_\rho)$, 
-$\free(\sk^m_\rho) = \free(\gamma_\eta) \setminus (V \cup \fixed_D(\rho))$ with $\beta(x/\sk^m_\rho)$ admissible and
+$\free(\sk^m_\rho) = \free(\phi) \setminus (V \cup \fixed_D(\rho))$ with $\beta(x/\sk^m_\rho)$ admissible and
 \begin{equation}
-\gamma_\eta = \ulcorner \exists x. \beta\urcorner. 
+\phi = \ulcorner \exists x. \beta\urcorner. 
 \end{equation}
+\end{enumerate}
+\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exist $\eta < \rho$ and $\alpha\in\F(\L^+)$
+ such that
+\begin{equation}
+\gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
+\end{equation}
+where $\eta = \final(\context(D, \rho))$.
 \end{enumerate}
 \end{definition}
 
-The intuition behind a \textit{constrained-proof} is that it is a proof in which certain variables are required to behave as constants.
+The intuition behind a \textit{constrained-proof} is that it is a proof in which certain variables are required to behave as constants and it does not require to place axioms in the reference system but apply rules directly to them.
 
 
-Note that each proof is a \textit{constrained-proof} with $V=\emptyset$.
+Note that each \textit{constrained-proof} with $V=\emptyset$ can be transformed by inserting some references with axioms to the begining of each context where required in $D$ and renumerating the rest of references.
 
 \begin{theorem}
 \label{soundnes-theorem}
