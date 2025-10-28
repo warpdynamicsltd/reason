@@ -644,7 +644,7 @@ $\free(\sk^m_\rho) = \free(\gamma_\eta) \setminus \fixed_D(\rho)$ with $\beta(x/
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
 \end{enumerate}
-\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exist $\eta < \rho$ and $\alpha\in\F(\L^+)$
+\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exists $\alpha\in\F(\L^+)$
  such that
 \begin{equation}
 \gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
@@ -923,7 +923,7 @@ where $\eta = \final(\context(D, \rho))$.
 The intuition behind a \textit{constrained-proof} is that it is a proof in which certain variables are required to behave as constants and it does not require to place axioms in the reference system but rules can be aplied directly to them.
 
 
-Note that each \textit{constrained-proof} with $V=\emptyset$ can be transformed by inserting some references with axioms to the begining of each context where required in $D$ and renumerating the rest of references.
+Note that each proof is a \textit{constrained-proof} with $V=\emptyset$.
 
 \begin{theorem}
 \label{soundnes-theorem}
@@ -958,12 +958,12 @@ k \in (0, k_f\rangle.
 \end{cases}
 \end{equation}
 
-By Definition \ref{proof-definition}, we have $\alpha\in \F_{-1}$ and $\gamma_{r_k}\in \overline{\F}_k$. 
+By Definition \ref{constrained-proof}, we have $\gamma_{r_k}\in \overline{\F}_k$. 
 Thus $T_k \subset \F_k$ for $k=0,\dots,k_f$.
 \\
 
 Take an arbitrary $j_0: \free(\alpha)\cup V\to A$.  
-Take an arbitrary assignment $j:\V\to A$ where $j$ is an extension of $j_0$ and $(\M, j)\models T$.
+Take an arbitrary assignment $j:\V\to A$ such as $j$ is an extension of $j_0$ and $(\M, j)\models T$.
 
 If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\omega \urcorner = \phi$.
 
