@@ -488,6 +488,13 @@ class TestKernelNegatives(unittest.TestCase):
         with pytest.raises(KernelError):
             RETURN()
 
+        L = Language()
+        BEGIN(L)
+        exists_over_imp(L("A(x)"), L("B(x)"), "x")
+        with pytest.raises(KernelError):
+            RETURN()
+
+
 
     def test_skolem_const(self):
         L = Language()
@@ -496,6 +503,35 @@ class TestKernelNegatives(unittest.TestCase):
             s = get_next_skolem_const_name()
             r1 = LEM(L(f"P({s})"))
             r2 = ref()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L(f"∀x.∃y.P(x,y)"))
+            r2 = ALL(L(f"∃y.P(x,y)"), Variable("x"), "x") # (∀x.∃y.P(x, y)) -> ∃y.P(x, y)
+            r3 = MOD(r2, r1) # ∃y.P(x, y)
+            sk = get_next_skolem_const_name()
+            r4 = SKO(r3, sk) # P(x, sk)
+            r5 = GEN(r4, "x") # ∀x. P(x, sk)
+            r6 = EXT(L("∀x. P(x, y)"), Const(sk), "y") # ( ∀x. P(x, sk) ) -> ( ∃y. ∀x. P(x, y) )
+            r7 = MOD(r6, r5) # ∃y. ∀x. P(x, y)
+            r8 = ref()
+
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L(f"∀x.∃y.P(x,y,z)"))
+            r2 = ALL(L(f"∃y.P(x,y,z)"), Variable("x"), "x")  # (∀x.∃y.P(x, y, z)) -> ∃y.P(x, y, z)
+            r3 = MOD(r2, r1)  # ∃y.P(x, y, z)
+            sk = get_next_skolem_const_name()
+            r4 = SKO(r3, sk)  # P(x, sk, z)
+            r5 = GEN(r4, "x")  # ∀x. P(x, sk, z)
+            r6 = EXT(L("∀x. P(x, y, z)"), Const(sk), "y")  # ( ∀x. P(x, sk, z) ) -> ( ∃y. ∀x. P(x, y, z) )
+            r7 = MOD(r6, r5)  # ∀x. P(x, sk, z)
+            r8 = ref() # # ∃y. ∀x. P(x, y, z)
 
         with pytest.raises(KernelError):
             RETURN()

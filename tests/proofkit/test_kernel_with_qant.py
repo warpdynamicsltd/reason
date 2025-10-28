@@ -169,6 +169,18 @@ class TestKernelWithQuant(unittest.TestCase):
 
         L = Language()
         BEGIN(L)
+        exists_over_imp(L("A"), L("B(x, y)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. B(x, y) → A ) → ( ( ∃x. B(x, y) ) → A )"))
+
+        L = Language()
+        BEGIN(L)
+        exists_over_imp(L("A"), L("B(x, y, z)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. B(x, y, z) → A ) → ( ( ∃x. B(x, y, z) ) → A )"))
+
+        L = Language()
+        BEGIN(L)
         de_morgan_not_exists_to_all_not(L("P(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L("~ ( ∃x. P(x) ) → ( ∀x. ~P(x) )"))
