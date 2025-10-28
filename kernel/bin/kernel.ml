@@ -275,12 +275,12 @@ let formula_match_ref ref formula =
   skolem_const_compatible_with_ref_in_formula ref formula 
   && max_context_const_index_of_formula formula < context_depth_of_ref ref
 
-let is_ctv_alinged ref terms = 
+let ctv_rule_constrain ref terms = 
   match List.nth terms 0 with
     | ContextConst index -> context_depth_of_ref ref = index
     | _ -> false
 
-let is_sko_aligned ref terms refs proof =
+let sko_rule_constrain ref terms refs proof =
   let formula = get_formula proof (List.nth refs 0) in
   let sk_term = List.nth terms 0 in
   if 
@@ -297,7 +297,7 @@ let is_sko_aligned ref terms refs proof =
       | _ -> false
   else false
 
-let is_gen_aligned ref terms proof =
+let gen_rule_constrain ref terms proof =
   match List.nth terms 0 with 
     | Var v -> not (var_accurs_free_in_assumptions proof ref v)
     | _ -> false
@@ -306,6 +306,9 @@ let is_assumption_statement s =
   match s with
     | AssumptionStmt _ -> true
     | _ -> false
+
+let derive_formula proof rule_label refs terms = 
+  rule rule_label (List.map (get_formula proof) refs, terms)
 
 let rec is_valid_conclusion proof r = 
   match get_statement proof r with
@@ -323,11 +326,10 @@ let rec is_valid_conclusion proof r =
           && List.for_all (is_valid_conclusion proof) refs
           && formula_match_ref r formula
         -> (match label with 
-            | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | "SKO" -> is_sko_aligned r terms refs proof && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | "GEN" -> is_gen_aligned r terms proof && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | "MOD" 
-            | "IDN" -> formula = (rule label (List.map (get_formula proof) refs, terms))
+            | "CTV" when ctv_rule_constrain r terms -> formula = derive_formula proof label refs terms
+            | "SKO" when sko_rule_constrain r terms refs proof -> formula = derive_formula proof label refs terms
+            | "GEN" when gen_rule_constrain r terms proof -> formula = derive_formula proof label refs terms
+            | "MOD" | "IDN" -> formula = derive_formula proof label refs terms
             | _ -> failwith "invalid proof")
     | BlockStmt{ref; statements; formula} 
         when ref = r 
