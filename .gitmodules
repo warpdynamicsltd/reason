@@ -4,3 +4,6 @@
 [submodule "repositories/lark"]
 	path = repositories/lark
 	url = https://github.com/warpdynamicsltd/lark.git
+[submodule "repositories/ctxproof"]
+	path = repositories/ctxproof
+	url = git@github.com:warpdynamicsltd/ctxproof.git
