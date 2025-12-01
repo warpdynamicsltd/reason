@@ -2,6 +2,7 @@ from typing import Self
 
 from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
+from reason.vampire.translator import to_tptp_fof
 
 from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
 from reason.proofkit.kernel.jsonize import jsonize
@@ -15,6 +16,12 @@ class Ref:
     def to_json(self) -> dict:
         # { "type": "Ref", "name": None, "args": [ index ] }
         return {"type": "Ref", "name": None, "args": self.indices}
+
+    def to_ctxproof(self):
+        if self.indices:
+            return ".".join(map(str, self.indices))
+        else:
+            return "."
 
     def __repr__(self):
         return f"Ref({self.indices})"
@@ -38,6 +45,8 @@ class Assumption:
             ],
         }
 
+    def to_ctxproof(self, depth: int = 0, ref: Ref = Ref([])):
+        return f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{ASM}} {{{ref.to_ctxproof()}}};"
 
 class Axiom:
     def __init__(
@@ -67,6 +76,12 @@ class Axiom:
             ],
         }
 
+    def to_ctxproof(self, depth: int = 0):
+        return (
+            f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{A:{self.label}}} "
+            f"{{{';'.join(map(to_tptp_fof, self.fofs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
+        )
+
 
 class Rule:
     def __init__(
@@ -95,6 +110,12 @@ class Rule:
                 jsonize(self.formula),                   # 3 formula
             ],
         }
+
+    def to_ctxproof(self, depth: int = 0):
+        return (
+            f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{R:{self.label}}} "
+            f"{{{';'.join(map(Ref.to_ctxproof, self.refs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
+        )
 
 
 class Block:
@@ -157,6 +178,26 @@ class Block:
                 jsonize(self.formula),
             ],
         }
+
+    def get_ctxproof_of_statement(self, statement, depth: int = 0):
+        if type(statement) is Assumption:
+            return statement.to_ctxproof(depth, ref=self.ref)
+        else:
+            return statement.to_ctxproof(depth)
+
+    def to_ctxproof(self, depth: int = 0):
+        if self.statements and type(self.statements[0]) is Assumption:
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)}\n"
+        else:
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {to_tptp_fof(self.formula)}\n"
+        res += f"{' ' * depth}{{\n"
+        for s in self.statements:
+            res += self.get_ctxproof_of_statement(s, depth + 2) + "\n"
+        res += f"{' ' * depth}}}"
+
+        return res
+
+
 
 PROOF : Block | None = None
 CURRENT : Block | None = None

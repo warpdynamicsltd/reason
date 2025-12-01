@@ -171,6 +171,11 @@ proof5 = Block(
     formula=L("P → P or ~P")
 )
 
+#%%
+
+print(proof5.to_ctxproof())
+
+#%%
 f1 = Kernel.prove_tautology(proof)
 f2 = Kernel.prove_tautology(proof2)
 f3 = Kernel.prove_tautology(proof3)
