@@ -136,7 +136,7 @@ let rule = function
   | "IDN" -> (function [a], [] -> a | _ -> failwith "illformed rule")
   | "MOD" -> (function [Implies(a, b); c], [] when c=a -> b | _ -> failwith "illformed rule")
   | "GEN" -> (function [a], [Var(v)] -> Forall(v, a) | _ -> failwith "illformed rule")
-  | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
+  (*| "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")*)
   | "SKO" -> (function [Exists(v, a)], [SkolemConst(ref_seq); Var v1] when v=v1 -> substitute_in_formula v (SkolemConst ref_seq) a | _ -> failwith "illformed rule")
   | _ -> failwith "unknown rule"
 
@@ -275,10 +275,10 @@ let formula_match_ref ref formula =
   skolem_const_compatible_with_ref_in_formula ref formula 
   && max_context_const_index_of_formula formula < context_depth_of_ref ref
 
-let ctv_rule_constrain ref terms = 
+(* let ctv_rule_constrain ref terms =
   match List.nth terms 0 with
     | ContextConst index -> context_depth_of_ref ref = index
-    | _ -> false
+    | _ -> false *)
 
 let sko_rule_constrain ref terms refs proof =
   let formula = get_formula proof (List.nth refs 0) in
@@ -326,7 +326,7 @@ let rec is_valid_conclusion proof r =
           && List.for_all (is_valid_conclusion proof) refs
           && formula_match_ref r formula
         -> (match label with 
-            | "CTV" when ctv_rule_constrain r terms -> formula = derive_formula proof label refs terms
+            (*| "CTV" when ctv_rule_constrain r terms -> formula = derive_formula proof label refs terms*)
             | "SKO" when sko_rule_constrain r terms refs proof -> formula = derive_formula proof label refs terms
             | "GEN" when gen_rule_constrain r terms proof -> formula = derive_formula proof label refs terms
             | "MOD" | "IDN" -> formula = derive_formula proof label refs terms

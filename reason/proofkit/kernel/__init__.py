@@ -19,6 +19,10 @@ def run(input):
     bin_path = files("reason") / "assets" / "bin" / "kernel"
     return run_binary(str(bin_path), input)
 
+def run_ctxproof(input):
+    bin_path = files("reason") / "assets" / "bin" / "ctxproof"
+    return run_binary(str(bin_path), input)
+
 
 def kernel_command(command_name):
     """
@@ -110,42 +114,47 @@ def kernel_command(command_name):
 
 
 class Kernel:
-    @staticmethod
-    @kernel_command("ToCnf")
-    def to_cnf(formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
+    # @staticmethod
+    # @kernel_command("ToCnf")
+    # def to_cnf(formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("ToNnf")
+    # def to_nnf(formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("ToEnnf")
+    # def to_ennf(formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("Skolemize")
+    # def skolemize(formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("Print")
+    # def echo(formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("IsSimpleAxiom")
+    # def is_simple_axiom(formula: FirstOrderFormula) -> bool:
+    #     pass
+    #
+    # @staticmethod
+    # @kernel_command("Sub")
+    # def substitute(var: str, replacement: Term, formula: FirstOrderFormula) -> FirstOrderFormula:
+    #     pass
 
     @staticmethod
-    @kernel_command("ToNnf")
-    def to_nnf(formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
-
-    @staticmethod
-    @kernel_command("ToEnnf")
-    def to_ennf(formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
-
-    @staticmethod
-    @kernel_command("Skolemize")
-    def skolemize(formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
-
-    @staticmethod
-    @kernel_command("Print")
-    def echo(formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
-
-    @staticmethod
-    @kernel_command("IsSimpleAxiom")
-    def is_simple_axiom(formula: FirstOrderFormula) -> bool:
-        pass
-
-    @staticmethod
-    @kernel_command("Sub")
-    def substitute(var: str, replacement: Term, formula: FirstOrderFormula) -> FirstOrderFormula:
-        pass
-
-    @staticmethod
-    @kernel_command("KernelProof")
+    #@kernel_command("KernelProof")
     def prove_tautology(block: Block) -> FirstOrderFormula:
-        pass
+        try:
+            run_ctxproof(block.to_ctxproof())
+
+        except CalledProcessError as e:
+            raise KernelError(e.stderr.strip())
+        # pass

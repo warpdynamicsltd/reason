@@ -50,6 +50,10 @@ def to_tptp_fof(obj: FirstOrderFormula) -> str:
             return f"V_{f}"
 
         case Const(name=c, args=[]):
+            if c.startswith("skolem_"):
+                rest = c[len("skolem_"):]
+                seq = rest.split("_")
+                return f"sk.{'.'.join(seq)}"
             return f"c_{name_tptp_encode(c)}"
 
         case Predicate(name=f, args=[]):

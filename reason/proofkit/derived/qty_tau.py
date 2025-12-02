@@ -11,11 +11,11 @@ def all_to_exist(p: FirstOrderFormula, x: str):
     ( ∀x. p(x) ) -> ( ∃x. p(x) )
     """
     with Context():
-        c = get_context_const_name()
+        # c = get_context_const_name()
         r1 = ASM(Forall(x, p)) # ∀x. P(x)
-        r2 = ALL(p, Const(c), x) # (∀x. P(x)) -> P(c1)
-        r3 = MOD(r2, r1) # P(c1)
-        r4 = EXT(p, Const(c), x) # P(c1) -> ∃x. P(x)
+        r2 = ALL(p, Variable(x), x) # (∀x. P(x)) -> P(x)
+        r3 = MOD(r2, r1) # P(x)
+        r4 = EXT(p, Variable(x), x) # P(x) -> ∃x. P(x)
         MOD(r4, r3) # ∃x. P(x)
         return ref() # ∀x. P(x) -> ∃x. P(x)
 
@@ -26,14 +26,12 @@ def all_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
     with Context():
         r0 = ASM(Forall(x, Implies(a, b)))
         with Context():
-            c = get_context_const_name()
             r1 = ASM(a)
-            r2 = ALL(Implies(a, b), Const(c), x) # ( ∀x. a -> b(x) ) -> ( a -> b(c) )
-            r3 = MOD(r2, r0) # a -> b(c)
-            r4 = MOD(r3, r1) # b(c)
-            r5 = CTV(r4, c, x) # b(x)
-            GEN(r5, x) # ∀x. b(x)
-            r6 = ref() # a -> ( ∀x. b(x) )
+            r2 = ALL(Implies(a, b), Variable(x), x)  # ( ∀x. a -> b(x) ) -> ( a -> b(x) )
+            r3 = MOD(r2, r0) # a -> b(x)
+            r4 = MOD(r3, r1) # b(x)
+            GEN(r4, x)  # ∀x. b(x)
+            r5 = ref()
         return ref()
 
 def exists_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
@@ -58,17 +56,16 @@ def de_morgan_not_exists_to_all_not(p: FirstOrderFormula, x: str):
     """
     with Context():
         r0 = ASM(Not(Exists(x, p)))
-        c = get_context_const_name()
+        # c = get_context_const_name()
         with Context():
-            r1 = ASM(Not(Not(p.replace(Variable(x), Const(c))))) # ~~p(c)
-            r2 = rules.r_not_not_to(r1) # p(c)
-            r3 = EXT(p, Const(c), x) # p(c) -> ( ∃x. p(x) )
+            r1 = ASM(Not(Not(p))) # ~~p(x)
+            r2 = rules.r_not_not_to(r1) # p(x)
+            r3 = EXT(p, Variable(x), x) # p(x) -> ( ∃x. p(x) )
             r4 = MOD(r3, r2) # ∃x. p(x)
-            rules.r_contradiction(r4, r0, Not(formula(r2))) # ~p(c)
-            r5 = ref() # ~~p(c) -> ~p(c)
-        r6 = rules.r_proof_p_by_not_p(r5) # ~p(c)
-        r7 = CTV(r6, c, x) # ~p(x)
-        GEN(r7, x) # ∀x. ~p(x)
+            rules.r_contradiction(r4, r0, Not(formula(r2))) # ~p(x)
+            r5 = ref() # ~~p(x) -> ~p(x)
+        r6 = rules.r_proof_p_by_not_p(r5) # ~p(x)
+        GEN(r6, x) # ∀x. ~p(x)
         return ref()
 
 def de_morgan_all_not_to_not_exist(p: FirstOrderFormula, x: str):

@@ -232,10 +232,10 @@ class Context():
 def ref():
     return reason.proofkit.kernel.proof.CURRENT.ref
 
-def get_context_const_name():
-    const_name = f"context_{CURRENT.get_depth()}"
-    LANGUAGE.add_const(const_name)
-    return const_name
+# def get_context_const_name():
+#     const_name = f"context_{CURRENT.get_depth()}"
+#     LANGUAGE.add_const(const_name)
+#     return const_name
 
 def get_next_skolem_const_name():
     skolem_name = CURRENT.get_next_skolem_name()
@@ -256,8 +256,8 @@ def formula(ref: Ref):
     return PROOF.value(ref)
 
 def RETURN():
-    return reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
-    # return PROOF.formula
+    reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
+    return PROOF.formula
 
 @asm
 def ASM(a: FirstOrderFormula):
@@ -402,13 +402,13 @@ def GEN(r: Ref, x: str):
     return Rule("GEN", [r], [Variable(x)], Forall(x, PROOF.value(r)))
 
 # | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
-@asm
-def CTV(a: Ref, context_const_name: str, x: str):
-    """
-    p(context_i) |- p(x)
-    """
-    c = Const(context_const_name)
-    return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
+# @asm
+# def CTV(a: Ref, context_const_name: str, x: str):
+#     """
+#     p(context_i) |- p(x)
+#     """
+#     c = Const(context_const_name)
+#     return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
 
 @asm
 def SKO(a: Ref, skolem_const_name: str):
