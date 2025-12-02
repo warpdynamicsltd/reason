@@ -34,7 +34,7 @@ jobs:
       - if: ${{ steps.cache-vampire.outputs.cache-hit == 'true' }}
         run: cp repositories/vampire/build/vampire reason/assets/bin
 
-      - run: ./kernel-install.sh
+      - run: ./ctxproof-install.sh
 
       - run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - run: uv sync
