@@ -4,7 +4,7 @@ from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
 from reason.proofkit.kernel.ctxproof_tptp import to_tptp_fof
 
-from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
+from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective, Predicate
 from reason.proofkit.kernel.jsonize import jsonize
 from reason.core.language import Language
 import reason.proofkit.kernel
@@ -258,8 +258,15 @@ def formula(ref: Ref):
     return PROOF.value(ref)
 
 def RETURN():
-    reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
-    return PROOF.formula
+    formula = reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
+    if type(PROOF.statements[0]) is Assumption:
+        return formula
+    else:
+        match formula:
+            case LogicConnective(name=IMP, args=[Predicate(name=const.TRUE), conclusion]):
+                return conclusion
+
+    raise RuntimeError("Invalid formula")
 
 @asm
 def ASM(a: FirstOrderFormula):

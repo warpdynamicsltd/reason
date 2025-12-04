@@ -1,0 +1,50 @@
+%import common.CNAME
+%import common.WS
+%import common.LETTER
+%import common.DIGIT
+%import common.UCASE_LETTER
+%import common.LCASE_LETTER
+%ignore WS
+
+VARIABLE: UCASE_LETTER ("_"|LETTER|DIGIT)*
+SKOLEM: "sk." DIGIT+ ("." DIGIT+)*
+FNAME: LCASE_LETTER ("_"|LETTER|DIGIT)*
+
+variable: VARIABLE
+fname: FNAME
+const: FNAME
+skolem_symbol: SKOLEM
+
+term: variable
+  | const
+  | skolem_symbol
+  | fname "(" term_list ")" -> composed_term
+  | skolem_symbol "(" term_list ")" -> skolem_term
+
+predicate: "$true" -> true_predicate
+  | "$false" -> false_predicate
+  | fname -> predicate_name
+  | fname "(" term_list ")" -> composed_predicate
+  | skolem_symbol -> skolem_predicate_name
+  | skolem_symbol "(" term_list ")" -> skolem_predicate
+  | term "=" term -> terms_equality
+  | term "!=" term -> terms_inequality
+
+term_list: [term ("," term)*]
+
+formula: predicate
+  | bracket
+  | "~" predicate -> logic_neg_op
+  | "~" bracket -> logic_neg_op
+  | formula "&" formula -> logic_and_op
+  | formula "|" formula -> logic_or_op
+  | formula "=>" formula -> logic_imp_op
+  | formula "<=>" formula -> logic_iff_op
+  | exists_quantifier
+  | forall_quantifier
+
+exists_quantifier: "?" "[" variables_list "]" ":" formula
+forall_quantifier: "!" "[" variables_list "]" ":" formula
+bracket: "(" formula ")"
+
+variables_list: [variable ("," variable)*]

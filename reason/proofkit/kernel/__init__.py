@@ -1,4 +1,5 @@
 import json
+import re
 from inspect import signature, Parameter
 from subprocess import CalledProcessError
 from typing import get_type_hints
@@ -9,6 +10,7 @@ from reason.proofkit.kernel.jsonize import jsonize
 from reason.proofkit.kernel.from_json import from_json
 from reason.core.fof_types import FirstOrderFormula, Term
 from reason.proofkit.kernel.proof import Ref, Axiom, Rule, Block
+from reason.parser.ctxproof_tptp import CtxProofTPTPParser
 
 DEBUG = False
 
@@ -22,6 +24,23 @@ def run(input):
 def run_ctxproof(input):
     bin_path = files("reason") / "assets" / "bin" / "ctxproof"
     return run_binary(str(bin_path), input)
+
+
+def extract_formula_from_ctxproof(ctxproof_str: str) -> str:
+    """
+    Extract the formula part from a ctxproof string.
+    The formula is the part before the opening brace {...}.
+
+    For example:
+    - ". p_A(X)\n{...}" -> "p_A(X)"
+    - ". $true => p_B(Y)\n{...}" -> "$true => p_B(Y)"
+    """
+    # Match everything before the first {, extract the part after the reference
+    match = re.match(r'^[^\s]+\s+(.+?)\s*\n?\s*\{', ctxproof_str, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    else:
+        raise ValueError("Could not extract formula from ctxproof string")
 
 
 def kernel_command(command_name):
@@ -152,9 +171,20 @@ class Kernel:
     @staticmethod
     #@kernel_command("KernelProof")
     def prove_tautology(block: Block) -> FirstOrderFormula:
-        try:
-            run_ctxproof(block.to_ctxproof())
+        # Get the ctxproof representation
+        ctxproof_str = block.to_ctxproof()
 
+        try:
+            # Verify the proof with ctxproof binary
+            run_ctxproof(ctxproof_str)
         except CalledProcessError as e:
             raise KernelError(e.stderr.strip())
-        # pass
+
+        # Extract the formula from the ctxproof string
+        formula_str = extract_formula_from_ctxproof(ctxproof_str)
+
+        # Parse the formula with CtxProofTPTPParser
+        parser = CtxProofTPTPParser()
+        formula = parser(formula_str)
+
+        return formula

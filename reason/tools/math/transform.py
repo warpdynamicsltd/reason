@@ -62,7 +62,7 @@ def str_to_var(s):
     """
     result = []
     for char in s:
-        if char.isalnum():
+        if char.isascii() and char.isalnum():
             result.append(char)
         elif char == '_':
             result.append('__')
