@@ -2,7 +2,7 @@ from typing import Self
 
 from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
-from reason.vampire.translator import to_tptp_fof
+from reason.proofkit.kernel.ctxproof_tptp import to_tptp_fof
 
 from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective
 from reason.proofkit.kernel.jsonize import jsonize
@@ -186,7 +186,9 @@ class Block:
             return statement.to_ctxproof(depth)
 
     def to_ctxproof(self, depth: int = 0):
-        if self.statements and type(self.statements[0]) is Assumption:
+        if not self.statements:
+            raise RuntimeError("Empty block")
+        if type(self.statements[0]) is Assumption:
             res = f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)}\n"
         else:
             res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {to_tptp_fof(self.formula)}\n"
