@@ -251,3 +251,11 @@ class TestKernelWithQuant(unittest.TestCase):
 
         f = RETURN()
         self.assertEqual(f, L("( ∀x. P(x) ) ⟷ ( ∀x. ~~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        r1 = p_iff_not_not_p(L("P(x)"))
+        r2 = r_iff_exists(r1, "x")
+
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. P(x) ) ⟷ ( ∃x. ~~P(x) )"))

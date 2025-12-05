@@ -68,3 +68,24 @@ def r_iff_to_exists(r1: Ref, r2: Ref, x: str):
             return MOD(r8, r2) # ∃x. q(x)
 
     raise rules.RuleError()
+
+def r_iff_exists(r1: Ref, x: str):
+    """
+    p(x) <-> q(x) |- ( ∃x. p(x) ) <-> ( ∃x. q(x) )
+    """
+    match formula(r1):
+        case LogicConnective(name=const.IFF, args=[p, q]):
+            with Context():
+                r2 = ASM(Exists(x, p))
+                r_iff_to_exists(r1, r2, x) # ( ∃x. q(x) )
+                r3 = ref() # ( ∃x. p(x) ) -> ( ∃x. q(x) )
+
+            with Context():
+                r4 = ASM(Exists(x, q))
+                r5 = rules.r_iff_revolve(r1) # q(x) <-> p(x)
+                r_iff_to_exists(r5, r4, x) # ( ∃x. p(x) )
+                r6 = ref() # ( ∃x. q(x) ) -> ( ∃x. q(x) )
+
+            return rules.r_imp_imp_iff(r3, r6) # ( ∃x. p(x) ) <-> ( ∃x. q(x) )
+
+    raise rules.RuleError()
