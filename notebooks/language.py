@@ -23,6 +23,6 @@ print(json.dumps(obj, indent=2))
 
 BEGIN(L)
 r1 = NnfProvedTransformer(f=L("( ∃y. ∀x. P(x, y) ) → ( ∀x. ∃y.  P(x, y) )")).result
-res_f = PROOF()
+res_f = RETURN()
 print(L.printer(res_f))
 # %%

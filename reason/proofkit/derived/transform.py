@@ -2,6 +2,7 @@ from unittest import case
 
 from reason.core.transform.transformer import Transformer
 from reason.proofkit.derived.qty_rules import *
+from reason.proofkit.derived.qty_tau import *
 
 from reason.proofkit.derived.rules import *
 from reason.proofkit.derived.tautologies import *
@@ -194,9 +195,23 @@ class NnfProvedTransformer(IDNProvedTransformer):
             case LogicConnective(name=const.IFF, args=[p, q]):
                 r1 = iff_iff(p, q)  # (p -> q and p -> q) <-> (p <-> q)
                 r2 = r_iff_revolve(r1) # (p <-> q) <-> (p -> q and p -> q)
-                return r_iff_neg(r2)  # ~(p -> q) <-> ~(p -> q and p -> q)
+                return r_iff_neg(r2)  # ~(p <-> q) <-> ~(p -> q and p -> q)
 
         raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_all(self, a):
+        match a:
+            case LogicQuantifier(name=const.FORALL, args=[var, arg]):
+                r1 = de_morgan_exists_not_iff_not_all(arg, var.name) #  ∃x. ~p(x) <-> ~( ∀x. p(x) )
+                return r_iff_revolve(r1) # ~( ∀x. p(x) ) <-> ∃x. ~p(x)
+
+    @ProvedTransformer.outer
+    def neg_exists(self, a):
+        match a:
+            case LogicQuantifier(name=const.EXISTS, args=[var, arg]):
+                return de_morgan_not_exists_iff_all_not(arg, var.name) #  ~ ( ∃x. p(x) ) <-> ∀x. ~p(x)
+
 
     def neg(self, a):
         match a:
@@ -210,6 +225,10 @@ class NnfProvedTransformer(IDNProvedTransformer):
                 return self.neg_imp(a)
             case LogicConnective(name=const.IFF):
                 return self.neg_iff(a)
+            case LogicQuantifier(name=const.EXISTS):
+                return self.neg_exists(a)
+            case LogicQuantifier(name=const.FORALL):
+                return self.neg_all(a)
 
         return self.neg_simple(a)
 
