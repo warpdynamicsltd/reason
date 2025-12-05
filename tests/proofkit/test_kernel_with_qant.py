@@ -259,3 +259,54 @@ class TestKernelWithQuant(unittest.TestCase):
 
         f = RETURN()
         self.assertEqual(f, L("( ∃x. P(x) ) ⟷ ( ∃x. ~~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∃x. P(x)")).result
+        f = RETURN()
+        self.assertEqual(f, L("(∃x. P(x)) ⟷ (∃x. P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∀x. P(x)")).result
+        f = RETURN()
+        self.assertEqual(f, L("(∀x. P(x)) ⟷ (∀x. P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∀x. ∃y. P(x, y)")).result
+        f = RETURN()
+        self.assertEqual(f, L("( ∀x. ∃y. P(x, y) ) ⟷ ( ∀x. ∃y. P(x, y) )"))
+
+    def test_transform(self):
+        L = Language()
+        cases = [
+            (L("∃x. P(x)"), L("∃x. P(x)")),
+            (L("( ∃x. P(x) ) → Q"), L("~(∃x. P(x)) ∨ Q")),
+            (L("A ∧ ( ( ∀x. P(x) ) → ( ∃x. Q(x) ) )"), L("A ∧ ( ~(∀x. P(x)) ∨ ( ∃x. Q(x) ) )")),
+            (L("( (∀x. P(x)) → (∃y. Q(y)) ) ∧ A"), L("( ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) ∧ A )")),
+            (L("A ∨ ( (∀x. P(x)) → (∃y. Q(y)) )"), L("( A ∨ ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) )")),
+            (L("( (∀x. P(x)) → (∃y. Q(y)) ) ∨ A"), L("( ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) ∨ A )")),
+            (L("~(∀x. P(x)) → Q"), L("~~(∀x. P(x)) ∨ Q")),
+            (L("(∀x. P(x)) → ~(∃y. Q(y))"), L("~(∀x. P(x)) ∨ ~(∃y. Q(y))")),
+            (L("~( (∀x. P(x)) → (∃y. Q(y)) )"), L("~( ~(∀x. P(x)) ∨ (∃y. Q(y)) )")),
+            (L("(∃x. Q(x)) → ( (∀y. P(y)) → (∃z. Q(z)) )"), L("~(∃x. Q(x)) ∨ ( ~(∀y. P(y)) ∨ (∃z. Q(z)) )")),
+            # Inverted quantifiers
+            (L("∀x. P(x)"), L("∀x. P(x)")),
+            (L("( ∀x. P(x) ) → Q"), L("~(∀x. P(x)) ∨ Q")),
+            (L("A ∧ ( ( ∃x. P(x) ) → ( ∀x. Q(x) ) )"), L("A ∧ ( ~(∃x. P(x)) ∨ ( ∀x. Q(x) ) )")),
+            (L("( (∃x. P(x)) → (∀y. Q(y)) ) ∧ A"), L("( ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) ∧ A )")),
+            (L("A ∨ ( (∃x. P(x)) → (∀y. Q(y)) )"), L("( A ∨ ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) )")),
+            (L("( (∃x. P(x)) → (∀y. Q(y)) ) ∨ A"), L("( ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) ∨ A )")),
+            (L("~(∃x. P(x)) → Q"), L("~~(∃x. P(x)) ∨ Q")),
+            (L("(∃x. P(x)) → ~(∀y. Q(y))"), L("~(∃x. P(x)) ∨ ~(∀y. Q(y))")),
+            (L("~( (∃x. P(x)) → (∀y. Q(y)) )"), L("~( ~(∃x. P(x)) ∨ (∀y. Q(y)) )")),
+            (L("(∀x. Q(x)) → ( (∃y. P(y)) → (∀z. Q(z)) )"), L("~(∀x. Q(x)) ∨ ( ~(∃y. P(y)) ∨ (∀z. Q(z)) )")),
+        ]
+
+        for f_in, f_out in cases:
+            L = Language()
+            BEGIN(L)
+            r = ImpDisProvedTransformer(f_in).result
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))
