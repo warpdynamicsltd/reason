@@ -23,5 +23,5 @@ opam install . --deps-only -y
 eval $(opam env)
 dune build
 dune test
-rm -f ../../../reason/assets/bin/ctxproof
-cp _build/install/default/bin/ctxproof ../../../reason/assets/bin/ctxproof
+rm -f ../../../reason/assets/bin/ctxproof || exit 1
+cp _build/install/default/bin/ctxproof ../../../reason/assets/bin/ctxproof || exit 1
