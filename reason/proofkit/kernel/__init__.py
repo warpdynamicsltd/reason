@@ -1,5 +1,8 @@
 import json
 import re
+import hashlib
+import os
+from pathlib import Path
 from inspect import signature, Parameter
 from subprocess import CalledProcessError
 from typing import get_type_hints
@@ -12,10 +15,32 @@ from reason.core.fof_types import FirstOrderFormula, Term
 from reason.proofkit.kernel.proof import Ref, Axiom, Rule, Block
 from reason.parser.ctxproof_tptp import CtxProofTPTPParser
 
-DEBUG = False
+DEBUG = True
 
 class KernelError(Exception):
     pass
+
+def save_proof_to_file(prefix: str, ctxproof_str: str):
+    """
+    Save ctxproof string to a file named by its SHA256 hash.
+    Files are saved in the 'proofs' directory relative to this module.
+    """
+    # Get the directory where this module is located
+    module_dir = Path(__file__).parent
+    proofs_dir = module_dir / "proofs" / prefix
+
+    # Create the proofs directory if it doesn't exist
+    proofs_dir.mkdir(exist_ok=True)
+
+    # Calculate SHA256 hash of the ctxproof string
+    hash_digest = hashlib.sha256(ctxproof_str.encode('utf-8')).hexdigest()
+
+    # Create the file path
+    proof_file = proofs_dir / f"{hash_digest}.ctxproof"
+
+    # Save the proof to the file
+    with open(proof_file, 'w') as f:
+        f.write(ctxproof_str)
 
 def run(input):
     bin_path = files("reason") / "assets" / "bin" / "kernel"
@@ -178,9 +203,13 @@ class Kernel:
             # Verify the proof with ctxproof binary
             run_ctxproof(ctxproof_str)
         except CalledProcessError as e:
+            if DEBUG:
+                save_proof_to_file("incorrect", ctxproof_str)
             raise KernelError(e.stderr.strip())
 
-        # Extract the formula from the ctxproof string
+        if DEBUG:
+            save_proof_to_file("correct", ctxproof_str)
+
         formula_str = extract_formula_from_ctxproof(ctxproof_str)
 
         # Parse the formula with CtxProofTPTPParser
