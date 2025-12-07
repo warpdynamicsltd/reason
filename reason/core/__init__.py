@@ -3,6 +3,8 @@ from __future__ import annotations
 from typing import Self
 from beartype import beartype
 
+from functools import cache
+
 
 class MutateImmutableError(Exception):
     pass
@@ -16,6 +18,8 @@ class AbstractTerm:
     def __init__(self, name: str | int | tuple, *args: AbstractTerm | str | int | tuple):
         self.__name = name
         self.__args = tuple(args)
+
+        self.__hash = None
 
     @property
     def name(self):
@@ -34,10 +38,15 @@ class AbstractTerm:
         raise MutateImmutableError()
 
     def __hash__(self):
+        if self.__hash is not None:
+            return self.__hash
+
         if not self.args:
-            return hash((type(self), self.name))
+            self.__hash = hash((type(self), self.name))
         else:
-            return hash((type(self), self.name, *self.args))
+            self.__hash = hash((type(self), self.name, *self.args))
+
+        return self.__hash
 
     def __eq__(self, other):
         return type(self) == type(other) and self.name == other.name and self.args == other.args

@@ -25,6 +25,12 @@ class Ref:
         else:
             return "."
 
+    def __hash__(self):
+        return hash(self.indices)
+
+    def __eq__(self, other):
+        return self.indices == other.indices
+
     def __repr__(self):
         return f"Ref({self.indices})"
 
@@ -130,6 +136,7 @@ class Block:
         self.ref = ref
         self.statements = list(statements)
         self.formula = formula
+        self.ref_map = {}
 
     def get_formula(self):
         if self.statements:
@@ -140,20 +147,35 @@ class Block:
         else:
             return None
 
-    def value(self, ref : Ref):
+    def _value(self, ref : Ref):
         """
         get formula at given ref
         """
+        # if ref in self.ref_map:
+        #     return self.ref_map[ref]
         index = ref.indices[0]
         statement = self.statements[index]
+
+        res = None
         if type(statement) is Block:
             if len(ref.indices) > 1:
                 ref = Ref(list(ref.indices)[1:])
-                return statement.value(ref)
+                res = statement._value(ref)
             else:
-                return statement.formula
+                res = statement.formula
         else:
-            return statement.formula
+            res = statement.formula
+
+        #self.ref_map[ref] = res
+        return res
+
+    def value(self, ref : Ref):
+        if ref in self.ref_map:
+            return self.ref_map[ref]
+
+        res = self._value(ref)
+        self.ref_map[ref] = res
+        return res
 
     def get_next_ref(self):
         return Ref(list(self.ref.indices) + [len(self.statements)])
@@ -357,6 +379,7 @@ def IFO(a: FirstOrderFormula, b: FirstOrderFormula):
     (a <-> b) -> (a -> b) and (b -> a)
     """
     return Axiom("IFO", [a, b], [], Implies(Iff(a, b), And(Implies(a, b), Implies(b, a))))
+
 
 @asm
 def ALL(a: FirstOrderFormula, t: Term, x: str):
