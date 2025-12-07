@@ -5,6 +5,8 @@ from reason.core.fof_types import LogicPredicate
 from reason.core.fof_types import Const, FirstOrderFormula, Function, Predicate, Variable
 from reason.tools.math.transform import str_to_var, var_to_str
 
+from functools import cache
+
 
 def name_tptp_encode(s: str):
     return str_to_var(s)
@@ -13,7 +15,7 @@ def name_tptp_encode(s: str):
 def name_tptp_decode(s: str):
     return var_to_str(s)
 
-
+@cache
 def to_tptp_fof(obj: FirstOrderFormula) -> str:
     """
     Converts FirstOrderFormula object to fof string from TPTP language for use in Vampire

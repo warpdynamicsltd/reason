@@ -9,6 +9,8 @@ from reason.proofkit.kernel.jsonize import jsonize
 from reason.core.language import Language
 import reason.proofkit.kernel
 
+from functools import cache
+
 class Ref:
     def __init__(self, indices: list[int]):
         self.indices = tuple(indices)
