@@ -21,8 +21,13 @@ obj = prove(L("( ∃y. ∀x. P(x, y) ) → ( ∀x. ∃y.  P(x, y) )"))
 
 print(json.dumps(obj, indent=2))
 
+import time
+start = time.time()
 BEGIN(L)
 r1 = NnfProvedTransformer(f=L("( ∃y. ∀x. P(x, y) ) → ( ∀x. ∃y.  P(x, y) )")).result
+print(PROOF.to_ctxproof())
 res_f = RETURN()
+end = time.time()
+print(f"Time: {end - start}")
 print(L.printer(res_f))
 # %%

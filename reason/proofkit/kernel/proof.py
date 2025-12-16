@@ -7,6 +7,7 @@ from reason.proofkit.kernel.ctxproof_tptp import to_tptp_fof
 from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective, Predicate
 from reason.proofkit.kernel.jsonize import jsonize
 from reason.core.language import Language
+from reason.core.transform.substitute import substitute_predicate
 import reason.proofkit.kernel
 
 from functools import cache
@@ -119,10 +120,19 @@ class Rule:
             ],
         }
 
+    def transform_to_ctxproof(self, generic_formula):
+        match generic_formula:
+            case Ref():
+                return generic_formula.to_ctxproof()
+            case FirstOrderFormula():
+                return to_tptp_fof(generic_formula)
+
+        raise RuntimeError("Invalid formula")
+
     def to_ctxproof(self, depth: int = 0):
         return (
             f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{R:{self.label}}} "
-            f"{{{';'.join(map(Ref.to_ctxproof, self.refs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
+            f"{{{';'.join(map(self.transform_to_ctxproof, self.refs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
         )
 
 
@@ -464,3 +474,38 @@ def IDN(a: Ref):
     """
     formula_a = PROOF.value(a)
     return Rule("IDN", [a], [], formula_a)
+
+@asm
+def PSU(r: Ref, predicate_pattern: Predicate, replacement: FirstOrderFormula):
+    """
+    PSU (Predicate Substitution) rule.
+
+    Given a formula f at reference r, a predicate pattern P(x1, ..., xn),
+    and a replacement formula repl, derives the formula where all occurrences
+    of predicates matching the pattern are replaced with the replacement formula
+    (with appropriate variable substitutions).
+
+    Example:
+        If f = P(a) ∧ P(b) at reference r,
+           pattern = P(x),
+           replacement = Q(x) ∨ R(x)
+        Then PSU(r, pattern, replacement) derives: (Q(a) ∨ R(a)) ∧ (Q(b) ∨ R(b))
+
+    Args:
+        r: Reference to the formula to transform
+        predicate_pattern: A Predicate with Variable arguments defining the pattern
+        replacement: The formula to substitute in place of matching predicates
+
+    Returns:
+        Rule object with the substituted formula
+    """
+    formula_at_r = PROOF.value(r)
+    result_formula = substitute_predicate(predicate_pattern, replacement, formula_at_r)
+
+    # In the OCaml implementation, PSU is stored as:
+    # Rule "PSU" with gformulas = [Reference r; Formula predicate_pattern; Formula replacement]
+    # For the ctxproof representation, we need to pass the formulas, not just the reference
+    # The Rule class expects refs (list of Ref) and terms (list of Term)
+    # But PSU needs to pass formulas. We'll use a special representation.
+
+    return Rule("PSU", [r, predicate_pattern, replacement], [], result_formula)
