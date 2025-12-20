@@ -185,10 +185,8 @@ def r_iff_revolve(p: Ref):
             r3 = r_and_left(r2) # a -> b
             r4 = r_and_right(r2) # b -> a
             r5 = r_and(r4, r3) # b -> a and a -> b
-            # r6 = tau.iff_tau(b, a)
-            r6 = schema(tau.iff_tau, L("_B"), L("_A"))
-            r6 = PSU(r6, L("_A"), a)
-            r6 = PSU(r6, L("_B"), b)
+            r6 = schema_with_result(tau.iff_tau, b, a)
+
             return MOD(r6, r5)
 
     raise RuleError()
@@ -216,7 +214,7 @@ def r_iff_imp_not(p: Ref):
             r1 = IFO(a, b)  # a <-> b -> (a -> b) and (b -> a)
             r2 = MOD(r1, p)  # (a -> b) and (b -> a)
             r3 = r_and_right(r2)  # b -> a
-            r4 = tau.imp_inv(b, a)  # (b -> a) -> (~a -> ~b)
+            r4 = schema_with_result(tau.imp_inv, b, a)  # (b -> a) -> (~a -> ~b)
             return  MOD(r4, r3)  # ~a -> ~b
 
     raise RuleError()
@@ -337,7 +335,7 @@ def r_to_not_not(r1: Ref):
     """
     p |- ~~p
     """
-    r2 = tau.p_to_not_not_p(formula(r1))
+    r2 = schema_with_result(tau.p_to_not_not_p, formula(r1))
     return MOD(r2, r1)
 
 @rule
@@ -348,7 +346,7 @@ def r_not_not_to(r1: Ref):
     not_not_p = formula(r1)
     match not_not_p:
         case LogicConnective(name=const.NEG, args=[LogicConnective(name=const.NEG, args=[p])]):
-            r2 = tau.not_not_p_to_p(p)
+            r2 = schema_with_result(tau.not_not_p_to_p, p)
             return MOD(r2, r1)
 
     raise RuleError()
@@ -374,7 +372,7 @@ def r_inv_imp(r1: Ref):
     f = formula(r1)
     match f:
         case LogicConnective(name=const.IMP, args=[p, q]):
-            r2 = tau.imp_inv(p, q)
+            r2 = schema_with_result(tau.imp_inv, p, q)
             return MOD(r2, r1)
 
     raise RuleError()
@@ -387,7 +385,7 @@ def r_de_morgan_neg_con(r1: Ref):
     f = formula(r1)
     match f:
         case LogicConnective(name=const.NEG, args=[LogicConnective(name=const.AND, args=[p, q])]):
-            r2 = tau.de_morgan_not_and_to_or_not(p, q)
+            r2 = schema_with_result(tau.de_morgan_not_and_to_or_not, p, q)
             return MOD(r2, r1)
 
     raise RuleError()
@@ -406,7 +404,7 @@ def r_de_morgan_dis_neg(r1: Ref):
                 LogicConnective(name=const.NEG, args=[q]),
             ],
         ):
-            r2 = tau.de_morgan_or_not_to_not_and(p, q)
+            r2 = schema_with_result(tau.de_morgan_or_not_to_not_and, p, q)
             return MOD(r2, r1)
 
     raise RuleError()
@@ -419,7 +417,7 @@ def r_de_morgan_neg_dis(r1: Ref):
     f = formula(r1)
     match f:
         case LogicConnective(name=const.NEG, args=[LogicConnective(name=const.OR, args=[p, q])]):
-            r2 = tau.de_morgan_not_or_to_and_not(p, q)
+            r2 = schema_with_result(tau.de_morgan_not_or_to_and_not, p, q)
             return MOD(r2, r1)
 
     raise RuleError()
@@ -439,7 +437,7 @@ def r_de_morgan_con_neg(r1: Ref):
                 LogicConnective(name=const.NEG, args=[q]),
             ],
         ):
-            r2 = tau.de_morgan_and_not_to_not_or(p, q)
+            r2 = schema_with_result(tau.de_morgan_and_not_to_not_or, p, q)
             return MOD(r2, r1)
 
     raise RuleError()

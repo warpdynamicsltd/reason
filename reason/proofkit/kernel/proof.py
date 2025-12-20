@@ -319,6 +319,25 @@ def schema(func, *args):
     SCHEMA_TABLE[key] = ref
     return ref
 
+def schema_with_result(func, *args):
+    L = lang()
+    schema_args = []
+    schema_map = {}
+    keys = []
+    for arg in args:
+        if isinstance(arg, FirstOrderFormula):
+            key = f"_{func.__name__}_arg_{len(schema_map)}"
+            schema_map[key] = arg
+            schema_args.append(L(key))
+            keys.append(key)
+        else:
+            schema_args.append(arg)
+
+    r = schema(func, *schema_args)
+    for key in keys:
+        r = PSU(r, L(key), schema_map[key])
+    return r
+
 def RETURN():
     formula = reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
     if type(PROOF.statements[0]) is Assumption:
