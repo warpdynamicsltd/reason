@@ -5,7 +5,6 @@ from reason.parser.tree.consts import *
 from reason.proofkit.kernel.ctxproof_tptp import to_tptp_fof
 
 from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective, Predicate, Const, Function
-from reason.proofkit.kernel.jsonize import jsonize
 from reason.core.language import Language
 from reason.core.transform.substitute import substitute_predicate
 from reason.core.transform.transformer import Transformer
@@ -42,20 +41,11 @@ class Ref:
 
         return tuple(indices)
 
-    def to_json(self) -> dict:
-        return {"type": "Ref", "name": None, "args": self.indices}
-
     def to_ctxproof(self):
         if self.indices:
             return ".".join(map(str, self.indices))
         else:
             return "."
-
-    # def __hash__(self):
-    #     return hash(self.indices)
-    #
-    # def __eq__(self, other):
-    #     return self.indices == other.indices
 
     def __repr__(self):
         return f"Ref({self.indices})"
@@ -127,16 +117,6 @@ class Assumption(Statement):
     ):
         super().__init__(ref=ref, index=index, parent=parent, formula=formula)
 
-    def to_json(self) -> dict:
-        return {
-            "type": "AssumptionStmt",
-            "name": None,
-            "args": [
-                self.ref.to_json(),
-                jsonize(self.formula),
-            ],
-        }
-
     def to_ctxproof(self, depth: int = 0, ref: Ref = Ref([])):
         return f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()} {{ASM}} {{{ref.to_ctxproof()}}};"
 
@@ -155,19 +135,6 @@ class Axiom(Statement):
         self.label = label
         self.fofs = fofs
         self.terms = terms
-
-    def to_json(self) -> dict:
-        return {
-            "type": "AxiomStmt",
-            "name": None,                      # label → name
-            "args": [
-                self.ref.to_json(),
-                self.label,# 0  ref
-                [jsonize(f) for f in self.fofs],     # 1  fofs
-                [jsonize(t) for t in self.terms],    # 2  terms
-                jsonize(self.formula),               # 3  formula
-            ],
-        }
 
     def to_ctxproof(self, depth: int = 0):
         fofs_tptp = ';'.join(self.formula_to_tptp(f) for f in self.fofs)
@@ -193,19 +160,6 @@ class Rule(Statement):
         self.label = label
         self.refs = refs
         self.terms = terms
-
-    def to_json(self) -> dict:
-        return {
-            "type": "RuleStmt",
-            "name": None,
-            "args": [
-                self.ref.to_json(),
-                self.label,
-                [r.to_json() for r in self.refs],        # 1 refs
-                [jsonize(t) for t in self.terms],        # 2 terms
-                jsonize(self.formula),                   # 3 formula
-            ],
-        }
 
     def transform_to_ctxproof(self, generic_formula):
         match generic_formula:
@@ -262,18 +216,6 @@ class Block(Statement):
         self.statements.append(statement)
         self.formula = self.get_formula()
         return statement
-
-
-    def to_json(self) -> dict:
-        return {
-            "type": "BlockStmt",
-            "name": None,
-            "args": [
-                self.ref.to_json(),
-                [s.to_json() for s in self.statements],
-                jsonize(self.formula),
-            ],
-        }
 
     def get_ctxproof_of_statement(self, statement, depth: int = 0):
         if type(statement) is Assumption:

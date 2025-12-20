@@ -9,8 +9,6 @@ from typing import get_type_hints
 from importlib.resources import files
 
 from reason.tools.binary import run_binary
-from reason.proofkit.kernel.jsonize import jsonize
-from reason.proofkit.kernel.from_json import from_json
 from reason.core.fof_types import FirstOrderFormula, Term
 from reason.proofkit.kernel.proof import Ref, Axiom, Rule, Block
 from reason.parser.ctxproof_tptp import CtxProofTPTPParser
