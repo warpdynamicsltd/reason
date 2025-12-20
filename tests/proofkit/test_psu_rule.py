@@ -2,6 +2,10 @@ import unittest
 
 from reason.core.language import Language
 from reason.proofkit.kernel.proof import *
+from reason.proofkit.derived.tautologies import *
+from reason.proofkit.derived.rules import *
+from reason.proofkit.derived.qty_rules import *
+from reason.proofkit.derived.qty_tau import *
 
 L = Language()
 
@@ -82,6 +86,17 @@ class TestPSURule(unittest.TestCase):
 
         result = RETURN()
         self.assertEqual(result, L("Q(x) → (Q(x) ∨ R(y))"))
+
+    def test_psu_with_schema(self):
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L("∀x. P(x)"))
+            r2 = schema(p_iff_not_not_p, L("Q"))
+            r3 = PSU(r2, L("Q"), L("P(x)"))
+            r4 = r_iff_to_all(r3, r1, "x")
+        f = RETURN()
+        self.assertEqual(f, L("(∀x. P(x)) → (∀x. ~~P(x))"))
 
 
 if __name__ == "__main__":

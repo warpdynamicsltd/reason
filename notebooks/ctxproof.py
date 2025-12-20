@@ -13,14 +13,15 @@ L = Language()
 
 formula = L("p(x)")
 
-global PROOF
+#global PROOF
 
 L = Language()
 BEGIN(L)
-
-r1 = p_iff_not_not_p(L("P(x)"))
 with Context():
-    r2 = ASM(L("∀x. P(x)"))
-    r3 = r_iff_to_all(r1, r2, "x")
+    r1 = ASM(L("∀x. P(x)"))
+    r2 = schema(p_iff_not_not_p, L("Q"))
+    r3 = PSU(r2, L("Q"), L("P(x)"))
+    r4 = r_iff_to_all(r3, r1, "x")
 print(PROOF.to_ctxproof())
 f = RETURN()
+print(L.printer(f))

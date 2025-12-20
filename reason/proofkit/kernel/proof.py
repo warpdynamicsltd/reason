@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, Any
 
 from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
@@ -208,6 +208,17 @@ class Block(Statement):
     def get_depth(self):
         return len(self.ref.indices)
 
+    def prepend(self, statement: Axiom | Rule | Self):
+        statement.ref = Ref([])
+        statement.ref.statement = statement
+        statement.index = 0
+        statement.parent = self
+        for existing_statement in self.statements:
+            existing_statement.index += 1
+        self.statements.insert(0, statement)
+        self.formula = self.get_formula()
+        return statement
+
     def add(self, statement: Axiom | Rule | Self):
         statement.ref = Ref([])
         statement.ref.statement = statement
@@ -242,10 +253,12 @@ class Block(Statement):
 PROOF : Block | None = None
 CURRENT : Block | None = None
 LANGUAGE: Language | None = None
+SCHEMA_TABLE: dict[Any, Ref] = {}
 
 def BEGIN(language: Language = None):
     Ref.last_id = 0
-    global CURRENT, PROOF, LANGUAGE
+    global CURRENT, PROOF, LANGUAGE, SCHEMA_TABLE
+    SCHEMA_TABLE = {}
     CURRENT = Block()
     PROOF = CURRENT
     LANGUAGE = language
@@ -282,9 +295,22 @@ def asm(func):
 
     return wrapper
 
-
 def formula(ref: Ref):
     return PROOF.value(ref)
+
+def schema(func, *args):
+    key = (id(func), args)
+    if key in SCHEMA_TABLE:
+        return SCHEMA_TABLE[key]
+
+    global CURRENT, PROOF
+    store_current = CURRENT
+    CURRENT = Block()
+    ref = func(*args)
+    PROOF.prepend(CURRENT)
+    CURRENT = store_current
+    SCHEMA_TABLE[key] = ref
+    return ref
 
 def RETURN():
     formula = reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
