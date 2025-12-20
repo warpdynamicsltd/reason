@@ -177,6 +177,7 @@ def r_iff_revolve(p: Ref):
     """
     a <-> b |- b <-> a
     """
+    L = lang()
     match formula(p):
         case LogicConnective(name=const.IFF, args=[a, b]):
             r1 = IFO(a, b)
@@ -184,7 +185,10 @@ def r_iff_revolve(p: Ref):
             r3 = r_and_left(r2) # a -> b
             r4 = r_and_right(r2) # b -> a
             r5 = r_and(r4, r3) # b -> a and a -> b
-            r6 = tau.iff_tau(b, a)
+            # r6 = tau.iff_tau(b, a)
+            r6 = schema(tau.iff_tau, L("_B"), L("_A"))
+            r6 = PSU(r6, L("_A"), a)
+            r6 = PSU(r6, L("_B"), b)
             return MOD(r6, r5)
 
     raise RuleError()

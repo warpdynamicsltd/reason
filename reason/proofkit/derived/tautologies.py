@@ -76,9 +76,16 @@ def p_iff_not_not_p(p: FirstOrderFormula):
     """
     p <-> ~~p
     """
+    L = lang()
+    # r1 = p_to_not_not_p(p) # p -> ~~p
+    # r2 = not_not_p_to_p(p) # ~~p -> p
 
-    r1 = p_to_not_not_p(p) # p -> ~~p
-    r2 = not_not_p_to_p(p) # ~~p -> p
+    r1 = schema(p_to_not_not_p, L("_P"))
+    r2 = schema(not_not_p_to_p, L("_P"))
+
+    r1 = PSU(r1, L("_P"), p)
+    r2 = PSU(r2, L("_P"), p)
+
     r3 = rules.r_and(r1, r2)
     r4 = iff_tau(p, Not(Not(p)))
     return MOD(r4, r3)

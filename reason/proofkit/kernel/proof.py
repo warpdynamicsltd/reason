@@ -261,7 +261,10 @@ def BEGIN(language: Language = None):
     SCHEMA_TABLE = {}
     CURRENT = Block()
     PROOF = CURRENT
-    LANGUAGE = language
+    if language is None:
+        LANGUAGE = Language()
+    else:
+        LANGUAGE = language
 
 class Context():
     def __enter__(self):
@@ -297,6 +300,10 @@ def asm(func):
 
 def formula(ref: Ref):
     return PROOF.value(ref)
+
+def lang():
+    global LANGUAGE
+    return LANGUAGE
 
 def schema(func, *args):
     key = (id(func), args)
