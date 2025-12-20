@@ -4,10 +4,11 @@ from reason.core.fof_ops import *
 from reason.parser.tree.consts import *
 from reason.proofkit.kernel.ctxproof_tptp import to_tptp_fof
 
-from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective, Predicate
+from reason.core.fof_types import FirstOrderFormula, Term, Variable, LogicConnective, Predicate, Const, Function
 from reason.proofkit.kernel.jsonize import jsonize
 from reason.core.language import Language
 from reason.core.transform.substitute import substitute_predicate
+from reason.core.transform.transformer import Transformer
 import reason.proofkit.kernel
 
 from functools import cache
@@ -59,6 +60,35 @@ class Ref:
     def __repr__(self):
         return f"Ref({self.indices})"
 
+class SkolemReplacer(Transformer):
+    """Transformer that replaces skolem_<id> with skolem_<indices>"""
+
+    def const(self, obj, name):
+        if name.startswith("skolem_"):
+            id_str = name.replace("skolem_", "")
+            if id_str.isdigit():
+                ref_id = int(id_str)
+                if ref_id in Ref.references:
+                    ref = Ref.references[ref_id]
+                    new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
+                    return Const(new_name)
+                else:
+                    raise RuntimeError(f"Invalid skolem constant: {name}")
+        return obj
+
+    def function(self, obj, name, args, targs):
+        if name.startswith("skolem_"):
+            id_str = name.replace("skolem_", "")
+            if id_str.isdigit():
+                ref_id = int(id_str)
+                if ref_id in Ref.references:
+                    ref = Ref.references[ref_id]
+                    new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
+                    return Function(new_name, *targs)
+                else:
+                    raise RuntimeError(f"Invalid skolem function: {name}")
+        return Function(name, *targs)
+
 class Statement:
     """Base class for all proof statements (Assumption, Axiom, Rule, Block)"""
     def __init__(self, ref: Ref = None, index: int = None, parent: 'Block' = None, formula: FirstOrderFormula = None):
@@ -74,57 +104,7 @@ class Statement:
         Example: 'skolem_5' where Ref.references[5].indices = (1, 2, 3)
                  becomes 'skolem_1_2_3'
         """
-        from reason.core.fof_types import Const, Function, LogicConnective, LogicQuantifier, Predicate
-
-        match formula_or_term:
-            case Const(name=name) if name.startswith("skolem_"):
-                # Extract ID from skolem name: "skolem_5" -> 5
-                id_str = name.replace("skolem_", "")
-                if id_str.isdigit():
-                    ref_id = int(id_str)
-                    if ref_id in Ref.references:
-                        ref = Ref.references[ref_id]
-                        new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
-                        return Const(new_name)
-                    else:
-                        raise RuntimeError(f"Invalid skolem constant: {name}")
-                return formula_or_term
-
-            case Function(name=name, args=args) if name.startswith("skolem_"):
-                # Handle skolem functions
-                id_str = name.replace("skolem_", "")
-                if id_str.isdigit():
-                    ref_id = int(id_str)
-                    if ref_id in Ref.references:
-                        ref = Ref.references[ref_id]
-                        new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
-                        new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
-                        return Function(new_name, new_args)
-                    else:
-                        raise RuntimeError(f"Invalid skolem function: {name}")
-                # Recursively process args even if name doesn't match
-                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
-                return Function(name, *new_args)
-
-            case Function(name=name, args=args):
-                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
-                return Function(name, *new_args)
-
-            case Predicate(name=name, args=args):
-                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
-                return Predicate(name, *new_args)
-
-            case LogicConnective(name=name, args=args):
-                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
-                return LogicConnective(name, *new_args)
-
-            case LogicQuantifier(name=name, args=[var, body]):
-                new_body = Statement.replace_skolem_with_ref(body)
-                return LogicQuantifier(name, var, new_body)
-
-            case _:
-                # For other types (Variable, etc.)
-                return formula_or_term
+        return SkolemReplacer(formula_or_term).result
 
     @staticmethod
     def term_to_tptp(term: Term):
@@ -275,7 +255,6 @@ class Block(Statement):
         return len(self.ref.indices)
 
     def add(self, statement: Axiom | Rule | Self):
-        # statement.ref = self.get_next_ref()
         statement.ref = Ref([])
         statement.ref.statement = statement
         statement.index = len(self.statements)

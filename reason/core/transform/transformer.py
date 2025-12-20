@@ -7,22 +7,22 @@ class Transformer:
         self.result = self.create_result(self._transform(formula))
 
     def variable(self, obj, name):
-        pass
+        return Variable(name=name)
 
     def const(self, obj, name):
-        pass
+        return Const(name=name)
 
     def function(self, obj, name, args, targs):
-        pass
+        return Function(name, *targs)
 
     def predicate(self, obj, name, args, targs):
-        pass
+        return Predicate(name, *targs)
 
     def logic_connective(self, obj, name, args, targs):
-        pass
+        return LogicConnective(name, *targs)
 
     def logic_quantifier(self, obj, name, args, targs):
-        pass
+        return LogicQuantifier(name, *targs)
 
     def create_result(self, transformed):
         return transformed
