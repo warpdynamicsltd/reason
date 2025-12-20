@@ -13,8 +13,33 @@ import reason.proofkit.kernel
 from functools import cache
 
 class Ref:
+    last_id = 0
+    references = {}
+
     def __init__(self, indices: list[int]):
-        self.indices = tuple(indices)
+        Ref.last_id += 1
+        self.id = Ref.last_id
+        self._indices = tuple(indices)
+        self.statement = None
+        Ref.references[self.id] = self
+
+    @property
+    def indices(self):
+        """Compute indices dynamically based on parent statement chain"""
+        if self.statement is None:
+            # Fallback to stored indices if no statement is linked
+            return self._indices
+
+        # Build indices by traversing parent chain
+        indices = []
+        current = self.statement
+
+        while current is not None and current.parent is not None:
+            if current.index is not None:
+                indices.insert(0, current.index)
+            current = current.parent
+
+        return tuple(indices) if indices else self._indices
 
     def to_json(self) -> dict:
         return {"type": "Ref", "name": None, "args": self.indices}
@@ -25,21 +50,89 @@ class Ref:
         else:
             return "."
 
-    def __hash__(self):
-        return hash(self.indices)
-
-    def __eq__(self, other):
-        return self.indices == other.indices
+    # def __hash__(self):
+    #     return hash(self.indices)
+    #
+    # def __eq__(self, other):
+    #     return self.indices == other.indices
 
     def __repr__(self):
         return f"Ref({self.indices})"
 
 class Statement:
     """Base class for all proof statements (Assumption, Axiom, Rule, Block)"""
-    def __init__(self, ref: Ref = None, index: int = None, parent: 'Block' = None):
+    def __init__(self, ref: Ref = None, index: int = None, parent: 'Block' = None, formula: FirstOrderFormula = None):
         self.ref = ref
         self.index = index
         self.parent = parent
+        self.formula = formula
+
+    @staticmethod
+    def replace_skolem_with_ref(formula_or_term):
+        """
+        Replace skolem constants from 'skolem_<id>' to 'skolem_<indices>' format.
+        Example: 'skolem_5' where Ref.references[5].indices = (1, 2, 3)
+                 becomes 'skolem_1_2_3'
+        """
+        from reason.core.fof_types import Const, Function, LogicConnective, LogicQuantifier, Predicate
+
+        match formula_or_term:
+            case Const(name=name) if name.startswith("skolem_"):
+                # Extract ID from skolem name: "skolem_5" -> 5
+                id_str = name.replace("skolem_", "")
+                if id_str.isdigit():
+                    ref_id = int(id_str)
+                    if ref_id in Ref.references:
+                        ref = Ref.references[ref_id]
+                        new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
+                        return Const(new_name)
+                    else:
+                        raise RuntimeError(f"Invalid skolem constant: {name}")
+                return formula_or_term
+
+            case Function(name=name, args=args) if name.startswith("skolem_"):
+                # Handle skolem functions
+                id_str = name.replace("skolem_", "")
+                if id_str.isdigit():
+                    ref_id = int(id_str)
+                    if ref_id in Ref.references:
+                        ref = Ref.references[ref_id]
+                        new_name = f"skolem_{'_'.join(map(str, ref.indices))}"
+                        new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
+                        return Function(new_name, new_args)
+                    else:
+                        raise RuntimeError(f"Invalid skolem function: {name}")
+                # Recursively process args even if name doesn't match
+                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
+                return Function(name, *new_args)
+
+            case Function(name=name, args=args):
+                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
+                return Function(name, *new_args)
+
+            case Predicate(name=name, args=args):
+                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
+                return Predicate(name, *new_args)
+
+            case LogicConnective(name=name, args=args):
+                new_args = [Statement.replace_skolem_with_ref(arg) for arg in args]
+                return LogicConnective(name, *new_args)
+
+            case LogicQuantifier(name=name, args=[var, body]):
+                new_body = Statement.replace_skolem_with_ref(body)
+                return LogicQuantifier(name, var, new_body)
+
+            case _:
+                # For other types (Variable, etc.)
+                return formula_or_term
+
+    def formula_to_tptp(self):
+        """Convert formula to TPTP FOF format"""
+        return to_tptp_fof(self.replace_skolem_with_ref(self.formula))
+
+    @staticmethod
+    def term_to_tptp(term: Term):
+        return to_tptp_fof(Statement.replace_skolem_with_ref(term))
 
 class Assumption(Statement):
     def __init__(
@@ -49,8 +142,7 @@ class Assumption(Statement):
             index: int = None,
             parent: 'Block' = None,
     ):
-        super().__init__(ref=ref, index=index, parent=parent)
-        self.formula = formula
+        super().__init__(ref=ref, index=index, parent=parent, formula=formula)
 
     def to_json(self) -> dict:
         return {
@@ -63,7 +155,7 @@ class Assumption(Statement):
         }
 
     def to_ctxproof(self, depth: int = 0, ref: Ref = Ref([])):
-        return f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{ASM}} {{{ref.to_ctxproof()}}};"
+        return f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{ASM}} {{{ref.to_ctxproof()}}};"
 
 class Axiom(Statement):
     def __init__(
@@ -76,11 +168,10 @@ class Axiom(Statement):
         index: int = None,
         parent: 'Block' = None,
     ):
-        super().__init__(ref=ref, index=index, parent=parent)
+        super().__init__(ref=ref, index=index, parent=parent, formula=formula)
         self.label = label
         self.fofs = fofs
         self.terms = terms
-        self.formula = formula
 
     def to_json(self) -> dict:
         return {
@@ -96,9 +187,11 @@ class Axiom(Statement):
         }
 
     def to_ctxproof(self, depth: int = 0):
+        fofs_tptp = ';'.join(to_tptp_fof(Statement.replace_skolem_with_ref(f)) for f in self.fofs)
+        terms_tptp = ','.join(self.term_to_tptp(t) for t in self.terms)
         return (
-            f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{A:{self.label}}} "
-            f"{{{';'.join(map(to_tptp_fof, self.fofs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
+            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{A:{self.label}}} "
+            f"{{{fofs_tptp}}} {{{terms_tptp}}};"
         )
 
 
@@ -113,11 +206,10 @@ class Rule(Statement):
         index: int = None,
         parent: 'Block' = None,
     ):
-        super().__init__(ref=ref, index=index, parent=parent)
+        super().__init__(ref=ref, index=index, parent=parent, formula=formula)
         self.label = label
         self.refs = refs
         self.terms = terms
-        self.formula = formula
 
     def to_json(self) -> dict:
         return {
@@ -143,8 +235,8 @@ class Rule(Statement):
 
     def to_ctxproof(self, depth: int = 0):
         return (
-            f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{R:{self.label}}} "
-            f"{{{';'.join(map(self.transform_to_ctxproof, self.refs))}}} {{{','.join(map(to_tptp_fof, self.terms))}}};"
+            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{R:{self.label}}} "
+            f"{{{';'.join(map(self.transform_to_ctxproof, self.refs))}}} {{{','.join(map(self.term_to_tptp, self.terms))}}};"
         )
 
 
@@ -157,9 +249,8 @@ class Block(Statement):
         index: int = None,
         parent: 'Block' = None,
     ):
-        super().__init__(ref=ref, index=index, parent=parent)
+        super().__init__(ref=ref, index=index, parent=parent, formula=formula)
         self.statements = list(statements)
-        self.formula = formula
         self.ref_map = {}
 
     def get_formula(self):
@@ -171,44 +262,23 @@ class Block(Statement):
         else:
             return None
 
-    def _value(self, ref : Ref):
-        """
-        get formula at given ref
-        """
-        index = ref.indices[0]
-        statement = self.statements[index]
-
-        res = None
-        if type(statement) is Block:
-            if len(ref.indices) > 1:
-                ref = Ref(list(ref.indices)[1:])
-                res = statement._value(ref)
-            else:
-                res = statement.formula
-        else:
-            res = statement.formula
-
-        return res
-
     def value(self, ref : Ref):
-        if ref in self.ref_map:
-            return self.ref_map[ref]
-
-        res = self._value(ref)
-        self.ref_map[ref] = res
-        return res
+        return ref.statement.formula
 
     def get_next_ref(self):
         return Ref(list(self.ref.indices) + [len(self.statements)])
 
     def get_next_skolem_name(self):
-        return f"skolem_{'_'.join(map(str, self.get_next_ref().indices))}"
+        return f"skolem_{Ref.last_id + 1}"
+        # return f"skolem_{'_'.join(map(str, self.get_next_ref().indices))}"
 
     def get_depth(self):
         return len(self.ref.indices)
 
     def add(self, statement: Axiom | Rule | Self):
-        statement.ref = self.get_next_ref()
+        # statement.ref = self.get_next_ref()
+        statement.ref = Ref([])
+        statement.ref.statement = statement
         statement.index = len(self.statements)
         statement.parent = self
         self.statements.append(statement)
@@ -237,9 +307,9 @@ class Block(Statement):
         if not self.statements:
             raise RuntimeError("Empty block")
         if type(self.statements[0]) is Assumption:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)}\n"
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()}\n"
         else:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {to_tptp_fof(self.formula)}\n"
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {self.formula_to_tptp()}\n"
         res += f"{' ' * depth}{{\n"
         for s in self.statements:
             res += self.get_ctxproof_of_statement(s, depth + 2) + "\n"
@@ -254,6 +324,7 @@ CURRENT : Block | None = None
 LANGUAGE: Language | None = None
 
 def BEGIN(language: Language = None):
+    Ref.last_id = 0
     global CURRENT, PROOF, LANGUAGE
     CURRENT = Block()
     PROOF = CURRENT
