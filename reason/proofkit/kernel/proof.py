@@ -39,7 +39,7 @@ class Ref:
                 indices.insert(0, current.index)
             current = current.parent
 
-        return tuple(indices) if indices else self._indices
+        return tuple(indices)
 
     def to_json(self) -> dict:
         return {"type": "Ref", "name": None, "args": self.indices}
@@ -126,13 +126,16 @@ class Statement:
                 # For other types (Variable, etc.)
                 return formula_or_term
 
-    def formula_to_tptp(self):
-        """Convert formula to TPTP FOF format"""
-        return to_tptp_fof(self.replace_skolem_with_ref(self.formula))
-
     @staticmethod
     def term_to_tptp(term: Term):
         return to_tptp_fof(Statement.replace_skolem_with_ref(term))
+
+    @staticmethod
+    def formula_to_tptp(formula: FirstOrderFormula):
+        return to_tptp_fof(Statement.replace_skolem_with_ref(formula))
+
+    def formula_of_statement_to_tptp(self):
+        return Statement.formula_to_tptp(self.formula)
 
 class Assumption(Statement):
     def __init__(
@@ -155,7 +158,7 @@ class Assumption(Statement):
         }
 
     def to_ctxproof(self, depth: int = 0, ref: Ref = Ref([])):
-        return f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{ASM}} {{{ref.to_ctxproof()}}};"
+        return f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()} {{ASM}} {{{ref.to_ctxproof()}}};"
 
 class Axiom(Statement):
     def __init__(
@@ -187,10 +190,10 @@ class Axiom(Statement):
         }
 
     def to_ctxproof(self, depth: int = 0):
-        fofs_tptp = ';'.join(to_tptp_fof(Statement.replace_skolem_with_ref(f)) for f in self.fofs)
+        fofs_tptp = ';'.join(self.formula_to_tptp(f) for f in self.fofs)
         terms_tptp = ','.join(self.term_to_tptp(t) for t in self.terms)
         return (
-            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{A:{self.label}}} "
+            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()} {{A:{self.label}}} "
             f"{{{fofs_tptp}}} {{{terms_tptp}}};"
         )
 
@@ -229,13 +232,13 @@ class Rule(Statement):
             case Ref():
                 return generic_formula.to_ctxproof()
             case FirstOrderFormula():
-                return to_tptp_fof(generic_formula)
+                return self.formula_to_tptp(generic_formula)
 
         raise RuntimeError("Invalid formula")
 
     def to_ctxproof(self, depth: int = 0):
         return (
-            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()} {{R:{self.label}}} "
+            f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()} {{R:{self.label}}} "
             f"{{{';'.join(map(self.transform_to_ctxproof, self.refs))}}} {{{','.join(map(self.term_to_tptp, self.terms))}}};"
         )
 
@@ -265,12 +268,8 @@ class Block(Statement):
     def value(self, ref : Ref):
         return ref.statement.formula
 
-    def get_next_ref(self):
-        return Ref(list(self.ref.indices) + [len(self.statements)])
-
     def get_next_skolem_name(self):
         return f"skolem_{Ref.last_id + 1}"
-        # return f"skolem_{'_'.join(map(str, self.get_next_ref().indices))}"
 
     def get_depth(self):
         return len(self.ref.indices)
@@ -307,9 +306,9 @@ class Block(Statement):
         if not self.statements:
             raise RuntimeError("Empty block")
         if type(self.statements[0]) is Assumption:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_to_tptp()}\n"
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()}\n"
         else:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {self.formula_to_tptp()}\n"
+            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {self.formula_of_statement_to_tptp()}\n"
         res += f"{' ' * depth}{{\n"
         for s in self.statements:
             res += self.get_ctxproof_of_statement(s, depth + 2) + "\n"
