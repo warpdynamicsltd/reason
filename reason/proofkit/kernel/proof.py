@@ -17,7 +17,6 @@ class Ref:
         self.indices = tuple(indices)
 
     def to_json(self) -> dict:
-        # { "type": "Ref", "name": None, "args": [ index ] }
         return {"type": "Ref", "name": None, "args": self.indices}
 
     def to_ctxproof(self):
@@ -35,13 +34,22 @@ class Ref:
     def __repr__(self):
         return f"Ref({self.indices})"
 
-class Assumption:
+class Statement:
+    """Base class for all proof statements (Assumption, Axiom, Rule, Block)"""
+    def __init__(self, ref: Ref = None, index: int = None, parent: 'Block' = None):
+        self.ref = ref
+        self.index = index
+        self.parent = parent
+
+class Assumption(Statement):
     def __init__(
             self,
             formula: FirstOrderFormula,
             ref: Ref = None,
+            index: int = None,
+            parent: 'Block' = None,
     ):
-        self.ref = ref
+        super().__init__(ref=ref, index=index, parent=parent)
         self.formula = formula
 
     def to_json(self) -> dict:
@@ -57,20 +65,22 @@ class Assumption:
     def to_ctxproof(self, depth: int = 0, ref: Ref = Ref([])):
         return f"{' ' * depth}{self.ref.to_ctxproof()} {to_tptp_fof(self.formula)} {{ASM}} {{{ref.to_ctxproof()}}};"
 
-class Axiom:
+class Axiom(Statement):
     def __init__(
         self,
         label: str,
         fofs: list[FirstOrderFormula],
         terms: list[Term],
         formula: FirstOrderFormula,
-        ref: Ref = None
+        ref: Ref = None,
+        index: int = None,
+        parent: 'Block' = None,
     ):
+        super().__init__(ref=ref, index=index, parent=parent)
         self.label = label
         self.fofs = fofs
         self.terms = terms
         self.formula = formula
-        self.ref = ref
 
     def to_json(self) -> dict:
         return {
@@ -92,7 +102,7 @@ class Axiom:
         )
 
 
-class Rule:
+class Rule(Statement):
     def __init__(
         self,
         label: str,
@@ -100,8 +110,10 @@ class Rule:
         terms: list[Term],
         formula: FirstOrderFormula,
         ref: Ref = None,
+        index: int = None,
+        parent: 'Block' = None,
     ):
-        self.ref = ref
+        super().__init__(ref=ref, index=index, parent=parent)
         self.label = label
         self.refs = refs
         self.terms = terms
@@ -136,14 +148,16 @@ class Rule:
         )
 
 
-class Block:
+class Block(Statement):
     def __init__(
         self,
         statements: list[Axiom | Rule | Self] = [],
         formula: FirstOrderFormula = None,
         ref: Ref = Ref([]),
+        index: int = None,
+        parent: 'Block' = None,
     ):
-        self.ref = ref
+        super().__init__(ref=ref, index=index, parent=parent)
         self.statements = list(statements)
         self.formula = formula
         self.ref_map = {}
@@ -161,8 +175,6 @@ class Block:
         """
         get formula at given ref
         """
-        # if ref in self.ref_map:
-        #     return self.ref_map[ref]
         index = ref.indices[0]
         statement = self.statements[index]
 
@@ -176,7 +188,6 @@ class Block:
         else:
             res = statement.formula
 
-        #self.ref_map[ref] = res
         return res
 
     def value(self, ref : Ref):
@@ -198,8 +209,11 @@ class Block:
 
     def add(self, statement: Axiom | Rule | Self):
         statement.ref = self.get_next_ref()
+        statement.index = len(self.statements)
+        statement.parent = self
         self.statements.append(statement)
         self.formula = self.get_formula()
+        return statement
 
 
     def to_json(self) -> dict:
@@ -248,12 +262,8 @@ def BEGIN(language: Language = None):
 class Context():
     def __enter__(self):
         global CURRENT, PROOF
-
         self.parent = CURRENT
-        self.block = Block(ref=self.parent.get_next_ref())
-        self.ref = None
-
-        self.parent.add(self.block)
+        self.block = self.parent.add(Block())
         CURRENT = self.block
         return self.block
 
@@ -261,17 +271,11 @@ class Context():
         global CURRENT
         self.block.formula = self.block.get_formula()
         self.parent.formula = self.parent.get_formula()
-        self.ref = self.block.ref
         CURRENT = self.parent
         return False
 
 def ref():
     return reason.proofkit.kernel.proof.CURRENT.ref
-
-# def get_context_const_name():
-#     const_name = f"context_{CURRENT.get_depth()}"
-#     LANGUAGE.add_const(const_name)
-#     return const_name
 
 def get_next_skolem_const_name():
     skolem_name = CURRENT.get_next_skolem_name()
@@ -320,12 +324,6 @@ def IMP(a: FirstOrderFormula, b: FirstOrderFormula):
     """
     return Axiom("IMP", [a, b], [], Implies(a, Implies(b, a)))
 
-# @asm
-# def TRN(a: FirstOrderFormula, b1: FirstOrderFormula, b2: FirstOrderFormula):
-#     """
-#     (a -> (b1 -> b2)) -> ( (a -> b1) -> (a -> b2) )
-#     """
-#     return Axiom("TRN", [a, b1, b2], [], Implies(Implies(a, Implies(b1, b2)), Implies(Implies(a, b1), Implies(a, b2))))
 
 @asm
 def ANL(a: FirstOrderFormula, b: FirstOrderFormula):
@@ -407,24 +405,6 @@ def EXT(a: FirstOrderFormula, t: Term, x: str):
     v = Variable(x)
     return Axiom("EXT", [a], [t, v], Implies(a.replace(v, t), Exists(x, a)))
 
-# @asm
-# def ALH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
-#     """
-#     ( ∀x. (a -> b(x)) ) -> ( a -> ∀x. b(x) )
-#     """
-#     v = Variable(x)
-#     return Axiom("ALH", [a, b], [v], Implies(Forall(x, Implies(a, b)), Implies(a, Forall(x, b))))
-#
-# @asm
-# def EXH(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
-#     """
-#     ( ∀x. (b(x) -> a) ) -> ( (∃x. b(x)) -> a )
-#     """
-#     v = Variable(x)
-#     return Axiom("EXH", [a, b], [v], Implies(Forall(x, Implies(b, a)), Implies(Exists(x, b), a)))
-
-### RULES ###
-
 @asm
 def MOD(r1: Ref, r2: Ref):
     """
@@ -445,14 +425,6 @@ def GEN(r: Ref, x: str):
     """
     return Rule("GEN", [r], [Variable(x)], Forall(x, PROOF.value(r)))
 
-# | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
-# @asm
-# def CTV(a: Ref, context_const_name: str, x: str):
-#     """
-#     p(context_i) |- p(x)
-#     """
-#     c = Const(context_const_name)
-#     return Rule("CTV", [a], [c, Variable(x)], PROOF.value(a).replace(c, Variable(x)))
 
 @asm
 def SKO(a: Ref, skolem_const_name: str):
@@ -478,34 +450,9 @@ def IDN(a: Ref):
 @asm
 def PSU(r: Ref, predicate_pattern: Predicate, replacement: FirstOrderFormula):
     """
-    PSU (Predicate Substitution) rule.
-
-    Given a formula f at reference r, a predicate pattern P(x1, ..., xn),
-    and a replacement formula repl, derives the formula where all occurrences
-    of predicates matching the pattern are replaced with the replacement formula
-    (with appropriate variable substitutions).
-
-    Example:
-        If f = P(a) ∧ P(b) at reference r,
-           pattern = P(x),
-           replacement = Q(x) ∨ R(x)
-        Then PSU(r, pattern, replacement) derives: (Q(a) ∨ R(a)) ∧ (Q(b) ∨ R(b))
-
-    Args:
-        r: Reference to the formula to transform
-        predicate_pattern: A Predicate with Variable arguments defining the pattern
-        replacement: The formula to substitute in place of matching predicates
-
-    Returns:
-        Rule object with the substituted formula
+    p |- p(predicate_pattern/replacement)
     """
     formula_at_r = PROOF.value(r)
     result_formula = substitute_predicate(predicate_pattern, replacement, formula_at_r)
-
-    # In the OCaml implementation, PSU is stored as:
-    # Rule "PSU" with gformulas = [Reference r; Formula predicate_pattern; Formula replacement]
-    # For the ctxproof representation, we need to pass the formulas, not just the reference
-    # The Rule class expects refs (list of Ref) and terms (list of Term)
-    # But PSU needs to pass formulas. We'll use a special representation.
 
     return Rule("PSU", [r, predicate_pattern, replacement], [], result_formula)
