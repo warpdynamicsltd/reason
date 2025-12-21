@@ -48,6 +48,12 @@ def to_tptp_fof(obj: FirstOrderFormula) -> str:
         case Predicate(name=const.EQ, args=[a, b]):
             return f"({to_tptp_fof(a)}={to_tptp_fof(b)})"
 
+        case Predicate(name=const.TRUE):
+            return "$true"
+
+        case Predicate(name=const.FALSE):
+            return "$false"
+
         case Variable(name=f, args=[]):
             return f"V_{f}"
 

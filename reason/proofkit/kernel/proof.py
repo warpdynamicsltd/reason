@@ -195,7 +195,8 @@ class Block(Statement):
             if type(self.statements[0]) is Assumption:
                 return Implies(self.statements[0].formula, self.statements[-1].formula)
             else:
-                return self.statements[-1].formula
+                #return self.statements[-1].formula
+                return Implies(Predicate(TRUE), self.statements[-1].formula)
         else:
             return None
 
@@ -208,16 +209,22 @@ class Block(Statement):
     def get_depth(self):
         return len(self.ref.indices)
 
-    def prepend(self, statement: Axiom | Rule | Self):
+    def prepend_statement(self, statement: Axiom | Rule | Self, index: int = 0):
         statement.ref = Ref([])
         statement.ref.statement = statement
-        statement.index = 0
+        statement.index = index
         statement.parent = self
         for existing_statement in self.statements:
-            existing_statement.index += 1
-        self.statements.insert(0, statement)
+            if existing_statement.index >= index:
+                existing_statement.index += 1
+        self.statements.insert(index, statement)
         self.formula = self.get_formula()
         return statement
+
+    def prepend_flat(self, block: Self, index: int = 0):
+        for block_statement in reversed(block.statements):
+            self.prepend_statement(block_statement, index)
+
 
     def add(self, statement: Axiom | Rule | Self):
         statement.ref = Ref([])
@@ -237,10 +244,10 @@ class Block(Statement):
     def to_ctxproof(self, depth: int = 0):
         if not self.statements:
             raise RuntimeError("Empty block")
-        if type(self.statements[0]) is Assumption:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()}\n"
-        else:
-            res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {self.formula_of_statement_to_tptp()}\n"
+        #if type(self.statements[0]) is Assumption:
+        res = f"{' ' * depth}{self.ref.to_ctxproof()} {self.formula_of_statement_to_tptp()}\n"
+        #else:
+            #res = f"{' ' * depth}{self.ref.to_ctxproof()} $true => {self.formula_of_statement_to_tptp()}\n"
         res += f"{' ' * depth}{{\n"
         for s in self.statements:
             res += self.get_ctxproof_of_statement(s, depth + 2) + "\n"
@@ -306,16 +313,33 @@ def lang():
     return LANGUAGE
 
 def schema(func, *args):
-    key = (id(func), args)
+    key = (func.__name__, args)
     if key in SCHEMA_TABLE:
         return SCHEMA_TABLE[key]
 
     global CURRENT, PROOF
     store_current = CURRENT
+
+    indices = store_current.ref.indices
+    if indices:
+        index = indices[0]
+    else:
+        index = 0
+
     CURRENT = Block()
+    PROOF.prepend_statement(CURRENT, index=index)
     ref = func(*args)
-    PROOF.prepend(CURRENT)
+    # ref = CURRENT.statements[-1].ref
+    # if len(CURRENT.statements) > 1:
+    #     PROOF.prepend_statement(CURRENT)
+    # else:
+    #     PROOF.prepend_statement(CURRENT.statements[-1])
+    #     ref = CURRENT.statements[-1].ref
+    # PROOF.prepend_flat(CURRENT, index=index)
+    ref = CURRENT.ref
+
     CURRENT = store_current
+
     SCHEMA_TABLE[key] = ref
     return ref
 
@@ -325,18 +349,37 @@ def schema_with_result(func, *args):
     schema_map = {}
     keys = []
 
+    predicate_patterns = []
+    current = []
     for arg in args:
         if isinstance(arg, FirstOrderFormula):
-            key = f"_{func.__name__}_arg_{len(schema_map)}"
-            schema_map[key] = arg
-            schema_args.append(L(key))
-            keys.append(key)
+            if current:
+                predicate_patterns.append(current)
+            current = [arg]
+        elif type(arg) is str:
+            current.append(arg)
         else:
-            schema_args.append(arg)
+            raise RuntimeError(f"Invalid argument type: {type(arg)}")
+
+    if current:
+        predicate_patterns.append(current)
+
+    predicates = []
+    for (arg, *var_names) in predicate_patterns:
+        pred_name = f"_{func.__name__}_pred_{len(schema_map)}"
+        predicate = Predicate(pred_name, *[Variable(var_name) for var_name in var_names])
+        predicates.append(predicate)
+        schema_map[predicate] = arg
+        schema_args.append(predicate)
+        for var in predicate.args:
+            schema_args.append(var.name)
 
     r = schema(func, *schema_args)
-    for key in keys:
-        r = PSU(r, L(key), schema_map[key])
+    for predicate in predicates:
+        if type(r.statement) is Block and r.statement.statements and type(r.statement.statements[0]) is not Assumption:
+            r1 = TRU()
+            r = MOD(r, r1)
+        r = PSU(r, predicate, schema_map[predicate])
     return r
 
 def sub_schema(func):
@@ -359,6 +402,14 @@ def RETURN():
 @asm
 def ASM(a: FirstOrderFormula):
     return Assumption(a)
+
+@asm
+def TRU():
+    """
+    $true
+    """
+    return Axiom("TRU", [], [], Predicate(TRUE))
+
 
 @asm
 def LEM(a: FirstOrderFormula):

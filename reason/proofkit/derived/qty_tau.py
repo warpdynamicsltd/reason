@@ -6,6 +6,7 @@ import reason.proofkit.derived.tautologies as tau
 from reason.proofkit.kernel import Ref
 from reason.proofkit.kernel.proof import *
 
+@sub_schema
 def all_to_exist(p: FirstOrderFormula, x: str):
     """
     ( ∀x. p(x) ) -> ( ∃x. p(x) )
@@ -19,6 +20,7 @@ def all_to_exist(p: FirstOrderFormula, x: str):
         MOD(r4, r3) # ∃x. P(x)
         return ref() # ∀x. P(x) -> ∃x. P(x)
 
+@sub_schema
 def all_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
     """
     ( ∀x. a -> b(x) ) -> ( a -> ( ∀x. b(x) ) )
@@ -34,6 +36,7 @@ def all_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
             r5 = ref()
         return ref()
 
+@sub_schema
 def exists_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
     """
     ( ∀x. b(x) -> a ) -> ( ( ∃x. b(x) ) -> a )
@@ -50,6 +53,7 @@ def exists_over_imp(a: FirstOrderFormula, b: FirstOrderFormula, x: str):
             # ( ∃x. b(x) ) -> a
         return ref()
 
+#@sub_schema
 def de_morgan_not_exists_to_all_not(p: FirstOrderFormula, x: str):
     """
     ~ ( ∃x. p(x) ) -> ∀x. ~p(x)
@@ -68,6 +72,7 @@ def de_morgan_not_exists_to_all_not(p: FirstOrderFormula, x: str):
         GEN(r6, x) # ∀x. ~p(x)
         return ref()
 
+#@sub_schema
 def de_morgan_all_not_to_not_exist(p: FirstOrderFormula, x: str):
     """
     ∀x. ~p(x) -> ~ ( ∃x. p(x) )
@@ -86,6 +91,7 @@ def de_morgan_all_not_to_not_exist(p: FirstOrderFormula, x: str):
         rules.r_proof_p_by_not_p(r6) # ~ ( ∃x. p(x) )
         return ref() # ∀x. ~p(x) -> ~ ( ∃x. p(x) )
 
+#@sub_schema
 def de_morgan_exists_not_to_not_all(p: FirstOrderFormula, x: str):
     """
     ∃x. ~p(x) -> ~( ∀x. p(x) )
@@ -104,6 +110,7 @@ def de_morgan_exists_not_to_not_all(p: FirstOrderFormula, x: str):
         rules.r_proof_p_by_not_p(r8) # ~∀x. p(x)
         return ref()
 
+#@sub_schema
 def de_morgan_not_all_to_exists_not(p: FirstOrderFormula, x: str):
     """
     ~( ∀x. p(x) ) -> ∃x. ~p(x)
@@ -123,6 +130,7 @@ def de_morgan_not_all_to_exists_not(p: FirstOrderFormula, x: str):
         return ref()
 
 
+#@sub_schema
 def de_morgan_not_exists_iff_all_not(p: FirstOrderFormula, x: str):
     """
     ~ ( ∃x. p(x) ) <-> ∀x. ~p(x)
@@ -131,7 +139,7 @@ def de_morgan_not_exists_iff_all_not(p: FirstOrderFormula, x: str):
     r2 = de_morgan_all_not_to_not_exist(p, x)
     return rules.r_imp_imp_iff(r1, r2)
 
-
+#@sub_schema
 def de_morgan_exists_not_iff_not_all(p: FirstOrderFormula, x: str):
     """
     ∃x. ~p(x) <-> ~( ∀x. p(x) )

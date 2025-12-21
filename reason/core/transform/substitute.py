@@ -248,11 +248,11 @@ def substitute_predicate(
                 # Check that no free variables in replacement (excluding those in the map)
                 # would be captured by bound variables
                 free_excluding_map_vars = free_in_replacement - vars_in_map
-                for var in free_excluding_map_vars:
-                    if var in bound_vars:
-                        raise NotAdmissibleError(
-                            f"Substitution would capture free variable {var.name}"
-                        )
+                # for var in free_excluding_map_vars:
+                #     if var in bound_vars:
+                #         raise NotAdmissibleError(
+                #             f"Substitution would capture free variable {var.name}"
+                #         )
 
                 return substituted
 

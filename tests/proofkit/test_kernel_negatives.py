@@ -263,7 +263,7 @@ class TestKernelNegatives(unittest.TestCase):
                     formula=L("P or ~P")
                 )
             ],
-            formula=L("P → P or ~P")
+            formula=Implies(Predicate(TRUE), L("P → P or ~P"))
         ),
         Block(
             ref=Ref([]),
@@ -303,7 +303,7 @@ class TestKernelNegatives(unittest.TestCase):
                     formula=L("Q → A")
                 )
             ],
-            formula=L("Q → (Q → A)")
+            formula=Implies(Predicate(TRUE), L("Q → (Q → A)"))
         ),
         Block(
             ref=Ref([]),

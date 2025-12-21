@@ -73,7 +73,7 @@ def p_to_not_not_p(p: FirstOrderFormula):
         r10 = MOD(r8, r9)
         return ref()
 
-@sub_schema
+#@sub_schema
 def p_iff_not_not_p(p: FirstOrderFormula):
     """
     p <-> ~~p
@@ -193,7 +193,7 @@ def de_morgan_neg_dis_iff_con_neg(p: FirstOrderFormula, q: FirstOrderFormula):
     r2 = de_morgan_and_not_to_not_or(p, q)
     return rules.r_imp_imp_iff(r1, r2)
 
-@sub_schema
+#@sub_schema
 def p_to_p(p: FirstOrderFormula):
     """
     p -> p
@@ -203,7 +203,7 @@ def p_to_p(p: FirstOrderFormula):
         r2 = ref()
     return r2
 
-@sub_schema
+#@sub_schema
 def p_iff_p(p : FirstOrderFormula):
     """
     p <-> p
@@ -213,7 +213,7 @@ def p_iff_p(p : FirstOrderFormula):
         r2 = ref()
     return rules.r_imp_imp_iff(r2, r2)
 
-@sub_schema
+#@sub_schema
 def imp_inv(a: FirstOrderFormula, b: FirstOrderFormula):
     """
     (a -> b) -> (~b -> ~a)
