@@ -312,29 +312,34 @@ def lang():
     return LANGUAGE
 
 def schema(func, *args):
+    global CURRENT, PROOF, SCHEMA_TABLE
     key = (func.__name__, args)
+
+
     if key in SCHEMA_TABLE:
         return SCHEMA_TABLE[key]
 
-    global CURRENT, PROOF
+
     store_current = CURRENT
 
-    indices = store_current.ref.indices
-    if indices:
-        index = indices[0]
+    if store_current.parent is None:
+        if PROOF.statements:
+            index = PROOF.statements[-1].index
+        else:
+            index = 0
     else:
-        index = 0
+        indices = store_current.ref.indices
+        if indices:
+            index = indices[0]
+        else:
+            index = 0
 
     CURRENT = Block()
+
     PROOF.prepend_statement(CURRENT, index=index)
-    ref = func(*args)
-    # ref = CURRENT.statements[-1].ref
-    # if len(CURRENT.statements) > 1:
-    #     PROOF.prepend_statement(CURRENT)
-    # else:
-    #     PROOF.prepend_statement(CURRENT.statements[-1])
-    #     ref = CURRENT.statements[-1].ref
-    # PROOF.prepend_flat(CURRENT, index=index)
+
+    func(*args)
+
     ref = CURRENT.ref
 
     CURRENT = store_current
