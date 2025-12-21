@@ -85,7 +85,7 @@ class ProvedTransformer:
         """
         match f:
             case Predicate():
-                return schema_with_result(p_iff_p, f)
+                return p_iff_p(f)
 
             case LogicConnective(name=const.NEG, args=[a]):
                 return self.neg(a)
@@ -144,7 +144,7 @@ class IDNProvedTransformer(ProvedTransformer):
 class ImpDisProvedTransformer(IDNProvedTransformer):
     @ProvedTransformer.outer
     def imp(self, a, b):
-        r = schema_with_result(dis_imp, a, b)  # (~a or b) <-> (a -> b)
+        r = dis_imp(a, b)  # (~a or b) <-> (a -> b)
         return r_iff_revolve(r) # (a -> b) <-> (~a or b)
 
 
@@ -157,7 +157,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_neg(self, a):
         match a:
             case LogicConnective(name=const.NEG, args=[b]):
-                r1 = schema_with_result(p_iff_not_not_p, b)  # b <-> ~~b
+                r1 = p_iff_not_not_p(b)  # b <-> ~~b
                 return r_iff_revolve(r1) # ~~b <-> b
 
         raise RuntimeError()
@@ -166,7 +166,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_and(self, a):
         match a:
             case LogicConnective(name=const.AND, args=[p, q]):
-                return schema_with_result(de_morgan_neg_con_iff_dis_neg, p, q) # ~(p and q) <-> ~p or ~q
+                return de_morgan_neg_con_iff_dis_neg(p, q) # ~(p and q) <-> ~p or ~q
 
 
         raise RuntimeError()
@@ -175,7 +175,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_or(self, a):
         match a:
             case LogicConnective(name=const.OR, args=[p, q]):
-                return schema_with_result(de_morgan_neg_dis_iff_con_neg, p, q) # ~(p or q) <-> ~p and ~q
+                return de_morgan_neg_dis_iff_con_neg(p, q) # ~(p or q) <-> ~p and ~q
 
         raise RuntimeError()
 
@@ -183,7 +183,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_imp(self, a):
         match a:
             case LogicConnective(name=const.IMP, args=[p, q]):
-                r1 = schema_with_result(dis_imp, p, q) # ~p or q <-> (p -> q)
+                r1 = dis_imp(p, q) # ~p or q <-> (p -> q)
                 r2 = r_iff_revolve(r1) # (p -> q) <-> ~p or q
                 return r_iff_neg(r2) # ~(p -> q) <-> ~(~p or q)
 
@@ -193,7 +193,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_iff(self, a):
         match a:
             case LogicConnective(name=const.IFF, args=[p, q]):
-                r1 = schema_with_result(iff_iff, p, q)  # (p -> q and p -> q) <-> (p <-> q)
+                r1 = iff_iff(p, q)  # (p -> q and p -> q) <-> (p <-> q)
                 r2 = r_iff_revolve(r1) # (p <-> q) <-> (p -> q and p -> q)
                 return r_iff_neg(r2)  # ~(p <-> q) <-> ~(p -> q and p -> q)
 
@@ -234,12 +234,12 @@ class NnfProvedTransformer(IDNProvedTransformer):
 
     @ProvedTransformer.outer
     def imp(self, a, b):
-        r = schema_with_result(dis_imp, a, b)  # (~a or b) <-> (a -> b)
+        r = dis_imp(a, b)  # (~a or b) <-> (a -> b)
         return r_iff_revolve(r)  # (a -> b) <-> (~a or b)
 
     @ProvedTransformer.outer
     def iff(self, a, b):
-        r = schema_with_result(iff_iff, a, b) # (a -> b and b -> a) <-> (a <-> b)
+        r = iff_iff(a, b) # (a -> b and b -> a) <-> (a <-> b)
         return r_iff_revolve(r) # (a <-> b) <-> (a -> b and b -> a)
 
 

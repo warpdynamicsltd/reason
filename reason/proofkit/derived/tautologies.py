@@ -4,7 +4,7 @@ import reason.proofkit.derived.rules as rules
 from reason.proofkit.kernel import Ref
 from reason.proofkit.kernel.proof import *
 
-
+@sub_schema
 def iff_tau(a: FirstOrderFormula, b: FirstOrderFormula) -> Ref:
     """
     (a → b) ∧ (b → a) → (a ⟷ b)
@@ -18,15 +18,16 @@ def iff_tau(a: FirstOrderFormula, b: FirstOrderFormula) -> Ref:
         MOD(r5, r4)
         return ref()
 
+@sub_schema
 def iff_iff(a: FirstOrderFormula, b: FirstOrderFormula) -> Ref:
     """
     (a → b) ∧ (b → a) ⟷ (a ⟷ b)
     """
-    r1 = schema_with_result(iff_tau, a, b) # (a → b) ∧ (b → a) → (a ⟷ b)
+    r1 = iff_tau(a, b) # (a → b) ∧ (b → a) → (a ⟷ b)
     r2 = IFO(a, b) # (a ⟷ b) → (a → b) ∧ (b → a)
     return rules.r_imp_imp_iff(r1, r2)
 
-
+@sub_schema
 def not_not_p_to_p(p: FirstOrderFormula):
     """
     ~~p -> p
@@ -49,7 +50,7 @@ def not_not_p_to_p(p: FirstOrderFormula):
         r10 = MOD(r8, r9)
         return ref()
 
-
+@sub_schema
 def p_to_not_not_p(p: FirstOrderFormula):
     """
     p -> ~~p
@@ -72,19 +73,19 @@ def p_to_not_not_p(p: FirstOrderFormula):
         r10 = MOD(r8, r9)
         return ref()
 
+@sub_schema
 def p_iff_not_not_p(p: FirstOrderFormula):
     """
     p <-> ~~p
     """
-    r1 = schema_with_result(p_to_not_not_p,p)
-    r2 = schema_with_result(not_not_p_to_p,p)
-    return rules.r_imp_imp_iff(r1, r2)
 
+    r1 = p_to_not_not_p(p) # p -> ~~p
+    r2 = not_not_p_to_p(p) # ~~p -> p
     r3 = rules.r_and(r1, r2)
     r4 = iff_tau(p, Not(Not(p)))
     return MOD(r4, r3)
 
-
+@sub_schema
 def de_morgan_not_and_to_or_not(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p and q) -> ~p or ~q
@@ -106,6 +107,7 @@ def de_morgan_not_and_to_or_not(p: FirstOrderFormula, q: FirstOrderFormula):
         rules.r_join_exclusive_cases(r8, r1)
         return ref()
 
+@sub_schema
 def de_morgan_or_not_to_not_and(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~p or ~q -> ~(p and q)
@@ -113,21 +115,23 @@ def de_morgan_or_not_to_not_and(p: FirstOrderFormula, q: FirstOrderFormula):
 
     r1 = ANL(p, q) # p and q -> p
     r2 = ANR(p, q) # p and q -> q
-    r3 = schema_with_result(imp_inv, And(p, q), p) # (p and q -> p) -> (~p -> ~(p and q))
-    r4 = schema_with_result(imp_inv, And(p, q), q) # (p and q -> q) -> (~q -> ~(p and q))
+    r3 = imp_inv(And(p, q), p) # (p and q -> p) -> (~p -> ~(p and q))
+    r4 = imp_inv(And(p, q), q) # (p and q -> q) -> (~q -> ~(p and q))
     r5 = MOD(r3, r1) # ~p -> ~(p and q)
     r6 = MOD(r4, r2) # ~q -> ~(p and q)
     return rules.r_join_cases(r5, r6) # ~p or ~q -> ~(p and q)
 
+@sub_schema
 def de_morgan_neg_con_iff_dis_neg(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p and q) <-> ~p or ~q
     """
 
-    r1 = schema_with_result(de_morgan_not_and_to_or_not, p, q)
-    r2 = schema_with_result(de_morgan_or_not_to_not_and, p, q)
+    r1 = de_morgan_not_and_to_or_not(p, q)
+    r2 = de_morgan_or_not_to_not_and(p, q)
     return rules.r_imp_imp_iff(r1, r2)
 
+@sub_schema
 def de_morgan_not_or_to_and_not(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p or q) -> ~p and ~q
@@ -155,6 +159,7 @@ def de_morgan_not_or_to_and_not(p: FirstOrderFormula, q: FirstOrderFormula):
         rules.r_and(r6, r10)
         return ref()
 
+@sub_schema
 def de_morgan_and_not_to_not_or(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~p and ~q -> ~(p or q)
@@ -178,15 +183,17 @@ def de_morgan_and_not_to_not_or(p: FirstOrderFormula, q: FirstOrderFormula):
         rules.r_proof_p_by_not_p(r8) # ~(p or q)
         return ref()
 
+@sub_schema
 def de_morgan_neg_dis_iff_con_neg(p: FirstOrderFormula, q: FirstOrderFormula):
     """
     ~(p or q) <-> ~p and ~q
     """
 
-    r1 = schema_with_result(de_morgan_not_or_to_and_not, p, q)
-    r2 = schema_with_result(de_morgan_and_not_to_not_or, p, q)
+    r1 = de_morgan_not_or_to_and_not(p, q)
+    r2 = de_morgan_and_not_to_not_or(p, q)
     return rules.r_imp_imp_iff(r1, r2)
 
+@sub_schema
 def p_to_p(p: FirstOrderFormula):
     """
     p -> p
@@ -196,6 +203,7 @@ def p_to_p(p: FirstOrderFormula):
         r2 = ref()
     return r2
 
+@sub_schema
 def p_iff_p(p : FirstOrderFormula):
     """
     p <-> p
@@ -205,7 +213,7 @@ def p_iff_p(p : FirstOrderFormula):
         r2 = ref()
     return rules.r_imp_imp_iff(r2, r2)
 
-
+@sub_schema
 def imp_inv(a: FirstOrderFormula, b: FirstOrderFormula):
     """
     (a -> b) -> (~b -> ~a)
@@ -224,7 +232,7 @@ def imp_inv(a: FirstOrderFormula, b: FirstOrderFormula):
             r7 = ref() # ~b -> ~a
         return ref() # (a -> b) -> (~b -> ~a)
 
-
+@sub_schema
 def imp_trans(a: FirstOrderFormula, b: FirstOrderFormula, c: FirstOrderFormula):
     """
     (a -> b) and (b -> c) -> (a -> c)
@@ -239,6 +247,7 @@ def imp_trans(a: FirstOrderFormula, b: FirstOrderFormula, c: FirstOrderFormula):
             MOD(r5, r7) # c
         return ref()
 
+@sub_schema
 def dis_imp(a:FirstOrderFormula, b:FirstOrderFormula):
     """
     (~a or b) <-> (a -> b)

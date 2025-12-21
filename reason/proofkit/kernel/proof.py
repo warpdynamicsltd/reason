@@ -324,6 +324,7 @@ def schema_with_result(func, *args):
     schema_args = []
     schema_map = {}
     keys = []
+
     for arg in args:
         if isinstance(arg, FirstOrderFormula):
             key = f"_{func.__name__}_arg_{len(schema_map)}"
@@ -337,6 +338,12 @@ def schema_with_result(func, *args):
     for key in keys:
         r = PSU(r, L(key), schema_map[key])
     return r
+
+def sub_schema(func):
+    def res_func(*args):
+        return schema_with_result(func, *args)
+
+    return res_func
 
 def RETURN():
     formula = reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
