@@ -195,8 +195,7 @@ class Block(Statement):
             if type(self.statements[0]) is Assumption:
                 return Implies(self.statements[0].formula, self.statements[-1].formula)
             else:
-                #return self.statements[-1].formula
-                return Implies(Predicate(TRUE), self.statements[-1].formula)
+                return Implies(TruePred(), self.statements[-1].formula)
         else:
             return None
 
@@ -408,7 +407,7 @@ def TRU():
     """
     $true
     """
-    return Axiom("TRU", [], [], Predicate(TRUE))
+    return Axiom("TRU", [], [], TruePred())
 
 
 @asm

@@ -2,6 +2,7 @@ from lark import Transformer
 from importlib.resources import files
 
 from reason.parser.lark import get_lark_parser
+from reason.core.fof_ops import *
 from reason.core.fof_types import Const, FirstOrderFormula, Function, LogicConnective, Predicate, Variable
 from reason.parser.tree import *
 from reason.core.fof import *
@@ -47,12 +48,12 @@ class CtxProofTPTPTreeToAbstractSyntaxTree(Transformer):
     @v_args(inline=True)
     def true_predicate(self):
         """Handle $true predicate"""
-        return Predicate(TRUE)
+        return TruePred()
 
     @v_args(inline=True)
     def false_predicate(self):
         """Handle $false predicate"""
-        return Predicate(FALSE)
+        return FalsePred()
 
     @v_args(inline=True)
     def predicate_name(self, arg):
