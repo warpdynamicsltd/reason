@@ -12,6 +12,8 @@ import reason.proofkit.kernel
 
 from functools import cache
 
+SUB_SCHEMA_ACTIVE = True
+
 class Ref:
     last_id = 0
     references = {}
@@ -390,7 +392,10 @@ def sub_schema(func):
     def res_func(*args):
         return schema_with_result(func, *args)
 
-    return res_func
+    if SUB_SCHEMA_ACTIVE:
+        return res_func
+    else:
+        return func
 
 def RETURN():
     formula = reason.proofkit.kernel.Kernel.prove_tautology(PROOF)
