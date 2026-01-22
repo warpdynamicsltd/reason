@@ -13,7 +13,7 @@ from reason.core.fof_types import FirstOrderFormula, Term
 from reason.proofkit.kernel.proof import Ref, Axiom, Rule, Block
 from reason.parser.ctxproof_tptp import CtxProofTPTPParser
 
-DEBUG = True
+DEBUG = False
 
 class KernelError(Exception):
     pass
