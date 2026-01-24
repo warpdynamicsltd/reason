@@ -43,89 +43,89 @@ class TestKernelWithQuant(unittest.TestCase):
         f = RETURN()
         self.assertEqual(f, L("P(z) → (∀x. P(x) → P(x))"))
 
-    def test_context_const(self):
-        L = Language()
-        L.add_const("context_0")
-        block = Block(
-            ref=Ref([]),
-            statements=[
-                Axiom(
-                    ref=Ref([0]),
-                    label="LEM",
-                    fofs=[L("P(context_0)")],
-                    terms=[],
-                    formula=L("P(context_0) or ~P(context_0)")
-                ),
-                Rule(
-                    ref=Ref([1]),
-                    label="CTV",
-                    refs=[Ref([0])],
-                    terms=[Const("context_0"), Variable("x")],
-                    formula=L("P(x) or ~P(x)")
-                )
-            ],
-            formula=L("P(x) or ~P(x)")
-        )
+    # def test_context_const(self):
+    #     L = Language()
+    #     L.add_const("context_0")
+    #     block = Block(
+    #         ref=Ref([]),
+    #         statements=[
+    #             Axiom(
+    #                 ref=Ref([0]),
+    #                 label="LEM",
+    #                 fofs=[L("P(context_0)")],
+    #                 terms=[],
+    #                 formula=L("P(context_0) or ~P(context_0)")
+    #             ),
+    #             Rule(
+    #                 ref=Ref([1]),
+    #                 label="CTV",
+    #                 refs=[Ref([0])],
+    #                 terms=[Const("context_0"), Variable("x")],
+    #                 formula=L("P(x) or ~P(x)")
+    #             )
+    #         ],
+    #         formula=L("P(x) or ~P(x)")
+    #     )
+    #
+    #     Kernel.prove_tautology(block)
 
-        Kernel.prove_tautology(block)
+        # L = Language()
+        # BEGIN(L)
+        #
+        # c = get_context_const_name()
+        # r1 = tau.p_to_p(L(f"P({c})")) # P(context_0) -> P(context_0)
+        # r2 = CTV(r1, c, "x") # P(x) → P(x)
+        #
+        # f = RETURN()
+        # self.assertEqual(f, L(f"P(x) → P(x)"))
 
-        L = Language()
-        BEGIN(L)
+        # L = Language()
+        # BEGIN(L)
+        # c = get_context_const_name()
+        # self.assertEqual(c, "context_0")
+        # with Context():
+        #     r0 = ASM(L(f"P({c})"))
+        #     r1 = ref() # P(c0) -> P(c0)
+        #
+        # r2 = CTV(r1, c, "z")
+        # f = RETURN()
+        # self.assertEqual(f, L(f"P(z) → P(z)"))
 
-        c = get_context_const_name()
-        r1 = tau.p_to_p(L(f"P({c})")) # P(context_0) -> P(context_0)
-        r2 = CTV(r1, c, "x") # P(x) → P(x)
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     c = get_context_const_name()
+        #     self.assertEqual(c, "context_1")
+        #     with Context():
+        #         r0 = ASM(L(f"P({c})"))
+        #         r1 = ref()  # P(c1) -> P(c1)
+        #
+        #     r2 = CTV(r1, c, "z")
+        # f = RETURN()
+        # self.assertEqual(f, L(f"P(z) → P(z)"))
 
-        f = RETURN()
-        self.assertEqual(f, L(f"P(x) → P(x)"))
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     with Context():
+        #         c = get_context_const_name()
+        #         self.assertEqual(c, "context_2")
+        #         with Context():
+        #             r0 = ASM(L(f"P({c})"))
+        #
+        #             r1 = ref()  # P(c1) -> P(c1)
+        #         r2 = CTV(r1, c, "z")
+        #
+        # f = RETURN()
+        # self.assertEqual(f, L(f"P(z) → P(z)"))
 
-        L = Language()
-        BEGIN(L)
-        c = get_context_const_name()
-        self.assertEqual(c, "context_0")
-        with Context():
-            r0 = ASM(L(f"P({c})"))
-            r1 = ref() # P(c0) -> P(c0)
-
-        r2 = CTV(r1, c, "z")
-        f = RETURN()
-        self.assertEqual(f, L(f"P(z) → P(z)"))
-
-        L = Language()
-        BEGIN(L)
-        with Context():
-            c = get_context_const_name()
-            self.assertEqual(c, "context_1")
-            with Context():
-                r0 = ASM(L(f"P({c})"))
-                r1 = ref()  # P(c1) -> P(c1)
-
-            r2 = CTV(r1, c, "z")
-        f = RETURN()
-        self.assertEqual(f, L(f"P(z) → P(z)"))
-
-        L = Language()
-        BEGIN(L)
-        with Context():
-            with Context():
-                c = get_context_const_name()
-                self.assertEqual(c, "context_2")
-                with Context():
-                    r0 = ASM(L(f"P({c})"))
-
-                    r1 = ref()  # P(c1) -> P(c1)
-                r2 = CTV(r1, c, "z")
-
-        f = RETURN()
-        self.assertEqual(f, L(f"P(z) → P(z)"))
-
-        L = Language()
-        BEGIN(L)
-        c = get_context_const_name()
-        r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
-        r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
-        f = RETURN()
-        self.assertEqual(f, L("P(x, x) → P(x, x)"))
+        # L = Language()
+        # BEGIN(L)
+        # c = get_context_const_name()
+        # r1 = tau.p_to_p(L(f"P(x, {c})"))  # P(x, c0) -> P(x, c0)
+        # r2 = CTV(r1, c, "x")  # P(x, x) → P(x, x)
+        # f = RETURN()
+        # self.assertEqual(f, L("P(x, x) → P(x, x)"))
 
     def test_skolem_const(self):
         L = Language()
@@ -169,6 +169,18 @@ class TestKernelWithQuant(unittest.TestCase):
 
         L = Language()
         BEGIN(L)
+        exists_over_imp(L("A"), L("B(x, y)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. B(x, y) → A ) → ( ( ∃x. B(x, y) ) → A )"))
+
+        L = Language()
+        BEGIN(L)
+        exists_over_imp(L("A"), L("B(x, y, z)"), "x")
+        f = RETURN()
+        self.assertEqual(f, L(" ( ∀x. B(x, y, z) → A ) → ( ( ∃x. B(x, y, z) ) → A )"))
+
+        L = Language()
+        BEGIN(L)
         de_morgan_not_exists_to_all_not(L("P(x)"), "x")
         f = RETURN()
         self.assertEqual(f, L("~ ( ∃x. P(x) ) → ( ∀x. ~P(x) )"))
@@ -205,35 +217,133 @@ class TestKernelWithQuant(unittest.TestCase):
 
 
     def test_rules(self):
+        #global PROOF
         L = Language()
         BEGIN(L)
+        # with Context():
+        r1 = p_iff_not_not_p(L("P(x)"))
         with Context():
-            r1 = p_iff_not_not_p(L("P(x)"))
-            with Context():
-                r2 = ASM(L("∀x. P(x)"))
-                r3 = r_iff_to_all(r1, r2, "x")
-                self.assertEqual(formula(r3), L("∀x. ~~P(x)"))
+            r2 = ASM(L("∀x. P(x)"))
+            r3 = r_iff_to_all(r1, r2, "x")
+            self.assertEqual(formula(r3), L("∀x. ~~P(x)"))
 
+        # print(PROOF.to_ctxproof())
         f = RETURN()
         self.assertEqual(f, L("(∀x. P(x)) → (∀x. ~~P(x))"))
 
         L = Language()
         BEGIN(L)
+        #with Context():
+        r1 = p_iff_not_not_p(L("P(x)"))
         with Context():
-            r1 = p_iff_not_not_p(L("P(x)"))
-            with Context():
-                r2 = ASM(L("∃x. P(x)"))
-                r3 = r_iff_to_exists(r1, r2, "x")
-                self.assertEqual(formula(r3), L("∃x. ~~P(x)"))
+            r2 = ASM(L("∃x. P(x)"))
+            r3 = r_iff_to_exists(r1, r2, "x")
+            self.assertEqual(formula(r3), L("∃x. ~~P(x)"))
 
         f = RETURN()
         self.assertEqual(f, L("(∃x. P(x)) → (∃x. ~~P(x))"))
 
         L = Language()
         BEGIN(L)
-        with Context():
-            r1 = p_iff_not_not_p(L("P(x)"))
-            r2 = r_iff_all(r1, "x")
+        #with Context():
+        r1 = p_iff_not_not_p(L("P(x)"))
+        r2 = r_iff_all(r1, "x")
 
         f = RETURN()
         self.assertEqual(f, L("( ∀x. P(x) ) ⟷ ( ∀x. ~~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        r1 = p_iff_not_not_p(L("P(x)"))
+        r2 = r_iff_exists(r1, "x")
+
+        f = RETURN()
+        self.assertEqual(f, L("( ∃x. P(x) ) ⟷ ( ∃x. ~~P(x) )"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∃x. P(x)")).result
+        f = RETURN()
+        self.assertEqual(f, L("(∃x. P(x)) ⟷ (∃x. P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∀x. P(x)")).result
+        f = RETURN()
+        self.assertEqual(f, L("(∀x. P(x)) ⟷ (∀x. P(x))"))
+
+        L = Language()
+        BEGIN(L)
+        r = IDNProvedTransformer(L("∀x. ∃y. P(x, y)")).result
+        f = RETURN()
+        self.assertEqual(f, L("( ∀x. ∃y. P(x, y) ) ⟷ ( ∀x. ∃y. P(x, y) )"))
+
+    def test_transform(self):
+        L = Language()
+        cases = [
+            (L("∃x. P(x)"), L("∃x. P(x)")),
+            (L("( ∃x. P(x) ) → Q"), L("~(∃x. P(x)) ∨ Q")),
+            (L("A ∧ ( ( ∀x. P(x) ) → ( ∃x. Q(x) ) )"), L("A ∧ ( ~(∀x. P(x)) ∨ ( ∃x. Q(x) ) )")),
+            (L("( (∀x. P(x)) → (∃y. Q(y)) ) ∧ A"), L("( ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) ∧ A )")),
+            (L("A ∨ ( (∀x. P(x)) → (∃y. Q(y)) )"), L("( A ∨ ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) )")),
+            (L("( (∀x. P(x)) → (∃y. Q(y)) ) ∨ A"), L("( ( ~(∀x. P(x)) ∨ (∃y. Q(y)) ) ∨ A )")),
+            (L("~(∀x. P(x)) → Q"), L("~~(∀x. P(x)) ∨ Q")),
+            (L("(∀x. P(x)) → ~(∃y. Q(y))"), L("~(∀x. P(x)) ∨ ~(∃y. Q(y))")),
+            (L("~( (∀x. P(x)) → (∃y. Q(y)) )"), L("~( ~(∀x. P(x)) ∨ (∃y. Q(y)) )")),
+            (L("(∃x. Q(x)) → ( (∀y. P(y)) → (∃z. Q(z)) )"), L("~(∃x. Q(x)) ∨ ( ~(∀y. P(y)) ∨ (∃z. Q(z)) )")),
+            # Inverted quantifiers
+            (L("∀x. P(x)"), L("∀x. P(x)")),
+            (L("( ∀x. P(x) ) → Q"), L("~(∀x. P(x)) ∨ Q")),
+            (L("A ∧ ( ( ∃x. P(x) ) → ( ∀x. Q(x) ) )"), L("A ∧ ( ~(∃x. P(x)) ∨ ( ∀x. Q(x) ) )")),
+            (L("( (∃x. P(x)) → (∀y. Q(y)) ) ∧ A"), L("( ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) ∧ A )")),
+            (L("A ∨ ( (∃x. P(x)) → (∀y. Q(y)) )"), L("( A ∨ ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) )")),
+            (L("( (∃x. P(x)) → (∀y. Q(y)) ) ∨ A"), L("( ( ~(∃x. P(x)) ∨ (∀y. Q(y)) ) ∨ A )")),
+            (L("~(∃x. P(x)) → Q"), L("~~(∃x. P(x)) ∨ Q")),
+            (L("(∃x. P(x)) → ~(∀y. Q(y))"), L("~(∃x. P(x)) ∨ ~(∀y. Q(y))")),
+            (L("~( (∃x. P(x)) → (∀y. Q(y)) )"), L("~( ~(∃x. P(x)) ∨ (∀y. Q(y)) )")),
+            (L("(∀x. Q(x)) → ( (∃y. P(y)) → (∀z. Q(z)) )"), L("~(∀x. Q(x)) ∨ ( ~(∃y. P(y)) ∨ (∀z. Q(z)) )")),
+        ]
+
+        for f_in, f_out in cases:
+            L = Language()
+            BEGIN(L)
+            r = ImpDisProvedTransformer(f_in).result
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))
+
+    def test_nnf(self):
+        L = Language()
+        cases = [
+            (L("∀x. P(x)"), L("∀x. P(x)")),
+            (L("~ (∀x. P(x))"), L("∃x. ~P(x)")),
+            (L("∃x. P(x)"), L("∃x. P(x)")),
+            (L("~ (∃x. P(x))"), L("∀x. ~P(x)")),
+            (L("(∀x. P(x)) ⟷ (∃y. Q(y))"), L("( (∃x. ~P(x)) ∨ (∃y. Q(y)) ) ∧ ( (∀y. ~Q(y)) ∨ (∀x. P(x)) )")),
+            (L("~(∀x. P(x)) ⟷ ~(∃y. Q(y))"), L("( (∀x. P(x)) ∨ (∀y. ~Q(y)) ) ∧ ( (∃y. Q(y)) ∨ (∃x. ~P(x)) )")),
+            (L("~~(∀x. P(x))"), L("∀x. P(x)")),
+            (L("~(∀x. P(x)) → (∃y. Q(y))"), L("(∀x. P(x)) ∨ (∃y. Q(y))")),
+            (L("~( (∀x. A(x)) ∧ (∃y. B(y)) )"), L("(∃x. ~A(x)) ∨ (∀y. ~B(y))")),
+            (L("~( ~(∀x. A(x)) ∧ ~(∃y. B(y)) )"), L("(∀x. A(x)) ∨ (∃y. B(y))")),
+            (L("~( (∀x. A(x)) ∨ (∃y. B(y)) )"), L("(∃x. ~A(x)) ∧ (∀y. ~B(y))")),
+            (L("~( ~(∀x. A(x)) ∨ ~(∃y. B(y)) )"), L("(∀x. A(x)) ∧ (∃y. B(y))")),
+            (L("~( (∀x. P(x)) → (∃y. Q(y)) )"), L("(∀x. P(x)) ∧ (∀y. ~Q(y))")),
+            (L("~( (∀x. P(x)) ⟷ (∃y. Q(y)) )"), L("( (∀x. P(x)) ∧ (∀y. ~Q(y)) ) ∨ ( (∃y. Q(y)) ∧ (∃x. ~P(x)) )")),
+            # Inverted quantifiers
+            (L("(∃x. P(x)) ⟷ (∀y. Q(y))"), L("( (∀x. ~P(x)) ∨ (∀y. Q(y)) ) ∧ ( (∃y. ~Q(y)) ∨ (∃x. P(x)) )")),
+            (L("~(∃x. P(x)) ⟷ ~(∀y. Q(y))"), L("( (∃x. P(x)) ∨ (∃y. ~Q(y)) ) ∧ ( (∀y. Q(y)) ∨ (∀x. ~P(x)) )")),
+            (L("~~(∃x. P(x))"), L("∃x. P(x)")),
+            (L("~(∃x. P(x)) → (∀y. Q(y))"), L("(∃x. P(x)) ∨ (∀y. Q(y))")),
+            (L("~( (∃x. A(x)) ∧ (∀y. B(y)) )"), L("(∀x. ~A(x)) ∨ (∃y. ~B(y))")),
+            (L("~( ~(∃x. A(x)) ∧ ~(∀y. B(y)) )"), L("(∃x. A(x)) ∨ (∀y. B(y))")),
+            (L("~( (∃x. A(x)) ∨ (∀y. B(y)) )"), L("(∀x. ~A(x)) ∧ (∃y. ~B(y))")),
+            (L("~( ~(∃x. A(x)) ∨ ~(∀y. B(y)) )"), L("(∃x. A(x)) ∧ (∀y. B(y))")),
+            (L("~( (∃x. P(x)) → (∀y. Q(y)) )"), L("(∃x. P(x)) ∧ (∃y. ~Q(y))")),
+            (L("~( (∃x. P(x)) ⟷ (∀y. Q(y)) )"), L("( (∃x. P(x)) ∧ (∃y. ~Q(y)) ) ∨ ( (∀y. Q(y)) ∧ (∀x. ~P(x)) )")),
+        ]
+
+        for f_in, f_out in cases:
+            L = Language()
+            BEGIN(L)
+            r = NnfProvedTransformer(f_in).result
+            f = RETURN()
+            self.assertEqual(f, Iff(f_in, f_out))

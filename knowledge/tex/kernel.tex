@@ -55,6 +55,7 @@
 \renewcommand{\succ}{\text{S}}
 \newcommand{\shift}{\text{shift}}
 \newcommand{\fixed}{\text{fixed}}
+\newcommand{\refset}{\text{ref}}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -164,7 +165,9 @@ For a sequence $s=[a_1, \dots, a_n]$, $*s$ means just $a_1, \dots, a_n$, which a
 To access $n-th$ element of a sequence we will use $0$-based indexing $a_i = s[i-1]$.
 Also $s[-1] = a_n$.
 We will denote a length of a sequence as $|s|$.
-We will denote empty sequence as $[]$. 
+We will denote empty sequence as $[]$.
+
+In this paper finite sequence of nonnegative integers will be sometimes called \textit{a reference}.   
 
 \begin{definition}[\textbf{reference order}]
 \label{reference-order}
@@ -605,13 +608,13 @@ Let $(D, \L, \gamma)$ be a reference system.
 For $\rho\in D$ we define
 \begin{equation}
 \fixed_D(\rho) \defeq 
-\bigcup_\eta \{\free(\alpha_\eta)\} : \eta \prec \rho \text{ and } \gamma_\eta = 
+\bigcup_\eta \{\free(\alpha_\eta) : \eta\in D \text{ and } \eta \prec \rho \text{ and } \gamma_\eta = 
 \ulcorner \alpha_\eta \to \beta_\eta \urcorner \}.
 \end{equation}
 \end{definition}
 
-In other words $\fixed_D(\rho)$ is a set of all free variablesin antecedent
- if $\gamma_\eta$ is in implication form for all $\eta$ which are prefix of $\rho$.
+In other words $\fixed_D(\rho)$ is a set of all free variables which occurs in antecedent
+if $\gamma_\eta$ is in implication form for all $\eta\in D$ which are prefix of $\rho$.
 
 \begin{definition}[\textbf{proof}]
 \label{proof-definition}
@@ -641,7 +644,7 @@ $\free(\sk^m_\rho) = \free(\gamma_\eta) \setminus \fixed_D(\rho)$ with $\beta(x/
 \gamma_\eta = \ulcorner \exists x. \beta\urcorner, 
 \end{equation}
 \end{enumerate}
-\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exist $\eta < \rho$ and $\alpha\in\F(\L^+)$
+\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exists $\alpha\in\F(\L^+)$
  such that
 \begin{equation}
 \gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
@@ -659,7 +662,7 @@ Let us introduce a certain set of logical axioms. An implication transitivity ax
 
 \begin{definition}[\textbf{logical axioms}]
 \label{axioms_schemas}
-Let one $\truth$ be a chosen predicate symbol of $0$-arity. 
+Let $\truth$ be a chosen predicate symbol of $0$-arity. 
 For any formulas $\alpha, \beta, \gamma\in\F(\L^+)$ the following are logical axioms:
 \begin{enumerate}
 \item (THR) $\truth$
@@ -851,7 +854,7 @@ D_i =
 P_i \text{ for } \phi_i\in \F(\L) \cap \mathfrak{B},
 \end{cases}
 \end{equation}
-where in case of $\phi_i\in \F(\L) \cap \mathfrak{B}$, $(P_i, \gamma)$ is a proof of $\phi_i$ with respect to $\mathfrak{A}$ where $P_i$ is context with root $[i]$ as given by Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) or Lemma \ref{EXH}(EXH).
+where in case of $\phi_i\in \F(\L) \cap \mathfrak{B}$, $(P_i, \L^+, \gamma)$ is a proof of $\phi_i$ with respect to $\mathfrak{A}$ where $P_i$ is a context with root $[i]$ as given by Lemma \ref{TRN}(TRN), Lemma \ref{ALH}(ALH) or Lemma \ref{EXH}(EXH).
 Since all $P_i$ are disjoint, the definition of function $\gamma$ on them is correct. 
 
 Now we are ready to define $D$. Let
@@ -871,27 +874,53 @@ Follows from Theorem \ref{semantic-completness} and Gödel’s Completeness Theo
 
 \section{Soudness}
 \label{soudness}
+\begin{definition}
+Let $\L$ be a signature of a language.
+Let $(D, \L^+,\gamma)$ be a reference system and $T\subset \F(\L^+)$ and $\rho\in D$.
+\begin{equation}
+\refset_D(\rho, T) = \{\gamma_\eta\in D: \eta < \rho\}\cup T.
+\end{equation}
+\end{definition}
+
 \begin{definition}[\textbf{constrained-proof}]
 \label{constrained-proof}
 Let $\L$ be a signature of a language.
-A reference system $(D, \L^+,\gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff
-the Definition \ref{proof-definition} holds with changed (GEN) case (\ref{gen-part}) and (SKO) case (\ref{sko-part}) as follows:
+A reference system $(D, \L^+,\gamma)$ is a constrained-proof of $\psi\in\F(\L^+)$ with respect to $\mathcal{A}\subset \F(\L^+)$ with fixed variables $V\subset \V$ iff for $r = \root(D)$, $\gamma_r = \psi$
+and for any $\rho\in \overline{D}$ the following conditions holds:
 \begin{enumerate}
-\item (GEN) there exists $\eta < \rho$ and $x\in \V\setminus (V \cup \fixed_D(\rho))$ such that
+\item \label{shallow-part} if $\context(D, \rho) = \emptyset$, then $\gamma_\rho\in\F(\overline{\L}_\rho)$ and at least one of the following holds:
+\begin{enumerate}
+\item (AXM) $\gamma_\rho\in \mathcal{A}$,
+\item (ASM) there exists $\eta \prec \rho$ and $\beta\in \F(\L^+)$
+such that $\gamma_\eta = \ulcorner \gamma_\rho \to \beta \urcorner$,
+%\item (ISO) there exists $\eta < \rho$ and 
+%$\gamma_\eta$ is isomporphic to $\gamma_\rho$,
+\item (MOD) there exist $\phi_1, \phi_2\in \refset_D(\mathcal{A}, \rho)$, such that
 \begin{equation}
-\gamma_\rho = \ulcorner \forall x. \gamma_\eta \urcorner,
+\phi_1 = \ulcorner \phi_2 \to \gamma_\rho \urcorner,
+\end{equation}
+\item (GEN) there exists $\phi \in \refset_D(\mathcal{A}, \rho)$ and $x\in \V\setminus (V \cup \fixed_D(\rho))$ such that
+\begin{equation}
+\gamma_\rho = \ulcorner \forall x. \phi \urcorner,
 \end{equation}
 
-\item (SKO) there exists $\eta < \rho$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
+\item (SKO) there exists $\phi \in \refset_D(\mathcal{A}, \rho)$, $x\in \V$, $\beta\in \F(\L^+)$ and $m\in\N$ such that
 $\gamma_\rho = \beta(x/\sk^m_\rho)$, 
-$\free(\sk^m_\rho) = \free(\gamma_\eta) \setminus (V \cup \fixed_D(\rho))$ with $\beta(x/\sk^m_\rho)$ admissible and
+$\free(\sk^m_\rho) = \free(\phi) \setminus (V \cup \fixed_D(\rho))$ with $\beta(x/\sk^m_\rho)$ admissible and
 \begin{equation}
-\gamma_\eta = \ulcorner \exists x. \beta\urcorner. 
+\phi = \ulcorner \exists x. \beta\urcorner. 
 \end{equation}
+\end{enumerate}
+\item if $\context(D, \rho) \not= \emptyset$, then $\gamma_\rho\in \F(\L_\rho)$ and there exist $\eta < \rho$ and $\alpha\in\F(\L^+)$
+ such that
+\begin{equation}
+\gamma_\rho = \ulcorner \alpha \to \gamma_\eta \urcorner,
+\end{equation}
+where $\eta = \final(\context(D, \rho))$.
 \end{enumerate}
 \end{definition}
 
-The intuition behind a \textit{constrained-proof} is that it is a proof in which certain variables are required to behave as constants.
+The intuition behind a \textit{constrained-proof} is that it is a proof in which certain variables are required to behave as constants and it does not require to place axioms in the reference system but rules can be aplied directly to them.
 
 
 Note that each proof is a \textit{constrained-proof} with $V=\emptyset$.
@@ -923,18 +952,18 @@ Let
 \begin{equation}
 T_k = 
 \begin{cases}
-T\cup\{\alpha\} \text{ for } k = 0,\\
-T\cup\{\alpha\} \cup \{ \gamma_{r_0}, \cdots, \gamma_{r_{k - 1}}\} \text{ for } 
+T \text{ for } k = 0,\\
+T\cup \{ \gamma_{r_0}, \cdots, \gamma_{r_{k - 1}}\} \text{ for } 
 k \in (0, k_f\rangle.
 \end{cases}
 \end{equation}
 
-By Definition \ref{proof-definition}, we have $\alpha\in \F_{-1}$ and $\gamma_{r_k}\in \overline{\F}_k$. 
+By Definition \ref{constrained-proof}, we have $\gamma_{r_k}\in \overline{\F}_k$. 
 Thus $T_k \subset \F_k$ for $k=0,\dots,k_f$.
 \\
 
 Take an arbitrary $j_0: \free(\alpha)\cup V\to A$.  
-Take an arbitrary assignment $j:\V\to A$ where $j$ is an extension of $j_0$ and $(\M, j)\models T$.
+Take an arbitrary assignment $j:\V\to A$ such as $j$ is an extension of $j_0$ and $(\M, j)\models T$.
 
 If $(\M,j)\not\models \alpha$, then $(\M,j)\models \neg\alpha$ and thus $(\M,j)\models \ulcorner \alpha\to\omega \urcorner = \phi$.
 
@@ -964,24 +993,23 @@ Take $k$ from $0, \dots, k_f$. Note that $(\M_{k-1}, j)\models T_k$. We will con
 \item $\context(D, r_k) = \emptyset$. By Definition \ref{proof-definition}, $\gamma_{r_k}\in \F_k$ and one of the following cases holds. We will stop a construction step of $\M_k$ after first satisfied case in the following order.
 
 \begin{enumerate}
-\item (AXM) $\gamma_{r_k}\in T \cup \mathfrak{A}$. If $\gamma_{r_k}\in T$, then $(\M_{k-1}, j)\models\gamma_{r_k}$. If $\gamma_{r_k}\in \mathfrak{A}$, then $(\M_{k-1}, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is a logical axiom. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k, j)\models\gamma_{r_k}$. Note that the above argument works for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
+\item (AXM) $\gamma_{r_k}\in T \cup \mathfrak{A}$. If $\gamma_{r_k}\in T$, then $(\M_{k-1}, j)\models\gamma_{r_k}$. If $\gamma_{r_k}\in \mathfrak{A}$, then $(\M_{k-1}, j)\models\gamma_{r_k}$ since $\gamma_{r_k}$ is a logical axiom. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k, j)\models\gamma_{r_k}$.
 
 \item (ASM) $\gamma_{r_k} = \alpha$. Then trivially $(\M_k,j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then
-$\M_k\models \gamma_{r_k}$. Note that the above argument works for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}).
+$\M_k\models \gamma_{r_k}$.
 
 %\item (ISO) there exists $\eta < r_k$ and 
 %$\gamma_\eta$ is isomporphic to $\gamma_{r_k}$. This can only hold for $k > 0$. Since $\gamma_\eta\in T_k$, we have 
 %$(\M_{k-1}, j)\models \gamma_\eta$ and by Theorem \ref{isomorphic-equisatisatibility} 
 %we have $(\M_{k-1}, j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed extension of model $\M_{k-1}$ onto $\overline{\L_k}$. Then $(\M_k,j)\models \gamma_{r_k}$. 
 
-\item (MOD) there exist $\eta_1, \eta_2 < r_k$, such that
-$\gamma_{\eta_1} = \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner$.
-This can only hold for $k > 0$.
-Note that $\gamma_{\eta_1}, \gamma_{\eta_2}\in T_k$. 
-So $(\M_{k-1}, j)\models \ulcorner \gamma_{\eta_2} \to \gamma_{r_k} \urcorner, \gamma_{\eta_2}$ and therefore $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k,j)\models \gamma_{r_k}$.
-\item \label{gen} (GEN) there exists $\eta < r_k$ and $x\in \V\setminus (V\cup \free(\alpha))$ such that
-$\gamma_{r_k} = \ulcorner \forall x. \gamma_\eta \urcorner$. This can only hold for $k > 0$.  Since $\gamma_\eta\in T_k$, 
-we have $(\M_{k-1}, j)\models \gamma_\eta$.
+\item (MOD) there exist $\phi_1, \phi_2 \in \refset_D({r_k}, T\cup \mathfrak{A})$, such that
+$\phi_1 = \ulcorner \phi_2 \to \gamma_{r_k} \urcorner$.
+Note that $\phi_1, \phi_2\in T_k \cup \mathfrak{A}$.
+So $(\M_{k-1}, j)\models \ulcorner \phi_2 \to \gamma_{r_k} \urcorner, \phi_2$ and therefore $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k,j)\models \gamma_{r_k}$. 
+\item \label{gen} (GEN) there exists $\phi\in\refset_D({r_k}, T\cup \mathfrak{A})$ and $x\in \V\setminus (V\cup \free(\alpha))$ such that
+$\gamma_{r_k} = \ulcorner \forall x. \phi \urcorner$. Since $\phi\in T_k\cup\mathfrak{A}$, 
+we have $(\M_{k-1}, j)\models \phi$.
 
 Take any $a\in A$.  Let
 \begin{equation}
@@ -992,18 +1020,18 @@ j(v) \text{ otherwise}.
 \end{cases}
 \end{equation}
 Since $x\not\in\free(\alpha)$ and $(\M, j)\models\alpha$, we have $(\M, j\cfrac{a}{x})\models\alpha$.
-Since $x\not\in\free(\alpha)\cup V$, $j\cfrac{a}{x}$ is an extension of $j_0$ similarily as $j$ is, and since $j$ was arbitrarily chosen, we can repeat the reasoning from (\ref{assumption-alpha}) for an interpretation $j\cfrac{a}{x}$ up to this point and got $(\M_{k-1}, j\cfrac{a}{x})\models \gamma_\eta$.
+Since $x\not\in\free(\alpha)\cup V$, $j\cfrac{a}{x}$ is an extension of $j_0$ similarily as $j$ is, and since $j$ was arbitrarily chosen, we can repeat the reasoning from (\ref{assumption-alpha}) for an interpretation $j\cfrac{a}{x}$ up to this point and got $(\M_{k-1}, j\cfrac{a}{x})\models \phi$.
 This is possible because construction of $\M_{k-1}$ nowhere depends on $j$.
-But since $a\in A$ was arbitrary chosen, we have $(\M_{k-1}, j)\models \forall x. \gamma_\eta $, and thus $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k,j)\models \gamma_{r_k}$.
+But since $a\in A$ was arbitrary chosen, we have $(\M_{k-1}, j)\models \forall x. \phi $, and thus $(\M_{k-1},j)\models \gamma_{r_k}$. Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k,j)\models \gamma_{r_k}$.
 
-\item (SKO) there exists $\eta < r_k$, $x\in \V$, $\beta\in \F_k$ and $m\in\N$ such that
+\item (SKO) there exists $\phi\in\refset_D({r_k}, T\cup \mathfrak{A})$, $x\in \V$, $\beta\in \F_k$ and $m\in\N$ such that
 $\gamma_{r_0} = \beta(x/\sk^m_{r_k})$,
-$\gamma_\eta = \ulcorner \exists x. \beta\urcorner$ and 
-$\free(\sk^m_{r_k}) = \free(\gamma_\eta)\setminus(V\cup \free(\alpha))$ with $\beta(x/\sk^m_\rho)$ admissible. 
+$\phi = \ulcorner \exists x. \beta\urcorner$ and 
+$\free(\sk^m_{r_k}) = \free(\phi)\setminus(V\cup \free(\alpha))$ with $\beta(x/\sk^m_\rho)$ admissible. 
 This can only hold for $k > 0$.
-Since $\gamma_\eta\in T_k$, we have $(\M_{k-1},j)\models \exists x. \beta$.
+Since $\phi\in T_k \cup \mathfrak{A}$, we have $(\M_{k-1},j)\models \exists x. \beta$.
 
-Assume that $\free(\gamma_n) \setminus (V \cup \free(\alpha)) = \{x_1, \dots, x_n \}$ and that 
+Assume that $\free(\phi) \setminus (V \cup \free(\alpha)) = \{x_1, \dots, x_n \}$ and that 
 $\beta = \beta(x, x_1, \dots, x_n, y_1, \dots, y_m)$
 where $y_1, \dots, y_m\in V \cup \free(\alpha)$ (this sequence can be empty). 
 We will now establish a model for $\sk^m_{r_k}$.
@@ -1039,10 +1067,12 @@ $$
 Therefore $(\M_k, j\cfrac{(\sk^m_{r_k})^{(\M_{k}, j)}}{x})\models \beta$ and since $\beta(x/\sk^m_\rho)$ is admissible, by Theorem \ref{admissible-theorem}, we have $(\M_k, j)\models \beta(x/\sk^m_{r_k})$, which is the same as $(\M_k,j)\models \gamma_{r_k}$.
 
 \end{enumerate}
+Note that the all above cases work for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
+
 \item $\context(D, r_k) \not= \emptyset$.
 By Definition \ref{constrained-proof}, $\gamma_{r_k}\in \F_k$.
-Since $T_k\subset\F_k$ and by Lemma \ref{first-level-references},
-one can show that $(\context(D, r_k), \L^+, \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k$ with fixed variables $V \cup free(\alpha)$. Since $\M_{k-1}$ is a $\L_k$-structure, $(\M_{k-1},j)\models T_k$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_{k-1}, j)\models\gamma_{r_k}$.
+Since $T_k\subset\F_k$ and by Lemma \ref{first-level-references} and by Definition \ref{constrained-proof} we have $\alpha\in \F_{-1}\subset \F_k$, and therefore $\{\alpha\} \cup T_k \subset \F_k$
+one can show that $(\context(D, r_k), \L^+, \gamma)$ is a constrained-proof of $\gamma_{r_k}$ with respect to $\mathfrak{A}\cup T_k \cup\{\alpha\}$ with fixed variables $V \cup free(\alpha)$. Since $\M_{k-1}$ is a $\L_k$-structure, $(\M_{k-1},j)\models T_k \cup\{\alpha\}$ and $|\context(D, r_k)| < n$, by induction assumption (\ref{induction-1}), we have $(\M_{k-1}, j)\models\gamma_{r_k}$.
 Let $\M_k$ be an arbitrary chosen but fixed $\overline{\L_k}$-structure which is an extension of $\M_{k-1}$. Then $(\M_k, j)\models\gamma_{r_k}$.
 Note that the above argument works for $k = 0$ without assumptions (\ref{induction-a-1}), (\ref{induction-a-2}) and (\ref{induction-a-3}). 
 \end{enumerate}

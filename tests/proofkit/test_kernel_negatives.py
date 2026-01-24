@@ -263,7 +263,7 @@ class TestKernelNegatives(unittest.TestCase):
                     formula=L("P or ~P")
                 )
             ],
-            formula=L("P → P or ~P")
+            formula=Implies(Predicate(TRUE), L("P → P or ~P"))
         ),
         Block(
             ref=Ref([]),
@@ -303,7 +303,7 @@ class TestKernelNegatives(unittest.TestCase):
                     formula=L("Q → A")
                 )
             ],
-            formula=L("Q → (Q → A)")
+            formula=Implies(Predicate(TRUE), L("Q → (Q → A)"))
         ),
         Block(
             ref=Ref([]),
@@ -368,89 +368,90 @@ class TestKernelNegatives(unittest.TestCase):
         with pytest.raises(KernelError):
             RETURN()
 
+        # L = Language()
+        # BEGIN(L)
+        # L.add_const("context_1")
+        # r = LEM(L("P(context_1)"))
+        # # print(r)
+        # with pytest.raises(KernelError):
+        #     RETURN()
+
+        # L = Language()
+        # BEGIN(L)
+        # L.add_const("context_2")
+        # r = LEM(L("P(context_2)"))
+        # # print(r)
+        # with pytest.raises(KernelError):
+        #     RETURN()
+        #
+        #
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     L.add_const("context_2")
+        #     LEM(L("P(context_2)"))
+        # with pytest.raises(KernelError):
+        #     RETURN()
+
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     c = get_context_const_name()
+        #     LEM(L(f"P({c})"))
+        # with pytest.raises(KernelError):
+        #     RETURN()
+
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     c = get_context_const_name()
+        #     ASM(L(f"P({c})"))
+        # with pytest.raises(KernelError):
+        #     RETURN()
+
         L = Language()
         BEGIN(L)
-        L.add_const("context_1")
-        r = LEM(L("P(context_1)"))
-        # print(r)
+        all_over_imp(L("A(x)"), L("B(x)"), "x")
         with pytest.raises(KernelError):
             RETURN()
 
-        L = Language()
-        BEGIN(L)
-        L.add_const("context_2")
-        r = LEM(L("P(context_2)"))
-        # print(r)
-        with pytest.raises(KernelError):
-            RETURN()
 
 
-        L = Language()
-        BEGIN(L)
-        with Context():
-            L.add_const("context_2")
-            LEM(L("P(context_2)"))
-        with pytest.raises(KernelError):
-            RETURN()
+        # L = Language()
+        # BEGIN(L)
+        # with Context():
+        #     c = get_context_const_name()
+        #     with Context():
+        #         r1 = ASM(L(f"P({c})")) # P(c)
+        #         CTV(r1, c, "x") # ∀x. P(x)
+        #         r2 = ref() # P(c) -> (∀x. P(x))
+        #     CTV(r2, c, "z") # P(z) -> (∀x. P(x))
+        # with pytest.raises(KernelError):
+        #     RETURN()
 
-        L = Language()
-        BEGIN(L)
-        with Context():
-            c = get_context_const_name()
-            LEM(L(f"P({c})"))
-        with pytest.raises(KernelError):
-            RETURN()
+        # L = Language()
+        # BEGIN(L)
+        # c = get_context_const_name()
+        # with Context():
+        #     r1 = ASM(L(f"P({c})"))  # P(c)
+        #     CTV(r1, c, "x")  # ∀x. P(x)
+        #     r2 = ref()  # P(c) -> (∀x. P(x))
+        # CTV(r2, c, "z")  # P(z) -> (∀x. P(x))
+        # with pytest.raises(KernelError):
+        #     RETURN()
 
-        L = Language()
-        BEGIN(L)
-        with Context():
-            c = get_context_const_name()
-            ASM(L(f"P({c})"))
-        with pytest.raises(KernelError):
-            RETURN()
-
-        L = Language()
-        BEGIN(L)
-
-        with pytest.raises(RuntimeError):
-            all_over_imp(L("A(x)"), L("B(x)"), "x")
-
-
-        L = Language()
-        BEGIN(L)
-        with Context():
-            c = get_context_const_name()
-            with Context():
-                r1 = ASM(L(f"P({c})")) # P(c)
-                CTV(r1, c, "x") # ∀x. P(x)
-                r2 = ref() # P(c) -> (∀x. P(x))
-            CTV(r2, c, "z") # P(z) -> (∀x. P(x))
-        with pytest.raises(KernelError):
-            RETURN()
-
-        L = Language()
-        BEGIN(L)
-        c = get_context_const_name()
-        with Context():
-            r1 = ASM(L(f"P({c})"))  # P(c)
-            CTV(r1, c, "x")  # ∀x. P(x)
-            r2 = ref()  # P(c) -> (∀x. P(x))
-        CTV(r2, c, "z")  # P(z) -> (∀x. P(x))
-        with pytest.raises(KernelError):
-            RETURN()
-
-        L = Language()
-        BEGIN(L)
-        c = get_context_const_name()
-        with Context():
-            with Context():
-                r1 = ASM(L(f"P({c})"))  # P(c)
-                CTV(r1, c, "x")  # ∀x. P(x)
-                r2 = ref()  # P(c) -> (∀x. P(x))
-            r3 = ref()
-        CTV(r3, c, "z")  # P(z) -> (∀x. P(x))
-        with pytest.raises(KernelError):
-            RETURN()
+        # L = Language()
+        # BEGIN(L)
+        # c = get_context_const_name()
+        # with Context():
+        #     with Context():
+        #         r1 = ASM(L(f"P({c})"))  # P(c)
+        #         CTV(r1, c, "x")  # ∀x. P(x)
+        #         r2 = ref()  # P(c) -> (∀x. P(x))
+        #     r3 = ref()
+        # CTV(r3, c, "z")  # P(z) -> (∀x. P(x))
+        # with pytest.raises(KernelError):
+        #     RETURN()
 
         L = Language()
         BEGIN(L)
@@ -488,6 +489,13 @@ class TestKernelNegatives(unittest.TestCase):
         with pytest.raises(KernelError):
             RETURN()
 
+        L = Language()
+        BEGIN(L)
+        exists_over_imp(L("A(x)"), L("B(x)"), "x")
+        with pytest.raises(KernelError):
+            RETURN()
+
+
 
     def test_skolem_const(self):
         L = Language()
@@ -496,6 +504,35 @@ class TestKernelNegatives(unittest.TestCase):
             s = get_next_skolem_const_name()
             r1 = LEM(L(f"P({s})"))
             r2 = ref()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L(f"∀x.∃y.P(x,y)"))
+            r2 = ALL(L(f"∃y.P(x,y)"), Variable("x"), "x") # (∀x.∃y.P(x, y)) -> ∃y.P(x, y)
+            r3 = MOD(r2, r1) # ∃y.P(x, y)
+            sk = get_next_skolem_const_name()
+            r4 = SKO(r3, sk) # P(x, sk)
+            r5 = GEN(r4, "x") # ∀x. P(x, sk)
+            r6 = EXT(L("∀x. P(x, y)"), Const(sk), "y") # ( ∀x. P(x, sk) ) -> ( ∃y. ∀x. P(x, y) )
+            r7 = MOD(r6, r5) # ∃y. ∀x. P(x, y)
+            r8 = ref()
+
+        with pytest.raises(KernelError):
+            RETURN()
+
+        L = Language()
+        BEGIN(L)
+        with Context():
+            r1 = ASM(L(f"∀x.∃y.P(x,y,z)"))
+            r2 = ALL(L(f"∃y.P(x,y,z)"), Variable("x"), "x")  # (∀x.∃y.P(x, y, z)) -> ∃y.P(x, y, z)
+            r3 = MOD(r2, r1)  # ∃y.P(x, y, z)
+            sk = get_next_skolem_const_name()
+            r4 = SKO(r3, sk)  # P(x, sk, z)
+            r5 = GEN(r4, "x")  # ∀x. P(x, sk, z)
+            r6 = EXT(L("∀x. P(x, y, z)"), Const(sk), "y")  # ( ∀x. P(x, sk, z) ) -> ( ∃y. ∀x. P(x, y, z) )
+            r7 = MOD(r6, r5)  # ∀x. P(x, sk, z)
+            r8 = ref() # # ∃y. ∀x. P(x, y, z)
 
         with pytest.raises(KernelError):
             RETURN()

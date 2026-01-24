@@ -19,30 +19,37 @@ let rec var_occurs_free_in_formula var = function
   | Exists(v, f) -> not (v = var) && var_occurs_free_in_formula var f
   | Forall(v, f) -> not (v = var) && var_occurs_free_in_formula var f
 
-(* Collect all variables in a term *)
-(*let rec vars_in_term = function
-  | Var v -> [v]
-  | Const _ -> []
-  | ContextConst _ -> []
-  | SkolemConst _ -> []
-  | Func (_, args) -> List.flatten (List.map vars_in_term args)*)
+(* Add at the top if not present *)
+module StringSet = Set.Make(String)
 
-(* Collect all free variables in a formula *)
-(*let rec free_vars formula bound =
+(* Collect free variables from a term *)
+let rec free_vars_term term : StringSet.t =
+  match term with
+  | Var x -> StringSet.singleton x
+  | Const _ | ContextConst _ | SkolemConst _ -> StringSet.empty
+  | Func (_, args) ->
+      List.fold_left
+        (fun vars arg -> StringSet.union vars (free_vars_term arg))
+        StringSet.empty args
+
+(* Main function: collect free variables from a first_order_formula *)
+let rec free_vars_formula formula : StringSet.t =
   match formula with
-  | True | False -> []
-  | Pred(_, args) -> List.filter (fun v -> not (List.mem v bound)) (List.flatten (List.map vars_in_term args))
-  | Not f -> free_vars f bound
-  | And(a, b) | Or(a, b) | Implies(a, b) | Iff(a, b) ->
-      let va = free_vars a bound in
-      let vb = free_vars b bound in
-      va @ List.filter (fun x -> not (List.mem x va)) vb
-  | Exists(v, f) | Forall(v, f) -> free_vars f (v :: bound)*)
-
-(** Compute the universal closure of a formula *)
-(**let closure formula =
-  let vars = free_vars formula [] in
-  List.fold_right (fun v f -> Forall(v, f)) vars formula**)
+  | True | False -> StringSet.empty
+  | Pred (_, terms) ->
+      List.fold_left
+        (fun vars t -> StringSet.union vars (free_vars_term t))
+        StringSet.empty terms
+  | Not f -> free_vars_formula f
+  | And (f1, f2)
+  | Or (f1, f2)
+  | Implies (f1, f2)
+  | Iff (f1, f2) ->
+      StringSet.union (free_vars_formula f1) (free_vars_formula f2)
+  | Forall (x, f)
+  | Exists (x, f) ->
+      let vars = free_vars_formula f in
+      StringSet.remove x vars
 
 let rec substitute_in_term var replacement t = 
   match t with
@@ -129,7 +136,7 @@ let rule = function
   | "IDN" -> (function [a], [] -> a | _ -> failwith "illformed rule")
   | "MOD" -> (function [Implies(a, b); c], [] when c=a -> b | _ -> failwith "illformed rule")
   | "GEN" -> (function [a], [Var(v)] -> Forall(v, a) | _ -> failwith "illformed rule")
-  | "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")
+  (*| "CTV" -> (function [a], [ContextConst(index); Var(v)] -> substitute_context_const_in_formula_by_var index v a | _ -> failwith "illformed rule")*)
   | "SKO" -> (function [Exists(v, a)], [SkolemConst(ref_seq); Var v1] when v=v1 -> substitute_in_formula v (SkolemConst ref_seq) a | _ -> failwith "illformed rule")
   | _ -> failwith "unknown rule"
 
@@ -268,17 +275,29 @@ let formula_match_ref ref formula =
   skolem_const_compatible_with_ref_in_formula ref formula 
   && max_context_const_index_of_formula formula < context_depth_of_ref ref
 
-let is_ctv_alinged ref terms = 
+(* let ctv_rule_constrain ref terms =
   match List.nth terms 0 with
     | ContextConst index -> context_depth_of_ref ref = index
-    | _ -> false
+    | _ -> false *)
 
-let is_sko_aligned ref terms =
-  match ref, List.nth terms 0 with 
-    | Ref seq, SkolemConst seq1 -> seq = seq1
-    | _ -> false
+let sko_rule_constrain ref terms refs proof =
+  let formula = get_formula proof (List.nth refs 0) in
+  let sk_term = List.nth terms 0 in
+  if 
+    List.for_all 
+      (fun v -> var_occurs_free_in_formula v formula && not (var_accurs_free_in_assumptions proof ref v)) 
+      (StringSet.elements (free_vars_term sk_term))
+    &&
+    List.for_all
+    (fun v -> var_occurs_in_term v sk_term || var_accurs_free_in_assumptions proof ref v)
+    (StringSet.elements (free_vars_formula formula))
+  then
+    match ref, sk_term with 
+      | Ref seq, SkolemConst seq1 -> seq = seq1
+      | _ -> false
+  else false
 
-let is_gen_aligned ref terms proof =
+let gen_rule_constrain ref terms proof =
   match List.nth terms 0 with 
     | Var v -> not (var_accurs_free_in_assumptions proof ref v)
     | _ -> false
@@ -287,6 +306,9 @@ let is_assumption_statement s =
   match s with
     | AssumptionStmt _ -> true
     | _ -> false
+
+let derive_formula proof rule_label refs terms = 
+  rule rule_label (List.map (get_formula proof) refs, terms)
 
 let rec is_valid_conclusion proof r = 
   match get_statement proof r with
@@ -304,10 +326,11 @@ let rec is_valid_conclusion proof r =
           && List.for_all (is_valid_conclusion proof) refs
           && formula_match_ref r formula
         -> (match label with 
-            | "CTV" -> is_ctv_alinged r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | "SKO" -> is_sko_aligned r terms && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | "GEN" -> is_gen_aligned r terms proof && formula = (rule label (List.map (get_formula proof) refs, terms))
-            | _ -> formula = (rule label (List.map (get_formula proof) refs, terms)))
+            (*| "CTV" when ctv_rule_constrain r terms -> formula = derive_formula proof label refs terms*)
+            | "SKO" when sko_rule_constrain r terms refs proof -> formula = derive_formula proof label refs terms
+            | "GEN" when gen_rule_constrain r terms proof -> formula = derive_formula proof label refs terms
+            | "MOD" | "IDN" -> formula = derive_formula proof label refs terms
+            | _ -> failwith "invalid proof")
     | BlockStmt{ref; statements; formula} 
         when ref = r 
         && (List.length statements) > 0

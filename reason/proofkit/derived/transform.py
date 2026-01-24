@@ -1,6 +1,8 @@
 from unittest import case
 
 from reason.core.transform.transformer import Transformer
+from reason.proofkit.derived.qty_rules import *
+from reason.proofkit.derived.qty_tau import *
 
 from reason.proofkit.derived.rules import *
 from reason.proofkit.derived.tautologies import *
@@ -34,6 +36,13 @@ class ProvedTransformer:
             return method(self, *map(self._transform, args))
         return wrapper # method.__name__(*args) <-> method.__name__(*[T(a) for a in args])
 
+    @classmethod
+    def inner_quant(cls, method):
+        def wrapper(self, a, x):
+            return method(self, self._transform(a), x)
+
+        return wrapper
+
     def neg(self, a: FirstOrderFormula):
         """
         @outer
@@ -57,6 +66,12 @@ class ProvedTransformer:
         pass
 
     def iff(self, a: FirstOrderFormula, b: FirstOrderFormula):
+        pass
+
+    def all(self, a: FirstOrderFormula, x: str):
+        pass
+
+    def exists(self, a: FirstOrderFormula, x: str):
         pass
 
     def _transform(self, f: FirstOrderFormula):
@@ -87,6 +102,12 @@ class ProvedTransformer:
             case LogicConnective(name=const.IFF, args=[a, b]):
                 return self.iff(a, b)
 
+            case LogicQuantifier(name=const.EXISTS, args=[var, arg]):
+                return self.exists(arg, var.name)
+
+            case LogicQuantifier(name=const.FORALL, args=[var, arg]):
+                return self.all(arg, var.name)
+
         raise RuntimeError()
 
 
@@ -110,6 +131,14 @@ class IDNProvedTransformer(ProvedTransformer):
     @ProvedTransformer.inner
     def iff(self, a, b):
         return r_iff_iff(a, b)
+
+    @ProvedTransformer.inner_quant
+    def exists(self, a, x: str):
+        return r_iff_exists(a, x)
+
+    @ProvedTransformer.inner_quant
+    def all(self, a, x: str):
+        return r_iff_all(a, x)
 
 
 class ImpDisProvedTransformer(IDNProvedTransformer):
@@ -154,7 +183,7 @@ class NnfProvedTransformer(IDNProvedTransformer):
     def neg_imp(self, a):
         match a:
             case LogicConnective(name=const.IMP, args=[p, q]):
-                r1 = dis_imp(p, q) # ~p or q <-> (p ->q)
+                r1 = dis_imp(p, q) # ~p or q <-> (p -> q)
                 r2 = r_iff_revolve(r1) # (p -> q) <-> ~p or q
                 return r_iff_neg(r2) # ~(p -> q) <-> ~(~p or q)
 
@@ -166,9 +195,23 @@ class NnfProvedTransformer(IDNProvedTransformer):
             case LogicConnective(name=const.IFF, args=[p, q]):
                 r1 = iff_iff(p, q)  # (p -> q and p -> q) <-> (p <-> q)
                 r2 = r_iff_revolve(r1) # (p <-> q) <-> (p -> q and p -> q)
-                return r_iff_neg(r2)  # ~(p -> q) <-> ~(p -> q and p -> q)
+                return r_iff_neg(r2)  # ~(p <-> q) <-> ~(p -> q and p -> q)
 
         raise RuntimeError()
+
+    @ProvedTransformer.outer
+    def neg_all(self, a):
+        match a:
+            case LogicQuantifier(name=const.FORALL, args=[var, arg]):
+                r1 = de_morgan_exists_not_iff_not_all(arg, var.name) #  ∃x. ~p(x) <-> ~( ∀x. p(x) )
+                return r_iff_revolve(r1) # ~( ∀x. p(x) ) <-> ∃x. ~p(x)
+
+    @ProvedTransformer.outer
+    def neg_exists(self, a):
+        match a:
+            case LogicQuantifier(name=const.EXISTS, args=[var, arg]):
+                return de_morgan_not_exists_iff_all_not(arg, var.name) #  ~ ( ∃x. p(x) ) <-> ∀x. ~p(x)
+
 
     def neg(self, a):
         match a:
@@ -182,6 +225,10 @@ class NnfProvedTransformer(IDNProvedTransformer):
                 return self.neg_imp(a)
             case LogicConnective(name=const.IFF):
                 return self.neg_iff(a)
+            case LogicQuantifier(name=const.EXISTS):
+                return self.neg_exists(a)
+            case LogicQuantifier(name=const.FORALL):
+                return self.neg_all(a)
 
         return self.neg_simple(a)
 

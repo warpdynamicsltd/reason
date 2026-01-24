@@ -3,18 +3,31 @@ import json
 from reason.core.language import Language
 from reason.core.theory.tautology import prove
 from reason.core.transform.describe import describe
+from reason.proofkit.derived.transform import NnfProvedTransformer
+from reason.proofkit.kernel.proof import *
 from reason.core.transform.base import quantifier_signature, remove_universal_quantifiers
 
 L = Language()
 # L.add_const("a")
 
-formula = L("a ∪ (p ∩ q) = (a ∪ p) ∩ (a ∪ q)")
-print(remove_universal_quantifiers(formula))
-L.display(print, formula)
+# formula = L("a ∪ (p ∩ q) = (a ∪ p) ∩ (a ∪ q)")
+# print(remove_universal_quantifiers(formula))
+# L.display(print, formula)
+#
+# print(describe(formula))
 
-print(describe(formula))
 
-# obj = prove(L("P(a)"), [L("∀x. P(x) ∧ Q(x)")])
+obj = prove(L("( ∃y. ∀x. P(x, y) ) → ( ∀x. ∃y.  P(x, y) )"))
 
-# print(json.dumps(obj, indent=2))
+print(json.dumps(obj, indent=2))
+
+import time
+start = time.time()
+BEGIN(L)
+r1 = NnfProvedTransformer(f=L("( ∃y. ∀x. P(x, y) ) → ( ∀x. ∃y.  P(x, y) )")).result
+print(PROOF.to_ctxproof())
+res_f = RETURN()
+end = time.time()
+print(f"Time: {end - start}")
+print(L.printer(res_f))
 # %%

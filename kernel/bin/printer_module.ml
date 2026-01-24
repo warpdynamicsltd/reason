@@ -42,7 +42,7 @@ let rec term_of_json (json : Yojson.Safe.t) =
   | `Assoc [("type", `String "Variable"); ("name", `String v)] -> Var v
   | `Assoc [("type", `String "Const"); ("name", `String c)] -> Const c
   | `Assoc [("type", `String "ContextConst"); ("name", `Int c)] -> ContextConst c
-  | `Assoc [("type", `String "SkolemConst"); ("name", _); ("args", `List indices_json)] ->
+  | `Assoc [("type", `String "SkolemConst"); ("name", `List indices_json)] ->
       let indices = List.map Yojson.Safe.Util.to_int indices_json in
       SkolemConst indices
   | `Assoc [("type", `String "Function"); ("name", `String f); ("args", `List args)] ->
